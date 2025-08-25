@@ -38,7 +38,7 @@ fn dev() {
     let alice: Account<snarkvm::console::network::TestnetV0> =
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
 
-    let dev = dev::new(&alice).unwrap();
+    let dev = dev::new(&alice, ENDPOINT).unwrap();
 
     wait_for_program_availability("dev.aleo", ENDPOINT, 60).unwrap();
 

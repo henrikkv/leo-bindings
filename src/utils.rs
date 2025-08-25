@@ -54,12 +54,12 @@ impl<N: Network> FromStr for Account<N> {
     }
 }
 
-pub fn get_public_balance<N: Network>(address: &Address<N>, endpoint: &str) -> Result<u64, anyhow::Error> {
+pub fn get_public_balance<N: Network>(address: &Address<N>, endpoint: &str, network_path: &str) -> Result<u64, anyhow::Error> {
     let credits = ProgramID::<N>::from_str("credits.aleo")?;
     let account_mapping = Identifier::<N>::from_str("account")?;
 
     let response = ureq::get(&format!(
-        "{endpoint}/testnet/program/{credits}/mapping/{account_mapping}/{address}"
+        "{endpoint}/{network_path}/program/{credits}/mapping/{account_mapping}/{address}"
     ))
     .call();
 
@@ -85,14 +85,14 @@ pub fn get_public_balance<N: Network>(address: &Address<N>, endpoint: &str) -> R
     }
 }
 
-pub fn broadcast_transaction<N: Network>(transaction: Transaction<N>, endpoint: &str) -> Result<String, anyhow::Error> {
+pub fn broadcast_transaction<N: Network>(transaction: Transaction<N>, endpoint: &str, network_path: &str) -> Result<String, anyhow::Error> {
     let transaction_id = transaction.id();
     ensure!(
         !transaction.is_fee(),
         "The transaction is a fee transaction and cannot be broadcast"
     );
     
-    match ureq::post(&format!("{}/testnet/transaction/broadcast", endpoint)).send_json(&transaction)
+    match ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, network_path)).send_json(&transaction)
     {
         Ok(id) => {
             let response_string = id.into_string()?.trim_matches('\"').to_string();

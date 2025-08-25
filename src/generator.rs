@@ -3,13 +3,23 @@ use quote::quote;
 use crate::signature::SimplifiedBindings;
 use crate::types::get_rust_type;
 
+
 pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_type: Option<syn::Path>) -> TokenStream {
     let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
     
     let network_type_token = network_type
         .as_ref()
         .map(|path| quote! { #path })
-        .unwrap_or_else(|| quote! { snarkvm::console::network::MainnetV0 });
+        .expect("Network type must be specified in generate_bindings! macro");
+    
+    let path_str = quote!(#network_type_token).to_string();
+    let (network_name_token, network_path) = match path_str.as_str() {
+        s if s.contains("TestnetV0") => (quote! { NetworkName::TestnetV0 }, "testnet"),
+        s if s.contains("MainnetV0") => (quote! { NetworkName::MainnetV0 }, "mainnet"),
+        s if s.contains("CanaryV0") => (quote! { NetworkName::CanaryV0 }, "canary"),
+        _ => panic!("Unsupported network type: {}. Supported types: TestnetV0, MainnetV0, CanaryV0", path_str),
+    };
+    
     
     let record_structs = generate_record_structs(&simplified.records);
     let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name);
@@ -38,19 +48,22 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         
         type Nw = #network_type_token;
         
-        const ENDPOINT: &str = "http://localhost:3030";
-        
         #(#record_structs)*
         
         pub struct #program_name {
             pub package: Package,
+            pub endpoint: String,
         }
         
+        const NETWORK_PATH: &str = #network_path;
+        const NETWORK_NAME: NetworkName = #network_name_token;
+        
         impl #program_name {
-            pub fn new(deployer: &Account<Nw>) -> Result<Self, anyhow::Error> {
+            pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
                 use leo_package::Package;
                 use leo_span::create_session_if_not_set_then;
                 use std::path::Path;
+                
                 
                 let result = create_session_if_not_set_then(|_| {
                 let package = Package::from_directory(
@@ -58,8 +71,8 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                     Path::new("."),
                     false,
                     false,
-                    NetworkName::TestnetV0,
-                    ENDPOINT,
+                    NETWORK_NAME,
+                    endpoint,
                 )?;
                 
                 let main_program = package.programs.iter()
@@ -84,7 +97,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                 println!("📦 Creating deployment transaction for '{}'...", program_id);
                 let rng = &mut rand::thread_rng();
                 let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                let query = Query::<Nw, BlockMemory<Nw>>::from(ENDPOINT);
+                let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
                 
                 let transaction = vm.deploy(
                     deployer.private_key(),
@@ -97,7 +110,8 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                 
                 println!("📡 Broadcasting deployment transaction...");
                 let transaction_id = transaction.id();
-                let response = ureq::post(&format!("{}/testnet/transaction/broadcast", ENDPOINT))
+                
+                let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
                     .send_json(&transaction)?;
                 
                 let response_string = response.into_string()?.trim_matches('\"').to_string();
@@ -108,7 +122,10 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                 
                 println!("✅ Deployment transaction {} broadcast successfully!", transaction_id);
                 
-                    Ok(Self { package })
+                    Ok(Self { 
+                        package,
+                        endpoint: endpoint.to_string(),
+                    })
                 });
                 
                 result
@@ -226,7 +243,7 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                 ];
                 let rng = &mut rand::thread_rng();
                 println!("Transaction of function {}:", function_name);
-                let query = ENDPOINT.to_string();
+                
                 let private_key = account.private_key();
                 let priority_fee = 0;
                 let locator = Locator::<Nw>::new(program_id, function_id);
@@ -237,7 +254,7 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                     let vm = VM::from(store)?;
                     
                     let program_string = {
-                        let response = ureq::get(&format!("{}/testnet/program/{}", query, program_id))
+                        let response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
                             .call()
                             .map_err(|e| anyhow!("Failed to fetch program: {}", e))?;
                         let json_response: serde_json::Value = response.into_json()?;
@@ -254,11 +271,11 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                         args.iter(),
                         fee_record,
                         priority_fee,
-                        Some(&Query::<Nw, BlockMemory<Nw>>::from(query.as_str()) as &dyn QueryTrait<Nw>),
+                        Some(&Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str()) as &dyn QueryTrait<Nw>),
                         rng,)?
                 };
                 
-                let public_balance = get_public_balance(&account.address(), &query)?;
+                let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
                 let storage_cost = transaction
                     .execution()
                     .ok_or_else(|| anyhow!("The transaction does not contain an execution"))?
@@ -274,7 +291,7 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                 }
                 
                 println!("✅ Created execution transaction for '{}'", locator.to_string());
-                println!("Response from transaction broadcast: {}", broadcast_transaction(transaction.clone(), &query)?);
+                println!("Response from transaction broadcast: {}", broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH)?);  
                 
                 let execution = match transaction {
                     Transaction::Execute(_, _, execution, _) => execution,
