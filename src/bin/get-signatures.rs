@@ -1,5 +1,5 @@
 use clap::Parser;
-use leo_bindings::get_signatures;
+use leo_signatures::get_signatures;
 use std::path::PathBuf;
 
 #[derive(Parser)]

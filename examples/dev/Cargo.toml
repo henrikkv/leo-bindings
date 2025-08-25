@@ -1,0 +1,26 @@
+[package]
+name = "dev"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "devtest"
+path = "lib.rs"
+
+[dependencies]
+leo-bindings = { path = "../../" }
+leo-signatures = { path = "../../leo-signatures" }
+anyhow = "1.0"
+rand = "0.8"
+ureq = { version = "2.6", features = ["json"] }
+aleo-std = { version = "1.0.1", features = ["storage"] }
+http = "1.0"
+snarkvm = "4.1.0"
+leo-lang = "3.1.0"
+leo-package = "3.1.0"
+leo-ast = "3.1.0"
+leo-span = "3.1.0"
+serde_json = "1.0"
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
