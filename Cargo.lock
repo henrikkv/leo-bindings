@@ -827,9 +827,9 @@ dependencies = [
  "http",
  "leo-ast",
  "leo-bindings",
+ "leo-bindings-macro",
  "leo-lang",
  "leo-package",
- "leo-signatures",
  "leo-span",
  "rand 0.8.5",
  "serde_json",
@@ -1645,15 +1645,27 @@ name = "leo-bindings"
 version = "0.1.0"
 dependencies = [
  "aleo-std",
+ "anyhow",
  "clap",
  "http",
  "leo-lang",
- "leo-signatures",
  "proc-macro2",
  "quote 1.0.40",
  "serde",
  "serde_json",
  "snarkvm",
+ "syn 2.0.106",
+ "ureq 2.12.1",
+]
+
+[[package]]
+name = "leo-bindings-macro"
+version = "0.1.0"
+dependencies = [
+ "leo-bindings",
+ "proc-macro2",
+ "quote 1.0.40",
+ "serde_json",
  "syn 2.0.106",
 ]
 
@@ -1827,15 +1839,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "snarkvm",
-]
-
-[[package]]
-name = "leo-signatures"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
  "snarkvm",
 ]
 

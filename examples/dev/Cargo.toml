@@ -9,7 +9,7 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings = { path = "../../" }
-leo-signatures = { path = "../../leo-signatures" }
+leo-bindings-macro = { path = "../../leo-bindings-macro" }
 anyhow = "1.0"
 rand = "0.8"
 ureq = { version = "2.6", features = ["json"] }

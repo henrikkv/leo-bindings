@@ -30,7 +30,8 @@ fn wait_for_program_availability(
 
 #[test]
 fn dev() {
-    use devtest::{dev, Account};
+    use devtest::dev;
+    use leo_bindings::utils::Account;
     use std::str::FromStr;
 
     const ENDPOINT: &str = "http://localhost:3030";

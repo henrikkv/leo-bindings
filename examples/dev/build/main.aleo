@@ -2,9 +2,9 @@ program dev.aleo;
 
 function main:
     input r0 as u32.public;
-    input r1 as u32.private;
+    input r1 as u32.public;
     add r0 r1 into r2;
-    output r2 as u32.private;
+    output r2 as u32.public;
 
 constructor:
     assert.eq edition 0u16;
