@@ -88,17 +88,18 @@ pub struct FutureType {}
 pub struct SimplifiedBindings {
     pub program_name: String,
     pub records: Vec<RecordDef>,
+    pub structs: Vec<RecordDef>,
     pub functions: Vec<FunctionBinding>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RecordDef {
     pub name: String,
-    pub fields: Vec<FieldDef>,
+    pub members: Vec<MemberDef>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FieldDef {
+pub struct MemberDef {
     pub name: String,
     #[serde(rename = "type")]
     pub type_name: String,
@@ -133,15 +134,39 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         .next()
         .ok_or("No program scope found")?;
 
-    let records: Vec<RecordDef> = program_scope
-        .structs
-        .into_iter()
+    let structs_data = program_scope.structs;
+    
+    let records: Vec<RecordDef> = structs_data
+        .iter()
         .filter_map(|(_, struct_def)| {
             if struct_def.is_record {
-                let fields = struct_def
+                let members = struct_def
+                    .members
+                    .iter()
+                    .map(|member| MemberDef {
+                        name: member.identifier.name.clone(),
+                        type_name: normalize_type(&member.type_info),
+                    })
+                    .collect();
+
+                Some(RecordDef {
+                    name: struct_def.identifier.name.clone(),
+                    members,
+                })
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    let structs: Vec<RecordDef> = structs_data
+        .into_iter()
+        .filter_map(|(_, struct_def)| {
+            if !struct_def.is_record {
+                let members = struct_def
                     .members
                     .into_iter()
-                    .map(|member| FieldDef {
+                    .map(|member| MemberDef {
                         name: member.identifier.name,
                         type_name: normalize_type(&member.type_info),
                     })
@@ -149,7 +174,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
 
                 Some(RecordDef {
                     name: struct_def.identifier.name,
-                    fields,
+                    members,
                 })
             } else {
                 None
@@ -193,6 +218,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
     let simplified = SimplifiedBindings {
         program_name,
         records,
+        structs,
         functions,
     };
 

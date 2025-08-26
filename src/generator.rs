@@ -21,7 +21,8 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
     };
     
     
-    let record_structs = generate_record_structs(&simplified.records);
+    let records = generate_records(&simplified.records);
+    let structs = generate_structs(&simplified.structs);
     let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name);
     
     let expanded = quote! {
@@ -48,7 +49,9 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         
         type Nw = #network_type_token;
         
-        #(#record_structs)*
+        #(#records)*
+        
+        #(#structs)*
         
         pub struct #program_name {
             pub package: Package,
@@ -138,32 +141,54 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
     expanded
 }
 
-fn generate_record_structs(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
+fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name, proc_macro2::Span::call_site());
-        let field_getters = record.fields.iter().map(|field| {
-            let field_name = syn::Ident::new(&field.name, proc_macro2::Span::call_site());
-            let field_type = get_rust_type(&field.type_name);
-            
+        
+        let member_definitions = record.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
+            quote! { pub #member_name: #member_type }
+        });
+        
+        let member_extractions = record.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
             quote! {
-                pub fn #field_name(&self) -> #field_type {
-                    let field = &Identifier::try_from(stringify!(#field_name)).unwrap();
-                    let entry = self.record.data().get(field).unwrap();
-                    let value = entry.to_value();
-                    <#field_type>::from_value(value)
-                }
+                let #member_name = {
+                    let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
+                    let entry = record.data().get(member_id).unwrap();
+                    let value = Value::Plaintext(entry.clone());
+                    <#member_type>::from_value(value)
+                };
+            }
+        });
+        
+        let member_names = record.members.iter().map(|member| {
+            syn::Ident::new(&member.name, proc_macro2::Span::call_site())
+        });
+        
+        let _member_conversions = record.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            quote! {
+                (
+                    Identifier::try_from(stringify!(#member_name)).unwrap(),
+                    self.#member_name.to_value().into_plaintext().unwrap()
+                )
             }
         });
         
         quote! {
             #[derive(Debug)]
             pub struct #record_name {
-                pub record: Record<Nw, Plaintext<Nw>>,
+                #(#member_definitions),*
             }
             
             impl ToValue<Nw> for #record_name {
                 fn to_value(&self) -> Value<Nw> {
-                    Value::Record(self.record.clone())
+                    // TODO: Implement proper Record construction with owner, gates, and nonce
+                    // For now, this is not implemented as it requires additional metadata
+                    panic!("ToValue for records with direct members needs proper Record construction with owner, gates, and nonce")
                 }
             }
             
@@ -171,7 +196,10 @@ fn generate_record_structs(records: &[crate::signature::RecordDef]) -> Vec<proc_
                 fn from_value(value: Value<Nw>) -> Self {
                     match value {
                         Value::Record(record) => {
-                            Self { record }
+                            #(#member_extractions)*
+                            Self {
+                                #(#member_names),*
+                            }
                         },
                         _ => panic!("Expected record type"),
                     }
@@ -180,15 +208,87 @@ fn generate_record_structs(records: &[crate::signature::RecordDef]) -> Vec<proc_
             
             impl #record_name {
                 pub fn new(record: Record<Nw, Plaintext<Nw>>) -> Self {
-                    #record_name { record }
+                    Self::from_value(Value::Record(record))
                 }
-                
-                #(#field_getters)*
             }
         }
     }).collect()
 }
 
+fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
+    structs.iter().map(|struct_def| {
+        let struct_name = syn::Ident::new(&struct_def.name, proc_macro2::Span::call_site());
+        
+        let member_definitions = struct_def.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
+            quote! { pub #member_name: #member_type }
+        });
+        
+        let member_extractions = struct_def.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
+            quote! {
+                let #member_name = {
+                    let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
+                    let entry = struct_members.get(member_id).unwrap();
+                    let value = Value::Plaintext(entry.clone());
+                    <#member_type>::from_value(value)
+                };
+            }
+        });
+        
+        let member_names = struct_def.members.iter().map(|member| {
+            syn::Ident::new(&member.name, proc_macro2::Span::call_site())
+        });
+        
+        let member_conversions = struct_def.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            quote! {
+                (
+                    Identifier::try_from(stringify!(#member_name)).unwrap(),
+                    self.#member_name.to_value().into_plaintext().unwrap()
+                )
+            }
+        });
+        
+        quote! {
+            #[derive(Debug)]
+            pub struct #struct_name {
+                #(#member_definitions),*
+            }
+            
+            impl ToValue<Nw> for #struct_name {
+                fn to_value(&self) -> Value<Nw> {
+                    let members = IndexMap::from([
+                        #(#member_conversions),*
+                    ]);
+                    Value::Plaintext(Plaintext::Struct(members, std::sync::OnceLock::new()))
+                }
+            }
+            
+            impl FromValue<Nw> for #struct_name {
+                fn from_value(value: Value<Nw>) -> Self {
+                    match value {
+                        Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
+                            #(#member_extractions)*
+                            Self {
+                                #(#member_names),*
+                            }
+                        },
+                        _ => panic!("Expected struct type"),
+                    }
+                }
+            }
+            
+            impl #struct_name {
+                pub fn new(struct_members: IndexMap<Identifier<Nw>, Plaintext<Nw>>) -> Self {
+                    Self::from_value(Value::Plaintext(Plaintext::Struct(struct_members, std::sync::OnceLock::new())))
+                }
+            }
+        }
+    }).collect()
+}
 fn generate_function_implementations(functions: &[crate::signature::FunctionBinding], program_name: &str) -> Vec<proc_macro2::TokenStream> {
     functions.iter().map(|function| {
         let function_name = syn::Ident::new(&function.name, proc_macro2::Span::call_site());
@@ -233,27 +333,21 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
         
         quote! {
             pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #return_type {
-                let program_name = #program_name.to_string();
-                let program_id_str = format!("{}.aleo", program_name);
-                let program_id = ProgramID::try_from(program_id_str.as_str()).unwrap();
-                let function_name = stringify!(#function_name).to_string();
-                let function_id = Identifier::from_str(&function_name).unwrap();
+                let program_id = ProgramID::try_from(format!("{}.aleo", #program_name).as_str()).unwrap();
+                let function_id = Identifier::from_str(&stringify!(#function_name).to_string()).unwrap();
                 let args: Vec<Value<Nw>> = vec![
                     #(#input_conversions),*
                 ];
                 let rng = &mut rand::thread_rng();
-                println!("Transaction of function {}:", function_name);
+                println!("Transaction of function {}:", stringify!(#function_name));
                 
-                let private_key = account.private_key();
-                let priority_fee = 0;
                 let locator = Locator::<Nw>::new(program_id, function_id);
                 
                 let transaction: Transaction<Nw> = {
-                    let rng = &mut rand::thread_rng();
                     let store = ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?;
                     let vm = VM::from(store)?;
                     
-                    let program_string = {
+                    let program: Program<Nw> = {
                         let response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
                             .call()
                             .map_err(|e| anyhow!("Failed to fetch program: {}", e))?;
@@ -261,16 +355,15 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                         json_response.as_str()
                             .ok_or_else(|| anyhow!("Expected program string in JSON response"))?
                             .to_string()
+                            .parse()?
                     };
-                    let program: Program<Nw> = program_string.parse()?;
                     vm.process().write().add_program(&program)?;
-                    let fee_record = None;
                     vm.execute(
-                        &private_key,
+                        account.private_key(),
                         (program_id, function_id),
                         args.iter(),
-                        fee_record,
-                        priority_fee,
+                        None,
+                        0,
                         Some(&Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str()) as &dyn QueryTrait<Nw>),
                         rng,)?
                 };
@@ -280,9 +373,8 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                     .execution()
                     .ok_or_else(|| anyhow!("The transaction does not contain an execution"))?
                     .size_in_bytes()?;
-                let base_fee = storage_cost.saturating_add(priority_fee);
                 
-                if public_balance < base_fee {
+                if public_balance < storage_cost {
                     bail!(
                         "❌ The public balance of {} is insufficient to pay the base fee for `{}`",
                         public_balance,
@@ -298,42 +390,44 @@ fn generate_function_implementations(functions: &[crate::signature::FunctionBind
                     _ => panic!("Not an execution."),
                 };
 
-                let mut transitions = execution.transitions();
-                let target_transition = transitions.find(|transition| {
-                    transition.function_name().to_string() == function_name
-                }).expect("Could not find transition for the target function");
-                let outputs_iter = target_transition.outputs().iter();
-                let outputs: Vec<Value<Nw>> = outputs_iter.map(|output| {
-                    match output {
-                      Output::Constant(_, plaintext) | Output::Public(_, plaintext) => {
-                          plaintext.as_ref().map(|pt| Value::Plaintext(pt.clone())).unwrap_or_else(|| {
-                              panic!("Expected plaintext output but found None")
-                          })
-                      },
-                      Output::Private(_, _ciphertext) => {
-                          panic!("Private outputs are not yet supported in generated bindings")
-                      },
-                      Output::Record(_, _, record_ciphertext, _) => {
-                          record_ciphertext.as_ref().and_then(|rc| {
-                              rc.decrypt(account.view_key()).ok().map(|record| Value::Record(record))
-                          }).unwrap_or_else(|| {
-                              panic!("Expected record output but found None or failed to decrypt")
-                          })
-                      },
-                      Output::Future(_, future) => {
-                          future.as_ref().map(|f| Value::Future(f.clone())).unwrap_or_else(|| {
-                              panic!("Expected future output but found None")
-                          })
-                      },
-                      Output::ExternalRecord(external_record) => {
-                          Value::Plaintext(Plaintext::from(Literal::Field(*external_record)))
-                      },
-                      _ => {
-                          println!("Debug: Unexpected output type: {:?}", output);
-                          panic!("Unexpected output type")
-                      },
-                    }
-                }).collect();
+                let outputs: Vec<Value<Nw>> = execution.transitions()
+                    .find(|transition| {
+                        transition.function_name().to_string() == stringify!(#function_name)
+                    })
+                    .expect("Could not find transition for the target function")
+                    .outputs()
+                    .iter()
+                    .map(|output| {
+                        match output {
+                          Output::Constant(_, plaintext) | Output::Public(_, plaintext) => {
+                              plaintext.as_ref().map(|pt| Value::Plaintext(pt.clone())).unwrap_or_else(|| {
+                                  panic!("Expected plaintext output but found None")
+                              })
+                          },
+                          Output::Private(_, _ciphertext) => {
+                              panic!("Private outputs are not yet supported in generated bindings")
+                          },
+                          Output::Record(_, _, record_ciphertext, _) => {
+                              record_ciphertext.as_ref().and_then(|rc| {
+                                  rc.decrypt(account.view_key()).ok().map(|record| Value::Record(record))
+                              }).unwrap_or_else(|| {
+                                  panic!("Expected record output but found None or failed to decrypt")
+                              })
+                          },
+                          Output::Future(_, future) => {
+                              future.as_ref().map(|f| Value::Future(f.clone())).unwrap_or_else(|| {
+                                  panic!("Expected future output but found None")
+                              })
+                          },
+                          Output::ExternalRecord(external_record) => {
+                              Value::Plaintext(Plaintext::from(Literal::Field(*external_record)))
+                          },
+                          _ => {
+                              println!("Debug: Unexpected output type: {:?}", output);
+                              panic!("Unexpected output type")
+                          },
+                        }
+                    }).collect();
 
                 #return_value
             }
