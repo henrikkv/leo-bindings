@@ -11,6 +11,7 @@ path = "lib.rs"
 leo-bindings = { path = "../../" }
 leo-bindings-macro = { path = "../../leo-bindings-macro" }
 anyhow = "1.0"
+indexmap = "2.0"
 rand = "0.8"
 ureq = { version = "2.6", features = ["json"] }
 aleo-std = { version = "1.0.1", features = ["storage"] }
