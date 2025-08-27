@@ -1,42 +1,6 @@
-fn wait_for_program_availability(
-    program_id: &str,
-    endpoint: &str,
-    timeout_secs: u64,
-) -> Result<(), Box<dyn std::error::Error>> {
-    println!(
-        "🔄 Test: Waiting for program '{}' to become available via API...",
-        program_id
-    );
-    let start = std::time::Instant::now();
-
-    loop {
-        if start.elapsed().as_secs() > timeout_secs {
-            return Err(format!("Timeout waiting for program {}", program_id).into());
-        }
-
-        let response = ureq::get(&format!("{}/testnet/program/{}", endpoint, program_id)).call();
-        match response {
-            Ok(_) => {
-                println!("✅ Test: Program '{}' is now available via API", program_id);
-                return Ok(());
-            }
-            Err(_) => {
-                if start.elapsed().as_secs() % 5 == 0 {
-                    println!(
-                        "⏳ Test: Still waiting for program availability... ({}/{})",
-                        start.elapsed().as_secs(),
-                        timeout_secs
-                    );
-                }
-                std::thread::sleep(std::time::Duration::from_secs(1));
-            }
-        }
-    }
-}
-
 #[test]
 fn token() {
-    use leo_bindings::utils::Account;
+    use leo_bindings::utils::*;
     use std::str::FromStr;
     use tokenexample::*;
 
