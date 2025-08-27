@@ -23,4 +23,7 @@ program dev.aleo {
         };
         return resultb;
     }
+    transition nested_array(public a: [[u8;5u8];5u8]) -> public [[u8;5u8];5u8] {
+        return [[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8]];
+    }
 }

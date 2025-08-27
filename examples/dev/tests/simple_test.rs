@@ -36,7 +36,7 @@ fn wait_for_program_availability(
 
 #[test]
 fn dev() {
-    use devtest::{dev, A, B};
+    use devtest::*;
     use leo_bindings::utils::Account;
     use std::str::FromStr;
 
@@ -54,5 +54,18 @@ fn dev() {
     let a = A::new(1);
     let b = B::new(2, a);
     let result = dev.nested(&alice, b).unwrap();
+    dbg!(result);
+    let result = dev
+        .nested_array(
+            &alice,
+            [
+                [10, 10, 10, 10, 10],
+                [10, 10, 10, 10, 10],
+                [10, 10, 10, 10, 10],
+                [10, 10, 10, 10, 10],
+                [10, 10, 10, 10, 10],
+            ],
+        )
+        .unwrap();
     dbg!(result);
 }
