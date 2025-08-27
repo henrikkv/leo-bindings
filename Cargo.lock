@@ -828,6 +828,7 @@ dependencies = [
  "indexmap",
  "leo-ast",
  "leo-bindings",
+ "leo-bindings-core",
  "leo-bindings-macro",
  "leo-lang",
  "leo-package",
@@ -1650,6 +1651,8 @@ dependencies = [
  "clap",
  "http",
  "indexmap",
+ "leo-bindings-core",
+ "leo-bindings-macro",
  "leo-lang",
  "proc-macro2",
  "quote 1.0.40",
@@ -1661,10 +1664,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "leo-bindings-core"
+version = "0.1.0"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "indexmap",
+ "leo-lang",
+ "proc-macro2",
+ "quote 1.0.40",
+ "serde",
+ "serde_json",
+ "snarkvm",
+ "syn 2.0.106",
+]
+
+[[package]]
 name = "leo-bindings-macro"
 version = "0.1.0"
 dependencies = [
- "leo-bindings",
+ "leo-bindings-core",
  "proc-macro2",
  "quote 1.0.40",
  "serde_json",
@@ -4208,6 +4227,7 @@ dependencies = [
  "indexmap",
  "leo-ast",
  "leo-bindings",
+ "leo-bindings-core",
  "leo-bindings-macro",
  "leo-lang",
  "leo-package",

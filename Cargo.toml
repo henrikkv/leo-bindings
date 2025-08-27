@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "leo-bindings-macro", "examples/dev", "examples/token"]
+members = [".", "leo-bindings-core", "leo-bindings-macro", "examples/dev", "examples/token"]
 
 [package]
 name = "leo-bindings"
@@ -25,3 +25,4 @@ leo-lang = "3.1.0"
 anyhow = "1.0"
 ureq = { version = "2.6", features = ["json"] }
 leo-bindings-macro = { path = "leo-bindings-macro" }
+leo-bindings-core = { path = "leo-bindings-core" }

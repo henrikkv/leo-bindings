@@ -9,6 +9,7 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings = { path = "../../" }
+leo-bindings-core = { path = "../../leo-bindings-core" }
 leo-bindings-macro = { path = "../../leo-bindings-macro" }
 anyhow = "1.0"
 indexmap = "2.0"

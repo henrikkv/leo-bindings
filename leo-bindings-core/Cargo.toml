@@ -1,0 +1,16 @@
+[package]
+name = "leo-bindings-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+indexmap = "2.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
+aleo-std = { version = "1.0.1", features = ["storage"] }
+snarkvm = "4.1.0"
+leo-lang = "3.1.0"
+anyhow = "1.0"

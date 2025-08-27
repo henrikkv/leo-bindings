@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, Token};
-use leo_bindings::signature::{get_signatures, SimplifiedBindings};
-use leo_bindings::generator::generate_code_from_simplified;
+use leo_bindings_core::signature::{get_signatures, SimplifiedBindings};
+use leo_bindings_core::generator::generate_code_from_simplified;
 
 // Struct to parse macro arguments
 struct MacroArgs {

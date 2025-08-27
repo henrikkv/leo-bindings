@@ -45,7 +45,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         use std::fmt;
         use std::thread::sleep;
         use std::time::Duration;
-        use leo_bindings::types::{ToValue, FromValue};
+        use leo_bindings_core::types::{ToValue, FromValue};
         use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction};
         
         type Nw = #network_type_token;
@@ -559,4 +559,3 @@ fn generate_function_implementations(
         }
     }).collect()
 }
-

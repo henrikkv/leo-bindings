@@ -7,7 +7,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-leo-bindings = { path = ".." }
+leo-bindings-core = { path = "../leo-bindings-core" }
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
