@@ -3,6 +3,12 @@ use quote::quote;
 use snarkvm::prelude::*;
 
 pub fn get_rust_type(type_name: &str) -> TokenStream {
+    if let Some(array_info) = parse_array_type(type_name) {
+        let inner_type = get_rust_type(&array_info.element_type);
+        let size = array_info.size;
+        return quote! { [#inner_type; #size] };
+    }
+
     match type_name {
         "u8" => quote! { u8 },
         "u16" => quote! { u16 },
@@ -16,12 +22,40 @@ pub fn get_rust_type(type_name: &str) -> TokenStream {
         "i128" => quote! { i128 },
         "address" => quote! { Address<Nw> },
         "Address" => quote! { Address<Nw> },
+        "field" => quote! { Field<Nw> },
+        "Field" => quote! { Field<Nw> },
+        "bool" => quote! { bool },
+        "boolean" => quote! { bool },
         "Future" => quote! { Future<Nw> },
         other => {
             let type_ident = syn::Ident::new(other, proc_macro2::Span::call_site());
             quote! { #type_ident }
         }
     }
+}
+
+pub struct ArrayInfo {
+    pub element_type: String,
+    pub size: usize,
+}
+
+pub fn parse_array_type(type_name: &str) -> Option<ArrayInfo> {
+    let trimmed = type_name.trim();
+    if !trimmed.starts_with('[') || !trimmed.ends_with(']') {
+        return None;
+    }
+
+    let inner = &trimmed[1..trimmed.len() - 1];
+
+    if let Some(semicolon_pos) = inner.rfind(';') {
+        let element_type = inner[..semicolon_pos].trim().to_string();
+        let size_str = inner[semicolon_pos + 1..].trim();
+        if let Ok(size) = size_str.parse::<usize>() {
+            return Some(ArrayInfo { element_type, size });
+        }
+    }
+
+    None
 }
 
 pub trait ToValue<N: Network> {
@@ -133,6 +167,87 @@ impl<N: Network> FromValue<N> for u128 {
                 _ => panic!("Expected literal plaintext"),
             },
             _ => panic!("Expected plaintext value"),
+        }
+    }
+}
+
+impl<N: Network> ToValue<N> for bool {
+    fn to_value(&self) -> Value<N> {
+        Value::Plaintext(Plaintext::from(Literal::Boolean(Boolean::new(*self))))
+    }
+}
+
+impl<N: Network> FromValue<N> for bool {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(plaintext) => match plaintext {
+                Plaintext::Literal(literal, _) => match literal {
+                    Literal::Boolean(bool_val) => *bool_val,
+                    _ => panic!("Expected bool type"),
+                },
+                _ => panic!("Expected literal plaintext"),
+            },
+            _ => panic!("Expected plaintext value"),
+        }
+    }
+}
+
+impl<N: Network> ToValue<N> for Field<N> {
+    fn to_value(&self) -> Value<N> {
+        Value::Plaintext(Plaintext::from(Literal::Field(*self)))
+    }
+}
+
+impl<N: Network> FromValue<N> for Field<N> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(plaintext) => match plaintext {
+                Plaintext::Literal(literal, _) => match literal {
+                    Literal::Field(field_val) => field_val,
+                    _ => panic!("Expected field type"),
+                },
+                _ => panic!("Expected literal plaintext"),
+            },
+            _ => panic!("Expected plaintext value"),
+        }
+    }
+}
+
+
+// Generic array implementations using const generics
+impl<N: Network, T: ToValue<N> + Copy, const SIZE: usize> ToValue<N> for [T; SIZE] {
+    fn to_value(&self) -> Value<N> {
+        let array_elements: Vec<Plaintext<N>> = self
+            .iter()
+            .map(|item| match item.to_value() {
+                Value::Plaintext(p) => p,
+                _ => panic!("Expected plaintext value from array element"),
+            })
+            .collect();
+
+        Value::Plaintext(Plaintext::Array(array_elements, std::sync::OnceLock::new()))
+    }
+}
+
+impl<N: Network, T: FromValue<N> + Copy + Default, const SIZE: usize> FromValue<N> for [T; SIZE] {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(Plaintext::Array(array_elements, _)) => {
+                if array_elements.len() != SIZE {
+                    panic!(
+                        "Array size mismatch: expected {}, got {}",
+                        SIZE,
+                        array_elements.len()
+                    );
+                }
+
+                let mut result = [T::default(); SIZE];
+                for (i, element) in array_elements.into_iter().enumerate() {
+                    result[i] = T::from_value(Value::Plaintext(element));
+                }
+                result
+            }
+            _ => panic!("Expected array type"),
         }
     }
 }

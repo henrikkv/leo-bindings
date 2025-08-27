@@ -28,6 +28,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
     let expanded = quote! {
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
+        use indexmap::IndexMap;
         use snarkvm::ledger::query::*;
         use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
         use snarkvm::ledger::store::ConsensusStore;
@@ -48,6 +49,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction};
         
         type Nw = #network_type_token;
+        
         
         #(#records)*
         
@@ -179,7 +181,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
         });
         
         quote! {
-            #[derive(Debug)]
+            #[derive(Debug, Clone, Copy, Default)]
             pub struct #record_name {
                 #(#member_definitions),*
             }
@@ -232,14 +234,19 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                 let #member_name = {
                     let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
                     let entry = struct_members.get(member_id).unwrap();
-                    let value = Value::Plaintext(entry.clone());
-                    <#member_type>::from_value(value)
+                    <#member_type>::from_value(Value::Plaintext(entry.clone()))
                 };
             }
         });
         
-        let member_names = struct_def.members.iter().map(|member| {
+        let member_names: Vec<_> = struct_def.members.iter().map(|member| {
             syn::Ident::new(&member.name, proc_macro2::Span::call_site())
+        }).collect();
+        
+        let member_definitions_for_constructor = struct_def.members.iter().map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
+            quote! { #member_name: #member_type }
         });
         
         let member_conversions = struct_def.members.iter().map(|member| {
@@ -247,13 +254,16 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             quote! {
                 (
                     Identifier::try_from(stringify!(#member_name)).unwrap(),
-                    self.#member_name.to_value().into_plaintext().unwrap()
+                    match self.#member_name.to_value() {
+                        Value::Plaintext(p) => p,
+                        _ => panic!("Expected plaintext value"),
+                    }
                 )
             }
         });
         
         quote! {
-            #[derive(Debug)]
+            #[derive(Debug, Clone, Copy, Default)]
             pub struct #struct_name {
                 #(#member_definitions),*
             }
@@ -282,8 +292,10 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             }
             
             impl #struct_name {
-                pub fn new(struct_members: IndexMap<Identifier<Nw>, Plaintext<Nw>>) -> Self {
-                    Self::from_value(Value::Plaintext(Plaintext::Struct(struct_members, std::sync::OnceLock::new())))
+                pub fn new(#(#member_definitions_for_constructor),*) -> Self {
+                    Self {
+                        #(#member_names),*
+                    }
                 }
             }
         }

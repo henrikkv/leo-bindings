@@ -70,6 +70,10 @@ pub enum TypeInfo {
         #[serde(rename = "Composite")]
         composite: CompositeType,
     },
+    Array {
+        #[serde(rename = "Array")]
+        array: ArrayType,
+    },
     Future {
         #[serde(rename = "Future")]
         future: FutureType,
@@ -79,6 +83,12 @@ pub enum TypeInfo {
 #[derive(Debug, Deserialize)]
 pub struct CompositeType {
     pub id: Identifier,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ArrayType {
+    pub element_type: Box<TypeInfo>,
+    pub length: serde_json::Value, // Store raw JSON for now, parse size in normalize_type
 }
 
 #[derive(Debug, Deserialize)]
@@ -135,7 +145,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         .ok_or("No program scope found")?;
 
     let structs_data = program_scope.structs;
-    
+
     let records: Vec<RecordDef> = structs_data
         .iter()
         .filter_map(|(_, struct_def)| {
@@ -242,6 +252,40 @@ fn normalize_type(type_info: &TypeInfo) -> String {
             _ => format!("Unknown_Integer_{}", int_type),
         },
         TypeInfo::Composite { composite: comp } => comp.id.name.clone(),
+        TypeInfo::Array { array } => {
+            let element_type = normalize_type(&array.element_type);
+            let size = extract_array_size(&array.length);
+            format!("[{}; {}]", element_type, size)
+        }
         TypeInfo::Future { .. } => "Future".to_string(),
     }
+}
+
+fn extract_array_size(length_json: &serde_json::Value) -> String {
+    // Extract size from JSON structure like:
+    // "length": {
+    //   "Literal": {
+    //     "id": 63,
+    //     "variant": {
+    //       "Integer": ["U8", "5"]
+    //     }
+    //   }
+    // }
+
+    if let Some(literal) = length_json.get("Literal") {
+        if let Some(variant) = literal.get("variant") {
+            if let Some(integer_array) = variant.get("Integer") {
+                if let Some(array) = integer_array.as_array() {
+                    if array.len() == 2 {
+                        if let Some(size_str) = array[1].as_str() {
+                            return size_str.to_string();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Fallback - if we can't parse, return a placeholder
+    "UNKNOWN_SIZE".to_string()
 }
