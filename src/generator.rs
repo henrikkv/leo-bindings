@@ -23,7 +23,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
     
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
-    let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name);
+    let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name, &simplified.records);
     
     let expanded = quote! {
         use anyhow::{anyhow, bail, ensure};
@@ -149,48 +149,118 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
         
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
-            let member_type = get_rust_type(&member.type_name);
-            quote! { pub #member_name: #member_type }
+            if member.name == "owner" {
+                quote! { #member_name: Owner<Nw, Plaintext<Nw>> }
+            } else {
+                let member_type = get_rust_type(&member.type_name);
+                quote! { #member_name: #member_type }
+            }
+        });
+        let extra_record_fields = quote! { __nonce: Group<Nw>, __version: U8<Nw> };
+        
+        
+        let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
+            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let mode = &member.mode;
+            
+            let entry_creation = match mode.as_str() {
+                "Constant" => quote! { Entry::Constant(plaintext_value) },
+                "Public" => quote! { Entry::Public(plaintext_value) },
+                "Private" => quote! { Entry::Private(plaintext_value) },
+                "None" | _ => quote! { Entry::Private(plaintext_value) },
+            };
+            
+            quote! {
+                (
+                    Identifier::try_from(stringify!(#member_name)).unwrap(),
+                    {
+                        let plaintext_value = match self.#member_name.to_value() {
+                            Value::Plaintext(p) => p,
+                            _ => panic!("Expected plaintext value from record member"),
+                        };
+                        #entry_creation
+                    }
+                )
+            }
         });
         
         let member_extractions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             let member_type = get_rust_type(&member.type_name);
-            quote! {
-                let #member_name = {
-                    let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
-                    let entry = record.data().get(member_id).unwrap();
-                    let value = Value::Plaintext(entry.clone());
-                    <#member_type>::from_value(value)
-                };
+            let field_name = &member.name;
+            let mode = &member.mode;
+            
+            let entry_extraction = match mode.as_str() {
+                "Constant" => quote! {
+                    let Entry::Constant(plaintext) = entry else {
+                        panic!("Expected Constant entry for field '{}', but found different entry type", #field_name);
+                    };
+                },
+                "Public" => quote! {
+                    let Entry::Public(plaintext) = entry else {
+                        panic!("Expected Public entry for field '{}', but found different entry type", #field_name);
+                    };
+                },
+                "Private" => quote! {
+                    let Entry::Private(plaintext) = entry else {
+                        panic!("Expected Private entry for field '{}', but found different entry type", #field_name);
+                    };
+                },
+                "None" | _ => quote! {
+                    let Entry::Private(plaintext) = entry else {
+                        panic!("Expected Private entry for field '{}' (default mode), but found different entry type", #field_name);
+                    };
+                }
+            };
+            
+            if field_name == "owner" {
+                quote! {
+                    let #member_name = {
+                        record.owner().clone()
+                    };
+                }
+            } else {
+                quote! {
+                    let #member_name = {
+                        let member_id = &Identifier::try_from(#field_name).unwrap();
+                        let entry = record.data().get(member_id)
+                            .expect(&format!("Field '{}' not found in record data", #field_name));
+                        #entry_extraction
+                        let value = Value::Plaintext(plaintext.clone());
+                        <#member_type>::from_value(value)
+                    };
+                }
             }
         });
-        
-        let member_names = record.members.iter().map(|member| {
+
+        let member_names: Vec<_> = record.members.iter().map(|member| {
             syn::Ident::new(&member.name, proc_macro2::Span::call_site())
-        });
-        
-        let _member_conversions = record.members.iter().map(|member| {
+        }).collect();
+        let extra_member_inits = quote! { __nonce: record.nonce().clone(), __version: record.version().clone() };
+
+        let getter_methods = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+            let member_type = get_rust_type(&member.type_name);
             quote! {
-                (
-                    Identifier::try_from(stringify!(#member_name)).unwrap(),
-                    self.#member_name.to_value().into_plaintext().unwrap()
-                )
+                pub fn #member_name(&self) -> &#member_type {
+                    &self.#member_name
+                }
             }
         });
         
         quote! {
-            #[derive(Debug, Clone, Copy, Default)]
+            #[derive(Debug, Clone)]
             pub struct #record_name {
-                #(#member_definitions),*
+                #(#member_definitions),*,
+                #extra_record_fields
             }
             
             impl ToValue<Nw> for #record_name {
                 fn to_value(&self) -> Value<Nw> {
-                    // TODO: Implement proper Record construction with owner, gates, and nonce
-                    // For now, this is not implemented as it requires additional metadata
-                    panic!("ToValue for records with direct members needs proper Record construction with owner, gates, and nonce")
+                    match self.to_record() {
+                        Ok(rec) => Value::Record(rec),
+                        Err(e) => panic!("Failed to convert to Record: {}", e),
+                    }
                 }
             }
             
@@ -198,9 +268,12 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                 fn from_value(value: Value<Nw>) -> Self {
                     match value {
                         Value::Record(record) => {
+
                             #(#member_extractions)*
+                            
                             Self {
-                                #(#member_names),*
+                                #(#member_names),*,
+                                #extra_member_inits
                             }
                         },
                         _ => panic!("Expected record type"),
@@ -209,9 +282,37 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             }
             
             impl #record_name {
-                pub fn new(record: Record<Nw, Plaintext<Nw>>) -> Self {
+                pub fn from_record(record: Record<Nw, Plaintext<Nw>>) -> Self {
                     Self::from_value(Value::Record(record))
                 }
+                
+                pub fn from_encrypted_record(
+                    record: Record<Nw, Ciphertext<Nw>>, 
+                    view_key: &ViewKey<Nw>
+                ) -> Result<Self, anyhow::Error> {
+                    match record.decrypt(view_key) {
+                        Ok(decrypted_record) => Ok(Self::from_record(decrypted_record)),
+                        Err(e) => Err(anyhow::anyhow!("Failed to decrypt record: {}", e))
+                    }
+                }
+                
+                pub fn to_record(&self) -> Result<Record<Nw, Plaintext<Nw>>, anyhow::Error> {
+                    let data = IndexMap::from([
+                        #(#member_conversions),*
+                    ]);
+                    let owner = self.owner.clone();
+                    let nonce = self.__nonce.clone();
+                    let version = self.__version.clone();
+                    
+                    Record::<Nw, Plaintext<Nw>>::from_plaintext(
+                        owner,
+                        data,
+                        nonce,
+                        version
+                    ).map_err(|e| anyhow::anyhow!("Failed to create record: {}", e))
+                }
+                
+                #(#getter_methods)*
             }
         }
     }).collect()
@@ -263,7 +364,7 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
         });
         
         quote! {
-            #[derive(Debug, Clone, Copy, Default)]
+            #[derive(Debug, Clone, Copy)]
             pub struct #struct_name {
                 #(#member_definitions),*
             }
@@ -301,36 +402,48 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
         }
     }).collect()
 }
-fn generate_function_implementations(functions: &[crate::signature::FunctionBinding], program_name: &str) -> Vec<proc_macro2::TokenStream> {
+fn generate_function_implementations(
+    functions: &[crate::signature::FunctionBinding], 
+    program_name: &str,
+    records: &[crate::signature::RecordDef],
+) -> Vec<proc_macro2::TokenStream> {
+    let record_names: std::collections::HashSet<String> = records.iter().map(|r| r.name.clone()).collect();
+    
     functions.iter().map(|function| {
         let function_name = syn::Ident::new(&function.name, proc_macro2::Span::call_site());
-        
         let input_params = function.inputs.iter().map(|input| {
             let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
-            let param_type = get_rust_type(&input.type_name);
+            let param_type = crate::types::get_rust_type(&input.type_name);
             quote! { #param_name: #param_type }
         });
         
         let output_types = function.outputs.iter().map(|output| {
-            get_rust_type(&output.type_name)
+            crate::types::get_rust_type(&output.type_name)
         });
         
         let input_conversions = function.inputs.iter().map(|input| {
             let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
-            quote! { (#param_name).to_value() }
+            let is_record_type = record_names.contains(&input.type_name);
+            
+            if is_record_type {
+                quote! { Value::Record(#param_name.to_record().expect("Failed to convert record input via to_record()")) }
+            } else {
+                quote! { (#param_name).to_value() }
+            }
         });
         
         let output_conversions = function.outputs.iter().enumerate().map(|(i, output)| {
-            let output_type = get_rust_type(&output.type_name);
+            let output_type = crate::types::get_rust_type(&output.type_name);
+            
             quote! { 
                 <#output_type>::from_value(
                     outputs.get(#i).ok_or_else(|| anyhow!("Missing output at index {}", #i))?.clone()
-                ) 
+                )
             }
         });
         
         let return_type = if function.outputs.len() == 1 {
-            let single_type = get_rust_type(&function.outputs[0].type_name);
+            let single_type = crate::types::get_rust_type(&function.outputs[0].type_name);
             quote! { Result<#single_type, anyhow::Error> }
         } else {
             quote! { Result<(#(#output_types),*), anyhow::Error> }

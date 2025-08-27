@@ -26,4 +26,23 @@ program dev.aleo {
     transition nested_array(public a: [[u8;5u8];5u8]) -> public [[u8;5u8];5u8] {
         return [[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8]];
     }
+    
+    record User {
+        owner: address,
+        id: u64,
+        public balance: u64,
+    }
+    
+    transition create_user(owner: address, id: u64, balance: u64) -> User {
+        let user: User = User {
+            owner: owner,
+            id: id,
+            balance: balance,
+        };
+        return user;
+    }
+    
+    transition consume_user(user: User) -> public u64 {
+        return user.balance;
+    }
 }

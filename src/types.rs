@@ -27,6 +27,7 @@ pub fn get_rust_type(type_name: &str) -> TokenStream {
         "bool" => quote! { bool },
         "boolean" => quote! { bool },
         "Future" => quote! { Future<Nw> },
+        "Ciphertext" => quote! { Ciphertext<Nw> },
         other => {
             let type_ident = syn::Ident::new(other, proc_macro2::Span::call_site());
             quote! { #type_ident }
@@ -192,6 +193,21 @@ impl<N: Network> FromValue<N> for bool {
     }
 }
 
+impl<N: Network> ToValue<N> for Address<N> {
+    fn to_value(&self) -> Value<N> {
+        Value::from(Literal::Address(*self))
+    }
+}
+
+impl<N: Network> FromValue<N> for Address<N> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(Plaintext::Literal(Literal::Address(v), _)) => v,
+            _ => panic!("Expected address type."),
+        }
+    }
+}
+
 impl<N: Network> ToValue<N> for Field<N> {
     fn to_value(&self) -> Value<N> {
         Value::Plaintext(Plaintext::from(Literal::Field(*self)))
@@ -213,8 +229,54 @@ impl<N: Network> FromValue<N> for Field<N> {
     }
 }
 
+impl<N: Network> ToValue<N> for Ciphertext<N> {
+    fn to_value(&self) -> Value<N> {
+        panic!("Ciphertext can not be converted")
+    }
+}
 
-// Generic array implementations using const generics
+impl<N: Network> FromValue<N> for Ciphertext<N> {
+    fn from_value(_value: Value<N>) -> Self {
+        panic!("Ciphertext can not be converted")
+    }
+}
+impl<N: Network> ToValue<N> for Entry<N, Plaintext<N>> {
+    fn to_value(&self) -> Value<N> {
+        match self {
+            Entry::Public(entry) | Entry::Private(entry) | Entry::Constant(entry) => {
+                Value::Plaintext(entry.clone())
+            }
+        }
+    }
+}
+
+impl<N: Network> ToValue<N> for Record<N, Plaintext<N>> {
+    fn to_value(&self) -> Value<N> {
+        Value::Record(self.clone())
+    }
+}
+
+impl<N: Network> FromValue<N> for Record<N, Plaintext<N>> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Record(record) => record,
+            _ => panic!("Expected record value"),
+        }
+    }
+}
+
+impl<N: Network> ToValue<N> for Record<N, Ciphertext<N>> {
+    fn to_value(&self) -> Value<N> {
+        panic!("Encrypted records must be decrypted first")
+    }
+}
+
+impl<N: Network> FromValue<N> for Record<N, Ciphertext<N>> {
+    fn from_value(_value: Value<N>) -> Self {
+        panic!("Cannot create encrypted record from Value")
+    }
+}
+
 impl<N: Network, T: ToValue<N> + Copy, const SIZE: usize> ToValue<N> for [T; SIZE] {
     fn to_value(&self) -> Value<N> {
         let array_elements: Vec<Plaintext<N>> = self
@@ -229,7 +291,7 @@ impl<N: Network, T: ToValue<N> + Copy, const SIZE: usize> ToValue<N> for [T; SIZ
     }
 }
 
-impl<N: Network, T: FromValue<N> + Copy + Default, const SIZE: usize> FromValue<N> for [T; SIZE] {
+impl<N: Network, T: FromValue<N>, const SIZE: usize> FromValue<N> for [T; SIZE] {
     fn from_value(value: Value<N>) -> Self {
         match value {
             Value::Plaintext(Plaintext::Array(array_elements, _)) => {
@@ -241,14 +303,13 @@ impl<N: Network, T: FromValue<N> + Copy + Default, const SIZE: usize> FromValue<
                     );
                 }
 
-                let mut result = [T::default(); SIZE];
-                for (i, element) in array_elements.into_iter().enumerate() {
-                    result[i] = T::from_value(Value::Plaintext(element));
-                }
-                result
+                let mut iter = array_elements.into_iter();
+                std::array::from_fn(|_| {
+                    let element = iter.next().expect("length checked above");
+                    T::from_value(Value::Plaintext(element))
+                })
             }
             _ => panic!("Expected array type"),
         }
     }
 }
-

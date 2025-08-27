@@ -35,6 +35,7 @@ pub struct StructMember {
     pub identifier: Identifier,
     #[serde(rename = "type_")]
     pub type_info: TypeInfo,
+    pub mode: String, // "None", "Public", "Private", "Constant"
 }
 
 #[derive(Debug, Deserialize)]
@@ -50,12 +51,14 @@ pub struct Parameter {
     pub identifier: Identifier,
     #[serde(rename = "type_")]
     pub type_info: TypeInfo,
+    pub mode: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct OutputParameter {
     #[serde(rename = "type_")]
     pub type_info: TypeInfo,
+    pub mode: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -113,6 +116,7 @@ pub struct MemberDef {
     pub name: String,
     #[serde(rename = "type")]
     pub type_name: String,
+    pub mode: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -127,12 +131,14 @@ pub struct InputParam {
     pub name: String,
     #[serde(rename = "type")]
     pub type_name: String,
+    pub mode: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OutputType {
     #[serde(rename = "type")]
     pub type_name: String,
+    pub mode: String,
 }
 
 pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -156,6 +162,11 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .map(|member| MemberDef {
                         name: member.identifier.name.clone(),
                         type_name: normalize_type(&member.type_info),
+                        mode: if member.mode == "Public" {
+                            "Public".to_string()
+                        } else {
+                            "Private".to_string()
+                        },
                     })
                     .collect();
 
@@ -179,6 +190,11 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .map(|member| MemberDef {
                         name: member.identifier.name,
                         type_name: normalize_type(&member.type_info),
+                        mode: if member.mode == "Public" {
+                            "Public".to_string()
+                        } else {
+                            "Private".to_string()
+                        },
                     })
                     .collect();
 
@@ -203,6 +219,11 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .map(|param| InputParam {
                         name: param.identifier.name,
                         type_name: normalize_type(&param.type_info),
+                        mode: if param.mode == "Public" {
+                            "Public".to_string()
+                        } else {
+                            "Private".to_string()
+                        },
                     })
                     .collect();
 
@@ -211,6 +232,11 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .into_iter()
                     .map(|output| OutputType {
                         type_name: normalize_type(&output.type_info),
+                        mode: if output.mode == "Public" {
+                            "Public".to_string()
+                        } else {
+                            "Private".to_string()
+                        },
                     })
                     .collect();
 

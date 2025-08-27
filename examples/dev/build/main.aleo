@@ -1,5 +1,10 @@
 program dev.aleo;
 
+record User:
+    owner as address.private;
+    id as u64.private;
+    balance as u64.public;
+
 struct A:
     number as u64;
 
@@ -28,6 +33,17 @@ function nested_array:
     cast 0u8 0u8 0u8 0u8 0u8 into r5 as [u8; 5u32];
     cast r1 r2 r3 r4 r5 into r6 as [[u8; 5u32]; 5u32];
     output r6 as [[u8; 5u32]; 5u32].public;
+
+function create_user:
+    input r0 as address.private;
+    input r1 as u64.private;
+    input r2 as u64.private;
+    cast r0 r1 r2 into r3 as User.record;
+    output r3 as User.record;
+
+function consume_user:
+    input r0 as User.record;
+    output r0.balance as u64.public;
 
 constructor:
     assert.eq edition 0u16;
