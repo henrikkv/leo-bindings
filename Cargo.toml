@@ -24,3 +24,4 @@ snarkvm = "4.1.0"
 leo-lang = "3.1.0"
 anyhow = "1.0"
 ureq = { version = "2.6", features = ["json"] }
+leo-bindings-macro = { path = "leo-bindings-macro" }
