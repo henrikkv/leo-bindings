@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "leo-bindings-macro", "examples/dev"]
+members = [".", "leo-bindings-macro", "examples/dev", "examples/token"]
 
 [package]
 name = "leo-bindings"
