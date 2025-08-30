@@ -4,13 +4,10 @@ use crate::signature::SimplifiedBindings;
 use crate::types::get_rust_type;
 
 
-pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_type: Option<syn::Path>) -> TokenStream {
+pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_type: syn::Path) -> TokenStream {
     let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
     
-    let network_type_token = network_type
-        .as_ref()
-        .map(|path| quote! { #path })
-        .expect("Network type must be specified in generate_bindings! macro");
+    let network_type_token = quote! { #network_type };
     
     let path_str = quote!(#network_type_token).to_string();
     let (network_name_token, network_path) = match path_str.as_str() {
@@ -164,10 +161,9 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             let mode = &member.mode;
             
             let entry_creation = match mode.as_str() {
-                "Constant" => quote! { Entry::Constant(plaintext_value) },
                 "Public" => quote! { Entry::Public(plaintext_value) },
                 "Private" => quote! { Entry::Private(plaintext_value) },
-                "None" | _ => quote! { Entry::Private(plaintext_value) },
+                _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
             };
             
             quote! {
@@ -191,11 +187,6 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             let mode = &member.mode;
             
             let entry_extraction = match mode.as_str() {
-                "Constant" => quote! {
-                    let Entry::Constant(plaintext) = entry else {
-                        panic!("Expected Constant entry for field '{}', but found different entry type", #field_name);
-                    };
-                },
                 "Public" => quote! {
                     let Entry::Public(plaintext) = entry else {
                         panic!("Expected Public entry for field '{}', but found different entry type", #field_name);
@@ -206,11 +197,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                         panic!("Expected Private entry for field '{}', but found different entry type", #field_name);
                     };
                 },
-                "None" | _ => quote! {
-                    let Entry::Private(plaintext) = entry else {
-                        panic!("Expected Private entry for field '{}' (default mode), but found different entry type", #field_name);
-                    };
-                }
+                _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, field_name),
             };
             
             if field_name == "owner" {
