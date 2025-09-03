@@ -311,7 +311,6 @@ fn extract_array_size(length_json: &serde_json::Value) -> String {
             }
         }
     }
-
-    // Fallback - if we can't parse, return a placeholder
     "UNKNOWN_SIZE".to_string()
 }
+
