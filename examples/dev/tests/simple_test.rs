@@ -1,4 +1,3 @@
-
 #[test]
 fn dev() {
     use devtest::*;
@@ -11,11 +10,10 @@ fn dev() {
 
     let dev = dev::new(&alice, ENDPOINT).unwrap();
 
-    wait_for_program_availability("dev.aleo", ENDPOINT, 60).unwrap();
+    //wait_for_program_availability("dev.aleo", ENDPOINT, 60).unwrap();
 
     let result = dev.main(&alice, 10u32, 5u32).unwrap();
     assert_eq!(result, 15u32);
-    println!("✅ Test passed - program is available on network");
     let a = A::new(1);
     let b = B::new(2, a);
     let result = dev.nested(&alice, b).unwrap();

@@ -42,7 +42,11 @@ impl<N: Network> TryFrom<&PrivateKey<N>> for Account<N> {
     fn try_from(private_key: &PrivateKey<N>) -> Result<Self, Self::Error> {
         let view_key = ViewKey::try_from(private_key)?;
         let address = view_key.to_address();
-        Ok(Self { private_key: *private_key, view_key, address })
+        Ok(Self {
+            private_key: *private_key,
+            view_key,
+            address,
+        })
     }
 }
 
@@ -54,7 +58,11 @@ impl<N: Network> FromStr for Account<N> {
     }
 }
 
-pub fn get_public_balance<N: Network>(address: &Address<N>, endpoint: &str, network_path: &str) -> Result<u64, anyhow::Error> {
+pub fn get_public_balance<N: Network>(
+    address: &Address<N>,
+    endpoint: &str,
+    network_path: &str,
+) -> Result<u64, anyhow::Error> {
     let credits = ProgramID::<N>::from_str("credits.aleo")?;
     let account_mapping = Identifier::<N>::from_str("account")?;
 
@@ -76,23 +84,29 @@ pub fn get_public_balance<N: Network>(address: &Address<N>, endpoint: &str, netw
     };
 
     match balance {
-        Ok(Some(Value::Plaintext(Plaintext::Literal(Literal::<N>::U64(amount), _)))) => {
-            Ok(*amount)
-        }
+        Ok(Some(Value::Plaintext(Plaintext::Literal(Literal::<N>::U64(amount), _)))) => Ok(*amount),
         Ok(None) => Ok(0),
         Ok(Some(..)) => bail!("Failed to deserialize balance for {address}"),
         Err(err) => bail!("Failed to fetch balance for {address}: {err}"),
     }
 }
 
-pub fn broadcast_transaction<N: Network>(transaction: Transaction<N>, endpoint: &str, network_path: &str) -> Result<String, anyhow::Error> {
+pub fn broadcast_transaction<N: Network>(
+    transaction: Transaction<N>,
+    endpoint: &str,
+    network_path: &str,
+) -> Result<String, anyhow::Error> {
     let transaction_id = transaction.id();
     ensure!(
         !transaction.is_fee(),
         "The transaction is a fee transaction and cannot be broadcast"
     );
-    
-    match ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, network_path)).send_json(&transaction)
+
+    match ureq::post(&format!(
+        "{}/{}/transaction/broadcast",
+        endpoint, network_path
+    ))
+    .send_json(&transaction)
     {
         Ok(id) => {
             let response_string = id.into_string()?.trim_matches('\"').to_string();
@@ -101,13 +115,15 @@ pub fn broadcast_transaction<N: Network>(transaction: Transaction<N>, endpoint: 
                 "⌛ Execution {transaction_id} has been broadcast to {}.",
                 endpoint
             );
-            
             Ok(response_string)
         }
         Err(error) => {
             let error_message = match error {
                 ureq::Error::Status(code, response) => {
-                    format!("(status code {code}: {:?})", response.into_string().unwrap_or_default())
+                    format!(
+                        "(status code {code}: {:?})",
+                        response.into_string().unwrap_or_default()
+                    )
                 }
                 ureq::Error::Transport(err) => format!("({err})"),
             };
@@ -119,6 +135,53 @@ pub fn broadcast_transaction<N: Network>(transaction: Transaction<N>, endpoint: 
         }
     }
 }
+
+pub fn wait_for_transaction_confirmation<N: Network>(
+    transaction_id: &N::TransactionID,
+    endpoint: &str,
+    network_path: &str,
+    timeout_secs: u64,
+) -> Result<bool, anyhow::Error> {
+    use std::thread::sleep;
+    use std::time::{Duration, Instant};
+
+    print!(
+        "\n⌛ Waiting for transaction {} to be confirmed.",
+        transaction_id
+    );
+
+    let start_time = Instant::now();
+    let timeout_duration = Duration::from_secs(timeout_secs);
+
+    loop {
+        if start_time.elapsed() > timeout_duration {
+            return Err(anyhow!(
+                "Transaction confirmation timeout after {} seconds",
+                timeout_secs
+            ));
+        }
+
+        // Try to get the transaction via REST API (same pattern as Query)
+        let response = ureq::get(&format!(
+            "{}/{}/transaction/{}",
+            endpoint, network_path, transaction_id
+        ))
+        .call();
+
+        match response {
+            Ok(_) => {
+                println!("\n✅ Transaction {} confirmed on network!", transaction_id);
+                return Ok(true);
+            }
+            Err(_) => {
+                print!(".");
+                std::io::stdout().flush().unwrap();
+                sleep(Duration::from_secs(2));
+            }
+        }
+    }
+}
+
 pub fn wait_for_program_availability(
     program_id: &str,
     endpoint: &str,
@@ -142,7 +205,7 @@ pub fn wait_for_program_availability(
                 return Ok(());
             }
             Err(_) => {
-                if start.elapsed().as_secs() % 5 == 0 {
+                if start.elapsed().as_secs().is_multiple_of(5) {
                     println!(
                         "⏳ Test: Still waiting for program availability... ({}/{})",
                         start.elapsed().as_secs(),
@@ -154,4 +217,3 @@ pub fn wait_for_program_availability(
         }
     }
 }
-

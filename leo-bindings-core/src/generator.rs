@@ -10,17 +10,29 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
     let network_type_token = quote! { #network_type };
     
     let path_str = quote!(#network_type_token).to_string();
-    let (network_name_token, network_path) = match path_str.as_str() {
-        s if s.contains("TestnetV0") => (quote! { NetworkName::TestnetV0 }, "testnet"),
-        s if s.contains("MainnetV0") => (quote! { NetworkName::MainnetV0 }, "mainnet"),
-        s if s.contains("CanaryV0") => (quote! { NetworkName::CanaryV0 }, "canary"),
+    let (network_name, network_path, aleo_type) = match path_str.as_str() {
+        s if s.contains("TestnetV0") => (
+            quote! { NetworkName::TestnetV0 }, 
+            "testnet", 
+            quote! { snarkvm::circuit::network::AleoTestnetV0 }
+        ),
+        s if s.contains("MainnetV0") => (
+            quote! { NetworkName::MainnetV0 }, 
+            "mainnet", 
+            quote! { snarkvm::circuit::network::AleoV0 }
+        ),
+        s if s.contains("CanaryV0") => (
+            quote! { NetworkName::CanaryV0 }, 
+            "canary", 
+            quote! { snarkvm::circuit::network::AleoCanaryV0 }
+        ),
         _ => panic!("Unsupported network type: {}. Supported types: TestnetV0, MainnetV0, CanaryV0", path_str),
     };
     
     
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
-    let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name, &simplified.records);
+    let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name, &simplified.records, &aleo_type);
     
     let expanded = quote! {
         use anyhow::{anyhow, bail, ensure};
@@ -33,6 +45,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         use snarkvm::synthesizer::VM;
         use snarkvm::prelude::ConsensusVersion;
         use snarkvm::ledger::query::{QueryTrait, Query};
+        use snarkvm::circuit;
         use leo_package::Package;
         use leo_ast::NetworkName;
         use leo_span::create_session_if_not_set_then;
@@ -43,7 +56,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         use std::thread::sleep;
         use std::time::Duration;
         use leo_bindings::{ToValue, FromValue};
-        use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction};
+        use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation};
         
         type Nw = #network_type_token;
         
@@ -58,7 +71,7 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         }
         
         const NETWORK_PATH: &str = #network_path;
-        const NETWORK_NAME: NetworkName = #network_name_token;
+        const NETWORK_NAME: NetworkName = #network_name;
         
         impl #program_name {
             pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
@@ -96,33 +109,48 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                 
                 let program_id = program.id();
                 
-                println!("📦 Creating deployment transaction for '{}'...", program_id);
-                let rng = &mut rand::thread_rng();
-                let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
-                
-                let transaction = vm.deploy(
-                    deployer.private_key(),
-                    &program,
-                    None,
-                    0,
-                    Some(&query),
-                    rng,
-                ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
-                
-                println!("📡 Broadcasting deployment transaction...");
-                let transaction_id = transaction.id();
-                
-                let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
-                    .send_json(&transaction)?;
-                
-                let response_string = response.into_string()?.trim_matches('\"').to_string();
-                ensure!(
-                    response_string == transaction_id.to_string(),
-                    "Response ID mismatch: {} != {}", response_string, transaction_id
-                );
-                
-                println!("✅ Deployment transaction {} broadcast successfully!", transaction_id);
+                let program_exists = {
+                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, program_id))
+                        .call();
+                    match check_response {
+                        Ok(_) => {
+                            println!("✅ Program '{}' already exists on network, skipping deployment", program_id);
+                            true
+                        },
+                        Err(_) => {
+                            println!("📦 Program '{}' not found on network, proceeding with deployment", program_id);
+                            false
+                        }
+                    }
+                };
+                if !program_exists {
+                    println!("📦 Creating deployment transaction for '{}'...", program_id);
+                    let rng = &mut rand::thread_rng();
+                    let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
+                    let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
+                    
+                    let transaction = vm.deploy(
+                        deployer.private_key(),
+                        &program,
+                        None,
+                        0,
+                        Some(&query),
+                        rng,
+                    ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
+                    
+                    println!("📡 Broadcasting deployment transaction...");
+                    
+                    let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
+                        .send_json(&transaction)?;
+                    
+                    let response_string = response.into_string()?.trim_matches('\"').to_string();
+                    ensure!(
+                        response_string == transaction.id().to_string(),
+                        "Response ID mismatch: {} != {}", response_string, transaction.id()
+                    );
+                    
+                    println!("✅ Deployment transaction {} broadcast successfully!", transaction.id());
+                }
                 
                     Ok(Self { 
                         package,
@@ -393,6 +421,7 @@ fn generate_function_implementations(
     functions: &[crate::signature::FunctionBinding], 
     program_name: &str,
     records: &[crate::signature::RecordDef],
+    aleo_type: &proc_macro2::TokenStream,
 ) -> Vec<proc_macro2::TokenStream> {
     let record_names: std::collections::HashSet<String> = records.iter().map(|r| r.name.clone()).collect();
     
@@ -402,6 +431,10 @@ fn generate_function_implementations(
             let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
             let param_type = crate::types::get_rust_type(&input.type_name);
             quote! { #param_name: #param_type }
+        });
+        
+        let param_names = function.inputs.iter().map(|input| {
+            syn::Ident::new(&input.name, proc_macro2::Span::call_site())
         });
         
         let output_types = function.outputs.iter().map(|output| {
@@ -451,11 +484,15 @@ fn generate_function_implementations(
                     #(#input_conversions),*
                 ];
                 let rng = &mut rand::thread_rng();
-                println!("Transaction of function {}:", stringify!(#function_name));
+                
+                println!("Creating transaction: {}.{}({})", 
+                    #program_name, 
+                    stringify!(#function_name), 
+                    vec![#(format!("{:?}", #param_names)),*].join(", "));
                 
                 let locator = Locator::<Nw>::new(program_id, function_id);
                 
-                let transaction: Transaction<Nw> = {
+                let (response, transaction): (Response<Nw>, Transaction<Nw>) = {
                     let store = ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?;
                     let vm = VM::from(store)?;
                     
@@ -469,15 +506,30 @@ fn generate_function_implementations(
                             .to_string()
                             .parse()?
                     };
-                    vm.process().write().add_program(&program)?;
-                    vm.execute(
+                    
+                    let process = vm.process();
+                    process.write().add_program(&program)?;
+                    
+                    let authorization = process.read().authorize::<#aleo_type, _>(
+                        account.private_key(),
+                        program_id,
+                        function_id,
+                        args.iter(),
+                        rng,
+                    )?;
+                    
+                    let (response, trace) = process.read().execute::<#aleo_type, _>(authorization.clone(), rng)?;
+                    let transaction = vm.execute(
                         account.private_key(),
                         (program_id, function_id),
                         args.iter(),
                         None,
                         0,
                         Some(&Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str()) as &dyn QueryTrait<Nw>),
-                        rng,)?
+                        rng,
+                    )?;
+                    
+                    (response, transaction)
                 };
                 
                 let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
@@ -495,51 +547,49 @@ fn generate_function_implementations(
                 }
                 
                 println!("✅ Created execution transaction for '{}'", locator.to_string());
-                println!("Response from transaction broadcast: {}", broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH)?);  
+                match broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH) {
+                    Ok(response) => {
+                        println!("Response from transaction broadcast: {}", response);
+                        
+                        wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
+                    },
+                    Err(e) => {
+                        eprintln!("❌ Failed to broadcast transaction for '{}': {}", locator.to_string(), e);
+                        return Err(e);
+                    }
+                }  
                 
-                let execution = match transaction {
-                    Transaction::Execute(_, _, execution, _) => execution,
-                    _ => panic!("Not an execution."),
-                };
-
-                let outputs: Vec<Value<Nw>> = execution.transitions()
-                    .find(|transition| {
-                        transition.function_name().to_string() == stringify!(#function_name)
-                    })
-                    .expect("Could not find transition for the target function")
-                    .outputs()
-                    .iter()
-                    .map(|output| {
-                        match output {
-                          Output::Constant(_, plaintext) | Output::Public(_, plaintext) => {
-                              plaintext.as_ref().map(|pt| Value::Plaintext(pt.clone())).unwrap_or_else(|| {
-                                  panic!("Expected plaintext output but found None")
-                              })
-                          },
-                          Output::Private(_, _ciphertext) => {
-                              panic!("Private outputs are not yet supported in generated bindings")
-                          },
-                          Output::Record(_, _, record_ciphertext, _) => {
-                              record_ciphertext.as_ref().and_then(|rc| {
-                                  rc.decrypt(account.view_key()).ok().map(|record| Value::Record(record))
-                              }).unwrap_or_else(|| {
-                                  panic!("Expected record output but found None or failed to decrypt")
-                              })
-                          },
-                          Output::Future(_, future) => {
-                              future.as_ref().map(|f| Value::Future(f.clone())).unwrap_or_else(|| {
-                                  panic!("Expected future output but found None")
-                              })
-                          },
-                          Output::ExternalRecord(external_record) => {
-                              Value::Plaintext(Plaintext::from(Literal::Field(*external_record)))
-                          },
-                          _ => {
-                              println!("Debug: Unexpected output type: {:?}", output);
-                              panic!("Unexpected output type")
-                          },
+                let outputs: Vec<Value<Nw>> = {
+                    let response_outputs = response.outputs();
+                    let execution = match transaction {
+                        Transaction::Execute(_, _, execution, _) => execution,
+                        _ => panic!("Not an execution."),
+                    };
+                    
+                    let target_transition = execution.transitions()
+                        .find(|transition| {
+                            transition.function_name().to_string() == stringify!(#function_name)
+                        })
+                        .expect("Could not find transition for the target function");
+                    
+                    response_outputs.iter().enumerate().map(|(index, response_output)| {
+                        let transition_output = target_transition.outputs().get(index)
+                            .expect("Output index mismatch between response and transition");
+                        
+                        match (response_output, transition_output) {
+                            (Value::Record(_), snarkvm::ledger::block::Output::Record(_, _, Some(network_record), _)) => {
+                                match network_record.decrypt(account.view_key()) {
+                                    Ok(plaintext_record) => Value::Record(plaintext_record),
+                                    Err(e) => {
+                                        eprintln!("Failed to decrypt network record: {}", e);
+                                        response_output.clone()
+                                    }
+                                }
+                            },
+                            _ => response_output.clone()
                         }
-                    }).collect();
+                    }).collect()
+                };
 
                 #return_value
             }

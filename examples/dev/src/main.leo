@@ -23,7 +23,7 @@ program dev.aleo {
         };
         return resultb;
     }
-    transition nested_array(public a: [[u8;5u8];5u8]) -> public [[u8;5u8];5u8] {
+    transition nested_array(a: [[u8;5u8];5u8]) -> [[u8;5u8];5u8] {
         return [[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8]];
     }
     
@@ -42,7 +42,7 @@ program dev.aleo {
         return user;
     }
     
-    transition consume_user(user: User) -> public u64 {
+    transition consume_user(user: User) -> u64 {
         return user.balance;
     }
 }
