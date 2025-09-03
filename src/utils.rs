@@ -111,10 +111,7 @@ pub fn broadcast_transaction<N: Network>(
         Ok(id) => {
             let response_string = id.into_string()?.trim_matches('\"').to_string();
             ensure!( response_string == transaction_id.to_string(), "The response does not match the transaction id. ({response_string} != {transaction_id})");
-            println!(
-                "⌛ Execution {transaction_id} has been broadcast to {}.",
-                endpoint
-            );
+            println!("⌛ Broadcasting execution of tx: {transaction_id} to: {endpoint}");
             Ok(response_string)
         }
         Err(error) => {
@@ -145,10 +142,7 @@ pub fn wait_for_transaction_confirmation<N: Network>(
     use std::thread::sleep;
     use std::time::{Duration, Instant};
 
-    print!(
-        "\n⌛ Waiting for transaction {} to be confirmed.",
-        transaction_id
-    );
+    print!("⌛ Waiting for confirmation of tx: {}", transaction_id);
 
     let start_time = Instant::now();
     let timeout_duration = Duration::from_secs(timeout_secs);
@@ -170,7 +164,7 @@ pub fn wait_for_transaction_confirmation<N: Network>(
 
         match response {
             Ok(_) => {
-                println!("\n✅ Transaction {} confirmed on network!", transaction_id);
+                println!("\n✅ Confirmed tx: {}", transaction_id);
                 return Ok(true);
             }
             Err(_) => {

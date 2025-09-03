@@ -114,17 +114,17 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                         .call();
                     match check_response {
                         Ok(_) => {
-                            println!("✅ Program '{}' already exists on network, skipping deployment", program_id);
+                            println!("✅ Found '{}', skipping deployment", program_id);
                             true
                         },
                         Err(_) => {
-                            println!("📦 Program '{}' not found on network, proceeding with deployment", program_id);
+                            println!("📦 Deploying '{}'", program_id);
                             false
                         }
                     }
                 };
                 if !program_exists {
-                    println!("📦 Creating deployment transaction for '{}'...", program_id);
+                    println!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
                     let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
                     let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
@@ -138,18 +138,10 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                         rng,
                     ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
                     
-                    println!("📡 Broadcasting deployment transaction...");
+                    println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
                     
                     let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
                         .send_json(&transaction)?;
-                    
-                    let response_string = response.into_string()?.trim_matches('\"').to_string();
-                    ensure!(
-                        response_string == transaction.id().to_string(),
-                        "Response ID mismatch: {} != {}", response_string, transaction.id()
-                    );
-                    
-                    println!("✅ Deployment transaction {} broadcast successfully!", transaction.id());
                 }
                 
                     Ok(Self { 
@@ -546,11 +538,8 @@ fn generate_function_implementations(
                     );
                 }
                 
-                println!("✅ Created execution transaction for '{}'", locator.to_string());
                 match broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH) {
                     Ok(response) => {
-                        println!("Response from transaction broadcast: {}", response);
-                        
                         wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
                     },
                     Err(e) => {
