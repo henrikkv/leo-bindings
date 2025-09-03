@@ -10,7 +10,9 @@ fn dev() {
 
     let dev = dev::new(&alice, ENDPOINT).unwrap();
 
-    //wait_for_program_availability("dev.aleo", ENDPOINT, 60).unwrap();
+    let (user, future) = dev.asynchronous(&alice, 60, 0).unwrap();
+    dbg!(user);
+    dbg!(future);
 
     let result = dev.main(&alice, 10u32, 5u32).unwrap();
     assert_eq!(result, 15u32);

@@ -1,6 +1,8 @@
 program dev.aleo {
     @noupgrade
     async constructor() {}
+
+    mapping balances: u64 => u64;
     
     transition main(public a: u32, public b: u32) -> public u32 {
         let c: u32 = a + b;
@@ -44,5 +46,17 @@ program dev.aleo {
     
     transition consume_user(user: User) -> u64 {
         return user.balance;
+    }
+
+    async transition asynchronous(balance: u64, id: u64) -> (User, Future) {
+        let user: User  = User {
+            owner: self.caller,
+            id: id,
+            balance: balance,
+        };
+        return (user, finalize_asynchronous(balance, id));
+    }
+    async function finalize_asynchronous(balance: u64, id: u64) {
+        Mapping::set(balances, id, balance);
     }
 }

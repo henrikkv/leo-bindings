@@ -438,6 +438,22 @@ impl<N: Network> FromValue<N> for Ciphertext<N> {
         panic!("Ciphertext can not be converted")
     }
 }
+
+impl<N: Network> ToValue<N> for Future<N> {
+    fn to_value(&self) -> Value<N> {
+        Value::Future(self.clone())
+    }
+}
+
+impl<N: Network> FromValue<N> for Future<N> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Future(future) => future,
+            _ => panic!("Expected future value"),
+        }
+    }
+}
+
 impl<N: Network> ToValue<N> for Entry<N, Plaintext<N>> {
     fn to_value(&self) -> Value<N> {
         match self {

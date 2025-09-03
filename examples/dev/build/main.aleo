@@ -12,6 +12,10 @@ struct B:
     number as u32;
     a as A;
 
+mapping balances:
+    key as u64.public;
+    value as u64.public;
+
 function main:
     input r0 as u32.public;
     input r1 as u32.public;
@@ -44,6 +48,19 @@ function create_user:
 function consume_user:
     input r0 as User.record;
     output r0.balance as u64.private;
+
+function asynchronous:
+    input r0 as u64.private;
+    input r1 as u64.private;
+    cast self.caller r1 r0 into r2 as User.record;
+    async asynchronous r0 r1 into r3;
+    output r2 as User.record;
+    output r3 as dev.aleo/asynchronous.future;
+
+finalize asynchronous:
+    input r0 as u64.public;
+    input r1 as u64.public;
+    set r0 into balances[r1];
 
 constructor:
     assert.eq edition 0u16;

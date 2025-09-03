@@ -124,6 +124,7 @@ pub struct FunctionBinding {
     pub name: String,
     pub inputs: Vec<InputParam>,
     pub outputs: Vec<OutputType>,
+    pub is_async: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -212,7 +213,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         .functions
         .into_iter()
         .filter_map(|(_, func_def)| {
-            if func_def.variant == "Transition" {
+            if func_def.variant == "Transition" || func_def.variant == "AsyncTransition" {
                 let inputs = func_def
                     .input
                     .into_iter()
@@ -227,7 +228,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     })
                     .collect();
 
-                let outputs = func_def
+                let outputs: Vec<OutputType> = func_def
                     .output
                     .into_iter()
                     .map(|output| OutputType {
@@ -240,10 +241,23 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     })
                     .collect();
 
+                let is_async = func_def.variant == "AsyncTransition";
+                
+                if is_async {
+                    if outputs.is_empty() {
+                        panic!("Async function '{}' must have at least a Future output", func_def.identifier.name);
+                    }
+                    let last_output = &outputs[outputs.len() - 1];
+                    if last_output.type_name != "Future" {
+                        panic!("Async function '{}' must have Future as the last output, but found '{}'", func_def.identifier.name, last_output.type_name);
+                    }
+                }
+
                 Some(FunctionBinding {
                     name: func_def.identifier.name,
                     inputs,
                     outputs,
+                    is_async,
                 })
             } else {
                 None
