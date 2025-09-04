@@ -3,6 +3,8 @@ program dev.aleo {
     async constructor() {}
 
     mapping balances: u64 => u64;
+
+    mapping bs: u64 => B;
     
     transition main(public a: u32, public b: u32) -> public u32 {
         let c: u32 = a + b;
@@ -25,6 +27,14 @@ program dev.aleo {
         };
         return resultb;
     }
+
+    async transition store_nested(b: B, id: u64) -> Future {
+        return finalize_store_nested(b, id);
+    }
+    async function finalize_store_nested(b: B, id: u64) {
+        Mapping::set(bs, id, b);
+    }
+
     transition nested_array(a: [[u8;5u8];5u8]) -> [[u8;5u8];5u8] {
         return [[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8],[0u8, 0u8, 0u8, 0u8, 0u8]];
     }

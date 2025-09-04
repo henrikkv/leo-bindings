@@ -10,14 +10,22 @@ fn dev() {
 
     let dev = dev::new(&alice, ENDPOINT).unwrap();
 
+    let balance_before = dev.get_balances(0).unwrap();
+    dbg!(&balance_before);
+
     let (user, future) = dev.asynchronous(&alice, 60, 0).unwrap();
     dbg!(user);
     dbg!(future);
+
+    let balance_after = dev.get_balances(0).unwrap();
+    dbg!(&balance_after);
 
     let result = dev.main(&alice, 10u32, 5u32).unwrap();
     assert_eq!(result, 15u32);
     let a = A::new(1);
     let b = B::new(2, a);
+    dev.store_nested(&alice, b, 1).unwrap();
+    dbg!(dev.get_bs(1).unwrap());
     let result = dev.nested(&alice, b).unwrap();
     dbg!(result);
     let result = dev

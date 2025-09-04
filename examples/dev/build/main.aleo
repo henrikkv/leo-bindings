@@ -16,6 +16,10 @@ mapping balances:
     key as u64.public;
     value as u64.public;
 
+mapping bs:
+    key as u64.public;
+    value as B.public;
+
 function main:
     input r0 as u32.public;
     input r1 as u32.public;
@@ -27,6 +31,17 @@ function nested:
     cast 1u64 into r1 as A;
     cast 2u32 r1 into r2 as B;
     output r2 as B.public;
+
+function store_nested:
+    input r0 as B.private;
+    input r1 as u64.private;
+    async store_nested r0 r1 into r2;
+    output r2 as dev.aleo/store_nested.future;
+
+finalize store_nested:
+    input r0 as B.public;
+    input r1 as u64.public;
+    set r0 into bs[r1];
 
 function nested_array:
     input r0 as [[u8; 5u32]; 5u32].private;

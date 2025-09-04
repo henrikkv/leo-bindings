@@ -115,6 +115,11 @@ pub fn generate_code_from_simplified(
         &dep_additions,
     );
 
+    let mapping_implementations = generate_mapping_implementations(
+        &simplified.mappings,
+        &simplified.program_name,
+    );
+
     let expanded = quote! {
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
@@ -242,6 +247,8 @@ pub fn generate_code_from_simplified(
             }
 
             #(#function_implementations)*
+
+            #(#mapping_implementations)*
         }
     };
 
@@ -682,6 +689,45 @@ fn generate_function_implementations(
                 #transaction_execution_body
                 #function_return_conversions
             }
+        }
+    }).collect()
+}
+
+fn generate_mapping_implementations(
+    mappings: &[crate::signature::MappingBinding],
+    program_name: &str,
+) -> Vec<proc_macro2::TokenStream> {
+    mappings.iter().map(|mapping| {
+        let mapping_name = &mapping.name;
+        let getter_name = syn::Ident::new(&format!("get_{}", mapping.name), proc_macro2::Span::call_site());
+        let key_type = crate::types::get_rust_type(&mapping.key_type);
+        let value_type = crate::types::get_rust_type(&mapping.value_type);
+
+        quote! {
+            pub fn #getter_name(&self, key: #key_type) -> Result<Option<#value_type>, anyhow::Error> {
+                let program_id = format!("{}.aleo", #program_name);
+                let mapping_name = #mapping_name;
+                
+                let key_value: Value<Nw> = key.to_value();
+                let url = format!("{}/{}/program/{}/mapping/{}/{}", 
+                    self.endpoint, NETWORK_PATH, program_id, mapping_name, 
+                    key_value.to_string().replace("\"", ""));
+                
+                let response = ureq::get(&url).call();
+                
+                match response {
+                    Ok(response) => {
+                        let value: Option<Value<Nw>> = response.into_json()?;
+                        match value {
+                            Some(val) => Ok(Some(<#value_type>::from_value(val))),
+                            None => Ok(None),
+                        }
+                    },
+                    Err(ureq::Error::Status(404, _)) => Ok(None),
+                    Err(e) => Err(anyhow!("Failed to fetch mapping value: {}", e)),
+                }
+            }
+                
         }
     }).collect()
 }

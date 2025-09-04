@@ -11,6 +11,7 @@ pub struct InitialJson {
 pub struct ProgramScope {
     pub program_id: ProgramId,
     pub structs: Vec<(String, StructDef)>,
+    pub mappings: Vec<(String, MappingDef)>,
     pub functions: Vec<(String, FunctionDef)>,
 }
 
@@ -96,6 +97,13 @@ pub struct ArrayType {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct MappingDef {
+    pub identifier: Identifier,
+    pub key_type: TypeInfo,
+    pub value_type: TypeInfo,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct FutureType {}
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -104,6 +112,7 @@ pub struct SimplifiedBindings {
     pub imports: Vec<String>,
     pub records: Vec<RecordDef>,
     pub structs: Vec<RecordDef>,
+    pub mappings: Vec<MappingBinding>,
     pub functions: Vec<FunctionBinding>,
 }
 
@@ -127,6 +136,13 @@ pub struct FunctionBinding {
     pub inputs: Vec<InputParam>,
     pub outputs: Vec<OutputType>,
     pub is_async: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MappingBinding {
+    pub name: String,
+    pub key_type: String,
+    pub value_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -279,11 +295,22 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         })
         .collect();
 
+    let mappings: Vec<MappingBinding> = program_scope
+        .mappings
+        .into_iter()
+        .map(|(_, mapping_def)| MappingBinding {
+            name: mapping_def.identifier.name,
+            key_type: normalize_type(&mapping_def.key_type),
+            value_type: normalize_type(&mapping_def.value_type),
+        })
+        .collect();
+
     let simplified = SimplifiedBindings {
         program_name,
         imports,
         records,
         structs,
+        mappings,
         functions,
     };
 
