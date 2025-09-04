@@ -251,7 +251,7 @@ pub fn generate_code_from_simplified(
 fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name, proc_macro2::Span::call_site());
-        
+
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             if member.name == "owner" {
@@ -262,18 +262,18 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             }
         });
         let extra_record_fields = quote! { __nonce: Group<Nw>, __version: U8<Nw> };
-        
-        
+
+
         let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             let mode = &member.mode;
-            
+
             let entry_creation = match mode.as_str() {
                 "Public" => quote! { Entry::Public(plaintext_value) },
                 "Private" => quote! { Entry::Private(plaintext_value) },
                 _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
             };
-            
+
             quote! {
                 (
                     Identifier::try_from(stringify!(#member_name)).unwrap(),
@@ -287,13 +287,13 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                 )
             }
         });
-        
+
         let member_extractions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             let member_type = get_rust_type(&member.type_name);
             let field_name = &member.name;
             let mode = &member.mode;
-            
+
             let entry_extraction = match mode.as_str() {
                 "Public" => quote! {
                     let Entry::Public(plaintext) = entry else {
@@ -307,7 +307,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                 },
                 _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, field_name),
             };
-            
+
             if field_name == "owner" {
                 quote! {
                     let #member_name = {
@@ -342,14 +342,14 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                 }
             }
         });
-        
+
         quote! {
             #[derive(Debug, Clone)]
             pub struct #record_name {
                 #(#member_definitions),*,
                 #extra_record_fields
             }
-            
+
             impl ToValue<Nw> for #record_name {
                 fn to_value(&self) -> Value<Nw> {
                     match self.to_record() {
@@ -358,14 +358,14 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                     }
                 }
             }
-            
+
             impl FromValue<Nw> for #record_name {
                 fn from_value(value: Value<Nw>) -> Self {
                     match value {
                         Value::Record(record) => {
 
                             #(#member_extractions)*
-                            
+
                             Self {
                                 #(#member_names),*,
                                 #extra_member_inits
@@ -375,14 +375,14 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                     }
                 }
             }
-            
+
             impl #record_name {
                 pub fn from_record(record: Record<Nw, Plaintext<Nw>>) -> Self {
                     Self::from_value(Value::Record(record))
                 }
-                
+
                 pub fn from_encrypted_record(
-                    record: Record<Nw, Ciphertext<Nw>>, 
+                    record: Record<Nw, Ciphertext<Nw>>,
                     view_key: &ViewKey<Nw>
                 ) -> Result<Self, anyhow::Error> {
                     match record.decrypt(view_key) {
@@ -390,7 +390,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                         Err(e) => Err(anyhow::anyhow!("Failed to decrypt record: {}", e))
                     }
                 }
-                
+
                 pub fn to_record(&self) -> Result<Record<Nw, Plaintext<Nw>>, anyhow::Error> {
                     let data = IndexMap::from([
                         #(#member_conversions),*
@@ -398,7 +398,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                     let owner = self.owner.clone();
                     let nonce = self.__nonce.clone();
                     let version = self.__version.clone();
-                    
+
                     Record::<Nw, Plaintext<Nw>>::from_plaintext(
                         owner,
                         data,
@@ -406,7 +406,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
                         version
                     ).map_err(|e| anyhow::anyhow!("Failed to create record: {}", e))
                 }
-                
+
                 #(#getter_methods)*
             }
         }
@@ -515,13 +515,13 @@ fn generate_function_implementations(
             let param_type = crate::types::get_rust_type(&input.type_name);
             quote! { #param_name: #param_type }
         }).collect();
-        
+
         let input_conversions: Vec<TokenStream> = function.inputs.iter().map(|input| {
                 let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
                 quote! { (#param_name).to_value() }
             })
             .collect();
-        
+
         let transaction_execution_body = quote! {
             let program_id = ProgramID::try_from(format!("{}.aleo", #program_name).as_str()).unwrap();
             let function_id = Identifier::from_str(&stringify!(#function_name).to_string()).unwrap();
@@ -529,13 +529,13 @@ fn generate_function_implementations(
                 #(#input_conversions),*
             ];
             let rng = &mut rand::thread_rng();
-            
+
             let locator = Locator::<Nw>::new(program_id, function_id);
-            
+
             let (execution_response, transaction): (Response<Nw>, Transaction<Nw>) = {
                 let store = ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?;
                 let vm = VM::from(store)?;
-                
+
                 wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let program: Program<Nw> = {
                     let response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
@@ -547,13 +547,13 @@ fn generate_function_implementations(
                         .to_string()
                         .parse()?
                 };
-                
+
                 let process = vm.process();
 
                 #(#dep_additions)*
 
                 process.write().add_program(&program)?;
-                
+
                 let authorization = process.read().authorize::<#aleo_type, _>(
                     account.private_key(),
                     program_id,
@@ -561,7 +561,7 @@ fn generate_function_implementations(
                     function_args.iter(),
                     rng,
                 )?;
-                
+
                 let (execution_response, _trace) = process.read().execute::<#aleo_type, _>(authorization.clone(), rng)?;
                 let transaction = vm.execute(
                     account.private_key(),
@@ -574,13 +574,13 @@ fn generate_function_implementations(
                 )?;
                 (execution_response, transaction)
             };
-            
+
             let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
             let storage_cost = transaction
                 .execution()
                 .ok_or_else(|| anyhow!("The transaction does not contain an execution"))?
                 .size_in_bytes()?;
-            
+
             if public_balance < storage_cost {
                 bail!(
                     "❌ The public balance of {} is insufficient to pay the base fee for `{}`",
@@ -588,7 +588,7 @@ fn generate_function_implementations(
                     locator.to_string()
                 );
             }
-            
+
             match broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH) {
                 Ok(_) => {
                     wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
@@ -597,25 +597,25 @@ fn generate_function_implementations(
                     eprintln!("❌ Failed to broadcast transaction for '{}': {}", locator.to_string(), e);
                     return Err(e);
                 }
-            }  
-            
+            }
+
             let function_outputs: Vec<Value<Nw>> = {
                 let response_outputs = execution_response.outputs();
                 let execution = match transaction {
                     Transaction::Execute(_, _, execution, _) => execution,
                     _ => panic!("Not an execution."),
                 };
-                
+
                 let target_transition = execution.transitions()
                     .find(|transition| {
                         transition.function_name().to_string() == stringify!(#function_name)
                     })
                     .expect("Could not find transition for the target function");
-                
+
                 response_outputs.iter().enumerate().map(|(index, response_output)| {
                     let transition_output = target_transition.outputs().get(index)
                         .expect("Output index mismatch between response and transition");
-                    
+
                     match (response_output, transition_output) {
                         (Value::Record(_), snarkvm::ledger::block::Output::Record(_, _, Some(network_record), _)) => {
                             match network_record.decrypt(account.view_key()) {
@@ -639,7 +639,7 @@ fn generate_function_implementations(
             ),
             1 => {
                 let output_type = crate::types::get_rust_type(&function.outputs[0].type_name);
-                let conversion = quote! { 
+                let conversion = quote! {
                     <#output_type>::from_value(function_outputs.get(0).ok_or_else(|| anyhow!("Missing output at index 0"))?.clone())
                 };
                 (
@@ -655,7 +655,7 @@ fn generate_function_implementations(
                     .enumerate()
                     .map(|(i, output)| {
                         let output_type = crate::types::get_rust_type(&output.type_name);
-                        quote! { 
+                        quote! {
                             <#output_type>::from_value(function_outputs.get(#i).ok_or_else(|| anyhow!("Missing output at index {}", #i))?.clone())
                         }
                     })
@@ -666,7 +666,7 @@ fn generate_function_implementations(
                 )
             }
         };
-        
+
         let param_names_string = function.inputs.iter()
             .map(|input| input.name.clone())
             .collect::<Vec<_>>()
@@ -674,11 +674,11 @@ fn generate_function_implementations(
 
         quote! {
             pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
-                println!("Creating tx: {}.{}({})", 
-                    #program_name, 
-                    stringify!(#function_name), 
+                println!("Creating tx: {}.{}({})",
+                    #program_name,
+                    stringify!(#function_name),
                     #param_names_string);
-                
+
                 #transaction_execution_body
                 #function_return_conversions
             }

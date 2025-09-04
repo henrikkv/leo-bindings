@@ -256,7 +256,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .collect();
 
                 let is_async = func_def.variant == "AsyncTransition";
-                
+
                 if is_async {
                     if outputs.is_empty() {
                         panic!("Async function '{}' must have at least a Future output", func_def.identifier.name);
@@ -348,8 +348,7 @@ fn extract_array_size(length_json: &serde_json::Value) -> String {
                         }
                     }
                 }
-            }
-            else if let Some(unsuffixed_str) = variant.get("Unsuffixed") {
+            } else if let Some(unsuffixed_str) = variant.get("Unsuffixed") {
                 if let Some(size_str) = unsuffixed_str.as_str() {
                     return size_str.to_string();
                 }
