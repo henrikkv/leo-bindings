@@ -1,0 +1,1849 @@
+{
+  "imports": {},
+  "stubs": {},
+  "program_scopes": {
+    "token": {
+      "program_id": {
+        "name": {
+          "name": "token",
+          "id": 0
+        },
+        "network": {
+          "name": "aleo",
+          "id": 1
+        }
+      },
+      "consts": [],
+      "structs": [
+        [
+          "Token",
+          {
+            "identifier": {
+              "name": "Token",
+              "id": 8
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "owner",
+                  "id": 9
+                },
+                "type_": "Address",
+                "id": 10
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "amount",
+                  "id": 11
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 12
+              }
+            ],
+            "external": "token",
+            "is_record": true,
+            "id": 13
+          }
+        ]
+      ],
+      "mappings": [
+        [
+          "account",
+          {
+            "identifier": {
+              "name": "account",
+              "id": 6
+            },
+            "key_type": "Address",
+            "value_type": {
+              "Integer": "U64"
+            },
+            "id": 7
+          }
+        ]
+      ],
+      "functions": [
+        [
+          "mint_public",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "mint_public",
+              "id": 14
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 15
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 16
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 17
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 18
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 19
+              }
+            ],
+            "output_type": {
+              "Future": {
+                "inputs": [],
+                "location": null,
+                "is_explicit": false
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Call": {
+                        "function": {
+                          "name": "finalize_mint_public",
+                          "id": 20
+                        },
+                        "const_arguments": [],
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 21
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "amount",
+                              "id": 22
+                            }
+                          }
+                        ],
+                        "program": "token",
+                        "id": 23
+                      }
+                    },
+                    "id": 24
+                  }
+                }
+              ],
+              "id": 25
+            },
+            "id": 26
+          }
+        ],
+        [
+          "mint_private",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "mint_private",
+              "id": 51
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 52
+                },
+                "mode": "None",
+                "type_": "Address",
+                "id": 53
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 54
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 55
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 56
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 57
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "id": {
+                  "name": "Token",
+                  "id": 56
+                },
+                "const_arguments": [],
+                "program": null
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Struct": {
+                        "name": {
+                          "name": "Token",
+                          "id": 58
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 59
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "receiver",
+                                "id": 60
+                              }
+                            },
+                            "id": 61
+                          },
+                          {
+                            "identifier": {
+                              "name": "amount",
+                              "id": 62
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "amount",
+                                "id": 63
+                              }
+                            },
+                            "id": 64
+                          }
+                        ],
+                        "id": 65
+                      }
+                    },
+                    "id": 66
+                  }
+                }
+              ],
+              "id": 67
+            },
+            "id": 68
+          }
+        ],
+        [
+          "transfer_public",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "transfer_public",
+              "id": 69
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 70
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 71
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 72
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 73
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 74
+              }
+            ],
+            "output_type": {
+              "Future": {
+                "inputs": [],
+                "location": null,
+                "is_explicit": false
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Call": {
+                        "function": {
+                          "name": "finalize_transfer_public",
+                          "id": 75
+                        },
+                        "const_arguments": [],
+                        "arguments": [
+                          {
+                            "MemberAccess": {
+                              "inner": {
+                                "Identifier": {
+                                  "name": "self",
+                                  "id": 76
+                                }
+                              },
+                              "name": {
+                                "name": "caller",
+                                "id": 77
+                              },
+                              "id": 78
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 79
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "amount",
+                              "id": 80
+                            }
+                          }
+                        ],
+                        "program": "token",
+                        "id": 81
+                      }
+                    },
+                    "id": 82
+                  }
+                }
+              ],
+              "id": 83
+            },
+            "id": 84
+          }
+        ],
+        [
+          "transfer_private",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "transfer_private",
+              "id": 128
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "sender",
+                  "id": 129
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 130
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 131
+              },
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 132
+                },
+                "mode": "None",
+                "type_": "Address",
+                "id": 133
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 134
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 135
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 136
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 137
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 138
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 139
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Composite": {
+                      "id": {
+                        "name": "Token",
+                        "id": 136
+                      },
+                      "const_arguments": [],
+                      "program": null
+                    }
+                  },
+                  {
+                    "Composite": {
+                      "id": {
+                        "name": "Token",
+                        "id": 138
+                      },
+                      "const_arguments": [],
+                      "program": null
+                    }
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "difference",
+                        "id": 140
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "Binary": {
+                        "left": {
+                          "MemberAccess": {
+                            "inner": {
+                              "Identifier": {
+                                "name": "sender",
+                                "id": 141
+                              }
+                            },
+                            "name": {
+                              "name": "amount",
+                              "id": 142
+                            },
+                            "id": 143
+                          }
+                        },
+                        "right": {
+                          "Identifier": {
+                            "name": "amount",
+                            "id": 144
+                          }
+                        },
+                        "op": "Sub",
+                        "id": 145
+                      }
+                    },
+                    "id": 146
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "remaining",
+                        "id": 147
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "id": {
+                          "name": "Token",
+                          "id": 148
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "name": {
+                          "name": "Token",
+                          "id": 149
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 150
+                            },
+                            "expression": {
+                              "MemberAccess": {
+                                "inner": {
+                                  "Identifier": {
+                                    "name": "sender",
+                                    "id": 151
+                                  }
+                                },
+                                "name": {
+                                  "name": "owner",
+                                  "id": 152
+                                },
+                                "id": 153
+                              }
+                            },
+                            "id": 154
+                          },
+                          {
+                            "identifier": {
+                              "name": "amount",
+                              "id": 155
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "difference",
+                                "id": 156
+                              }
+                            },
+                            "id": 157
+                          }
+                        ],
+                        "id": 158
+                      }
+                    },
+                    "id": 159
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "transferred",
+                        "id": 160
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "id": {
+                          "name": "Token",
+                          "id": 161
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "name": {
+                          "name": "Token",
+                          "id": 162
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 163
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "receiver",
+                                "id": 164
+                              }
+                            },
+                            "id": 165
+                          },
+                          {
+                            "identifier": {
+                              "name": "amount",
+                              "id": 166
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "amount",
+                                "id": 167
+                              }
+                            },
+                            "id": 168
+                          }
+                        ],
+                        "id": 169
+                      }
+                    },
+                    "id": 170
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Identifier": {
+                              "name": "remaining",
+                              "id": 171
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "transferred",
+                              "id": 172
+                            }
+                          }
+                        ],
+                        "id": 173
+                      }
+                    },
+                    "id": 174
+                  }
+                }
+              ],
+              "id": 175
+            },
+            "id": 176
+          }
+        ],
+        [
+          "transfer_private_to_public",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "transfer_private_to_public",
+              "id": 177
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "sender",
+                  "id": 178
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 179
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 180
+              },
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 181
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 182
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 183
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 184
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 185
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 186
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 187
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Composite": {
+                      "id": {
+                        "name": "Token",
+                        "id": 185
+                      },
+                      "const_arguments": [],
+                      "program": null
+                    }
+                  },
+                  {
+                    "Future": {
+                      "inputs": [],
+                      "location": null,
+                      "is_explicit": false
+                    }
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "difference",
+                        "id": 188
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "Binary": {
+                        "left": {
+                          "MemberAccess": {
+                            "inner": {
+                              "Identifier": {
+                                "name": "sender",
+                                "id": 189
+                              }
+                            },
+                            "name": {
+                              "name": "amount",
+                              "id": 190
+                            },
+                            "id": 191
+                          }
+                        },
+                        "right": {
+                          "Identifier": {
+                            "name": "amount",
+                            "id": 192
+                          }
+                        },
+                        "op": "Sub",
+                        "id": 193
+                      }
+                    },
+                    "id": 194
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "remaining",
+                        "id": 195
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "id": {
+                          "name": "Token",
+                          "id": 196
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "name": {
+                          "name": "Token",
+                          "id": 197
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 198
+                            },
+                            "expression": {
+                              "MemberAccess": {
+                                "inner": {
+                                  "Identifier": {
+                                    "name": "sender",
+                                    "id": 199
+                                  }
+                                },
+                                "name": {
+                                  "name": "owner",
+                                  "id": 200
+                                },
+                                "id": 201
+                              }
+                            },
+                            "id": 202
+                          },
+                          {
+                            "identifier": {
+                              "name": "amount",
+                              "id": 203
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "difference",
+                                "id": 204
+                              }
+                            },
+                            "id": 205
+                          }
+                        ],
+                        "id": 206
+                      }
+                    },
+                    "id": 207
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Identifier": {
+                              "name": "remaining",
+                              "id": 208
+                            }
+                          },
+                          {
+                            "Call": {
+                              "function": {
+                                "name": "finalize_transfer_priv_to_pub",
+                                "id": 209
+                              },
+                              "const_arguments": [],
+                              "arguments": [
+                                {
+                                  "Identifier": {
+                                    "name": "receiver",
+                                    "id": 210
+                                  }
+                                },
+                                {
+                                  "Identifier": {
+                                    "name": "amount",
+                                    "id": 211
+                                  }
+                                }
+                              ],
+                              "program": "token",
+                              "id": 212
+                            }
+                          }
+                        ],
+                        "id": 213
+                      }
+                    },
+                    "id": 214
+                  }
+                }
+              ],
+              "id": 215
+            },
+            "id": 216
+          }
+        ],
+        [
+          "transfer_public_to_private",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "transfer_public_to_private",
+              "id": 241
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 242
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 243
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 244
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 245
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "id": {
+                      "name": "Token",
+                      "id": 246
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 247
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 248
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Composite": {
+                      "id": {
+                        "name": "Token",
+                        "id": 246
+                      },
+                      "const_arguments": [],
+                      "program": null
+                    }
+                  },
+                  {
+                    "Future": {
+                      "inputs": [],
+                      "location": null,
+                      "is_explicit": false
+                    }
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "transferred",
+                        "id": 249
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "id": {
+                          "name": "Token",
+                          "id": 250
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "name": {
+                          "name": "Token",
+                          "id": 251
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 252
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "receiver",
+                                "id": 253
+                              }
+                            },
+                            "id": 254
+                          },
+                          {
+                            "identifier": {
+                              "name": "amount",
+                              "id": 255
+                            },
+                            "expression": {
+                              "Identifier": {
+                                "name": "amount",
+                                "id": 256
+                              }
+                            },
+                            "id": 257
+                          }
+                        ],
+                        "id": 258
+                      }
+                    },
+                    "id": 259
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Identifier": {
+                              "name": "transferred",
+                              "id": 260
+                            }
+                          },
+                          {
+                            "Call": {
+                              "function": {
+                                "name": "finalize_transfer_pub_to_priv",
+                                "id": 261
+                              },
+                              "const_arguments": [],
+                              "arguments": [
+                                {
+                                  "MemberAccess": {
+                                    "inner": {
+                                      "Identifier": {
+                                        "name": "self",
+                                        "id": 262
+                                      }
+                                    },
+                                    "name": {
+                                      "name": "caller",
+                                      "id": 263
+                                    },
+                                    "id": 264
+                                  }
+                                },
+                                {
+                                  "Identifier": {
+                                    "name": "amount",
+                                    "id": 265
+                                  }
+                                }
+                              ],
+                              "program": "token",
+                              "id": 266
+                            }
+                          }
+                        ],
+                        "id": 267
+                      }
+                    },
+                    "id": 268
+                  }
+                }
+              ],
+              "id": 269
+            },
+            "id": 270
+          }
+        ],
+        [
+          "finalize_mint_public",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_mint_public",
+              "id": 27
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 28
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 29
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 30
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 31
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "current_amount",
+                        "id": 32
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 33
+                        },
+                        "name": {
+                          "name": "get_or_use",
+                          "id": 34
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 35
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 36
+                            }
+                          },
+                          {
+                            "Literal": {
+                              "id": 37,
+                              "variant": {
+                                "Integer": [
+                                  "U64",
+                                  "0"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "id": 38
+                      }
+                    },
+                    "id": 39
+                  }
+                },
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 40
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 41
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 42
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 43
+                            }
+                          },
+                          {
+                            "Binary": {
+                              "left": {
+                                "Identifier": {
+                                  "name": "current_amount",
+                                  "id": 44
+                                }
+                              },
+                              "right": {
+                                "Identifier": {
+                                  "name": "amount",
+                                  "id": 45
+                                }
+                              },
+                              "op": "Add",
+                              "id": 46
+                            }
+                          }
+                        ],
+                        "id": 47
+                      }
+                    },
+                    "id": 48
+                  }
+                }
+              ],
+              "id": 49
+            },
+            "id": 50
+          }
+        ],
+        [
+          "finalize_transfer_public",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_transfer_public",
+              "id": 85
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "sender",
+                  "id": 86
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 87
+              },
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 88
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 89
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 90
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 91
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "sender_amount",
+                        "id": 92
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 93
+                        },
+                        "name": {
+                          "name": "get_or_use",
+                          "id": 94
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 95
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "sender",
+                              "id": 96
+                            }
+                          },
+                          {
+                            "Literal": {
+                              "id": 97,
+                              "variant": {
+                                "Integer": [
+                                  "U64",
+                                  "0"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "id": 98
+                      }
+                    },
+                    "id": 99
+                  }
+                },
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 100
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 101
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 102
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "sender",
+                              "id": 103
+                            }
+                          },
+                          {
+                            "Binary": {
+                              "left": {
+                                "Identifier": {
+                                  "name": "sender_amount",
+                                  "id": 104
+                                }
+                              },
+                              "right": {
+                                "Identifier": {
+                                  "name": "amount",
+                                  "id": 105
+                                }
+                              },
+                              "op": "Sub",
+                              "id": 106
+                            }
+                          }
+                        ],
+                        "id": 107
+                      }
+                    },
+                    "id": 108
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "receiver_amount",
+                        "id": 109
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 110
+                        },
+                        "name": {
+                          "name": "get_or_use",
+                          "id": 111
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 112
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 113
+                            }
+                          },
+                          {
+                            "Literal": {
+                              "id": 114,
+                              "variant": {
+                                "Integer": [
+                                  "U64",
+                                  "0"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "id": 115
+                      }
+                    },
+                    "id": 116
+                  }
+                },
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 117
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 118
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 119
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 120
+                            }
+                          },
+                          {
+                            "Binary": {
+                              "left": {
+                                "Identifier": {
+                                  "name": "receiver_amount",
+                                  "id": 121
+                                }
+                              },
+                              "right": {
+                                "Identifier": {
+                                  "name": "amount",
+                                  "id": 122
+                                }
+                              },
+                              "op": "Add",
+                              "id": 123
+                            }
+                          }
+                        ],
+                        "id": 124
+                      }
+                    },
+                    "id": 125
+                  }
+                }
+              ],
+              "id": 126
+            },
+            "id": 127
+          }
+        ],
+        [
+          "finalize_transfer_priv_to_pub",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_transfer_priv_to_pub",
+              "id": 217
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "receiver",
+                  "id": 218
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 219
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 220
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 221
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "current_amount",
+                        "id": 222
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 223
+                        },
+                        "name": {
+                          "name": "get_or_use",
+                          "id": 224
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 225
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 226
+                            }
+                          },
+                          {
+                            "Literal": {
+                              "id": 227,
+                              "variant": {
+                                "Integer": [
+                                  "U64",
+                                  "0"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "id": 228
+                      }
+                    },
+                    "id": 229
+                  }
+                },
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 230
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 231
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 232
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "receiver",
+                              "id": 233
+                            }
+                          },
+                          {
+                            "Binary": {
+                              "left": {
+                                "Identifier": {
+                                  "name": "current_amount",
+                                  "id": 234
+                                }
+                              },
+                              "right": {
+                                "Identifier": {
+                                  "name": "amount",
+                                  "id": 235
+                                }
+                              },
+                              "op": "Add",
+                              "id": 236
+                            }
+                          }
+                        ],
+                        "id": 237
+                      }
+                    },
+                    "id": 238
+                  }
+                }
+              ],
+              "id": 239
+            },
+            "id": 240
+          }
+        ],
+        [
+          "finalize_transfer_pub_to_priv",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_transfer_pub_to_priv",
+              "id": 271
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "sender",
+                  "id": 272
+                },
+                "mode": "Public",
+                "type_": "Address",
+                "id": 273
+              },
+              {
+                "identifier": {
+                  "name": "amount",
+                  "id": 274
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 275
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "current_amount",
+                        "id": 276
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U64"
+                    },
+                    "value": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 277
+                        },
+                        "name": {
+                          "name": "get_or_use",
+                          "id": 278
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 279
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "sender",
+                              "id": 280
+                            }
+                          },
+                          {
+                            "Literal": {
+                              "id": 281,
+                              "variant": {
+                                "Integer": [
+                                  "U64",
+                                  "0"
+                                ]
+                              }
+                            }
+                          }
+                        ],
+                        "id": 282
+                      }
+                    },
+                    "id": 283
+                  }
+                },
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 284
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 285
+                        },
+                        "arguments": [
+                          {
+                            "Identifier": {
+                              "name": "account",
+                              "id": 286
+                            }
+                          },
+                          {
+                            "Identifier": {
+                              "name": "sender",
+                              "id": 287
+                            }
+                          },
+                          {
+                            "Binary": {
+                              "left": {
+                                "Identifier": {
+                                  "name": "current_amount",
+                                  "id": 288
+                                }
+                              },
+                              "right": {
+                                "Identifier": {
+                                  "name": "amount",
+                                  "id": 289
+                                }
+                              },
+                              "op": "Sub",
+                              "id": 290
+                            }
+                          }
+                        ],
+                        "id": 291
+                      }
+                    },
+                    "id": 292
+                  }
+                }
+              ],
+              "id": 293
+            },
+            "id": 294
+          }
+        ]
+      ],
+      "constructor": {
+        "annotations": [
+          {
+            "identifier": {
+              "name": "noupgrade",
+              "id": 2
+            },
+            "map": {},
+            "id": 3
+          }
+        ],
+        "block": {
+          "statements": [],
+          "id": 4
+        },
+        "id": 5
+      }
+    }
+  }
+}
