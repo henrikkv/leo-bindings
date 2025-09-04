@@ -2,7 +2,7 @@
 fn token() {
     use leo_bindings::utils::*;
     use std::str::FromStr;
-    use tokenexample::*;
+    use tokenexample::token_aleo::token;
 
     const ENDPOINT: &str = "http://localhost:3030";
     let alice: Account<snarkvm::console::network::TestnetV0> =

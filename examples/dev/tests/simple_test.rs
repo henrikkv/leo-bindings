@@ -1,6 +1,6 @@
 #[test]
 fn dev() {
-    use devtest::*;
+    use devtest::dev_aleo::*;
     use leo_bindings::utils::*;
     use std::str::FromStr;
 

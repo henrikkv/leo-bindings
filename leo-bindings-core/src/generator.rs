@@ -1,39 +1,120 @@
-use proc_macro2::TokenStream;
-use quote::quote;
 use crate::signature::SimplifiedBindings;
 use crate::types::get_rust_type;
+use proc_macro2::TokenStream;
+use quote::quote;
 
-
-pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_type: syn::Path) -> TokenStream {
-    let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
-    
-    let network_type_token = quote! { #network_type };
-    
-    let path_str = quote!(#network_type_token).to_string();
-    let (network_name, network_path, aleo_type) = match path_str.as_str() {
+fn get_network_info(
+    network_type: &syn::Path,
+) -> (
+    &'static str,
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+) {
+    let path_str = quote!(#network_type).to_string();
+    match path_str.as_str() {
         s if s.contains("TestnetV0") => (
-            quote! { NetworkName::TestnetV0 }, 
-            "testnet", 
-            quote! { snarkvm::circuit::network::AleoTestnetV0 }
+            "testnet",
+            quote! { NetworkName::TestnetV0 },
+            quote! { snarkvm::circuit::network::AleoTestnetV0 },
         ),
         s if s.contains("MainnetV0") => (
-            quote! { NetworkName::MainnetV0 }, 
-            "mainnet", 
-            quote! { snarkvm::circuit::network::AleoV0 }
+            "mainnet",
+            quote! { NetworkName::MainnetV0 },
+            quote! { snarkvm::circuit::network::AleoV0 },
         ),
         s if s.contains("CanaryV0") => (
-            quote! { NetworkName::CanaryV0 }, 
-            "canary", 
-            quote! { snarkvm::circuit::network::AleoCanaryV0 }
+            "canary",
+            quote! { NetworkName::CanaryV0 },
+            quote! { snarkvm::circuit::network::AleoCanaryV0 },
         ),
-        _ => panic!("Unsupported network type: {}. Supported types: TestnetV0, MainnetV0, CanaryV0", path_str),
-    };
-    
-    
+        _ => panic!(
+            "Unsupported network type: {}. Supported types: TestnetV0, MainnetV0, CanaryV0",
+            path_str
+        ),
+    }
+}
+
+pub fn generate_program_module(
+    simplified: &SimplifiedBindings,
+    network_type: syn::Path,
+) -> TokenStream {
+    let module_name = syn::Ident::new(
+        &format!("{}_aleo", simplified.program_name.to_lowercase()),
+        proc_macro2::Span::call_site(),
+    );
+
+    let dependency_modules: Vec<(String, String)> = simplified
+        .imports
+        .iter()
+        .map(|import_name| {
+            let module_name = format!("{}_aleo", import_name.to_lowercase());
+            (import_name.clone(), module_name)
+        })
+        .collect();
+
+    let program_code =
+        generate_code_from_simplified(simplified, network_type, Some(dependency_modules));
+
+    quote! {
+        pub mod #module_name {
+            #program_code
+        }
+    }
+}
+
+pub fn generate_code_from_simplified(
+    simplified: &SimplifiedBindings,
+    network_type: syn::Path,
+    dependency_modules: Option<Vec<(String, String)>>,
+) -> TokenStream {
+    let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
+
+    let (network_path, network_name, aleo_type) = get_network_info(&network_type);
+
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
-    let function_implementations = generate_function_implementations(&simplified.functions, &simplified.program_name, &aleo_type);
-    
+    let imports = &simplified.imports;
+
+    // Recursive deployment of dependencies
+    let deployment_calls: Vec<proc_macro2::TokenStream> = imports
+        .iter()
+        .map(|import_name| {
+            let dep_struct_name = syn::Ident::new(import_name, proc_macro2::Span::call_site());
+            dependency_modules
+                .as_ref()
+                .and_then(|deps| deps.iter().find(|(name, _)| name == import_name))
+                .map_or_else(
+                    || quote! { #dep_struct_name::new(deployer, endpoint)?; },
+                    |(_, module_name)| {
+                        let dep_module_name = syn::Ident::new(module_name, proc_macro2::Span::call_site());
+                        quote! { super::#dep_module_name::#dep_struct_name::new(deployer, endpoint)?; }
+                    }
+                )
+        }).collect();
+    // Add dependencies to SnarkVM
+    let dep_additions: Vec<proc_macro2::TokenStream> = imports
+        .iter()
+        .map(|import_name| {
+            let dep_program_id = format!("{}.aleo", import_name);
+            quote! {
+                let dep_program_id = ProgramID::<Nw>::from_str(#dep_program_id).unwrap();
+                wait_for_program_availability(&dep_program_id.to_string(), endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let dep_program: Program<Nw> = {
+                    let response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, dep_program_id)).call().map_err(|e| anyhow!("Failed to fetch dependency program: {}", e))?;
+                    let json_response: serde_json::Value = response.into_json()?;
+                    json_response.as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?.to_string().parse()?
+                };
+                process.write().add_program(&dep_program)?;
+            }
+        }).collect();
+
+    let function_implementations = generate_function_implementations(
+        &simplified.functions,
+        &simplified.program_name,
+        &aleo_type,
+        &dep_additions,
+    );
+
     let expanded = quote! {
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
@@ -56,30 +137,28 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
         use std::thread::sleep;
         use std::time::Duration;
         use leo_bindings::{ToValue, FromValue};
-        use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation};
-        
-        type Nw = #network_type_token;
-        
-        
+        use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
+
+        type Nw = #network_type;
+
         #(#records)*
-        
+
         #(#structs)*
-        
+
         pub struct #program_name {
             pub package: Package,
             pub endpoint: String,
         }
-        
+
         const NETWORK_PATH: &str = #network_path;
         const NETWORK_NAME: NetworkName = #network_name;
-        
+
         impl #program_name {
             pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
                 use leo_package::Package;
                 use leo_span::create_session_if_not_set_then;
                 use std::path::Path;
-                
-                
+
                 let result = create_session_if_not_set_then(|_| {
                 let package = Package::from_directory(
                     Path::new("."),
@@ -89,26 +168,29 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                     NETWORK_NAME,
                     endpoint,
                 )?;
-                
-                let main_program = package.programs.iter()
-                    .find(|p| !p.is_test && p.is_local)
-                    .ok_or_else(|| anyhow!("No main program found in package"))?;
-                
-                let aleo_name = format!("{}.aleo", main_program.name);
+
+                #(#deployment_calls)*
+
+                let target_program_name_symbol = leo_span::Symbol::intern(stringify!(#program_name));
+                let target_program = package.programs.iter()
+                    .find(|p| p.name == target_program_name_symbol)
+                    .ok_or_else(|| anyhow!("Program '{}' not found in package", stringify!(#program_name)))?;
+
+                let aleo_name = format!("{}.aleo", target_program.name);
                 let aleo_path = if package.manifest.program == aleo_name {
                     package.build_directory().join("main.aleo")
                 } else {
                     package.imports_directory().join(aleo_name)
                 };
-                
+
                 let bytecode = std::fs::read_to_string(aleo_path.clone())
                     .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?;
-                
+
                 let program: Program<Nw> = bytecode.parse()
                     .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
-                
+
                 let program_id = program.id();
-                
+
                 let program_exists = {
                     let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, program_id))
                         .call();
@@ -128,7 +210,10 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                     let rng = &mut rand::thread_rng();
                     let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
                     let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
-                    
+                    let process = vm.process();
+
+                     #(#dep_additions)*
+
                     let transaction = vm.deploy(
                         deployer.private_key(),
                         &program,
@@ -137,26 +222,29 @@ pub fn generate_code_from_simplified(simplified: &SimplifiedBindings, network_ty
                         Some(&query),
                         rng,
                     ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
-                    
+
                     println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
-                    
+
                     let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
                         .send_json(&transaction)?;
+
+                    wait_for_transaction_confirmation::<Nw>(&transaction.id(), endpoint, NETWORK_PATH, 60)?;
+                    wait_for_program_availability(&program_id.to_string(), endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
                 }
-                
-                    Ok(Self { 
+
+                    Ok(Self {
                         package,
                         endpoint: endpoint.to_string(),
                     })
                 });
-                
+
                 result
             }
-            
+
             #(#function_implementations)*
         }
     };
-    
+
     expanded
 }
 
@@ -326,93 +414,99 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
 }
 
 fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
-    structs.iter().map(|struct_def| {
-        let struct_name = syn::Ident::new(&struct_def.name, proc_macro2::Span::call_site());
-        
-        let member_definitions = struct_def.members.iter().map(|member| {
-            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
-            let member_type = get_rust_type(&member.type_name);
-            quote! { pub #member_name: #member_type }
-        });
-        
-        let member_extractions = struct_def.members.iter().map(|member| {
-            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
-            let member_type = get_rust_type(&member.type_name);
+    structs
+        .iter()
+        .map(|struct_def| {
+            let struct_name = syn::Ident::new(&struct_def.name, proc_macro2::Span::call_site());
+
+            let member_definitions = struct_def.members.iter().map(|member| {
+                let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+                let member_type = get_rust_type(&member.type_name);
+                quote! { pub #member_name: #member_type }
+            });
+
+            let member_extractions = struct_def.members.iter().map(|member| {
+                let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+                let member_type = get_rust_type(&member.type_name);
+                quote! {
+                    let #member_name = {
+                        let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
+                        let entry = struct_members.get(member_id).unwrap();
+                        <#member_type>::from_value(Value::Plaintext(entry.clone()))
+                    };
+                }
+            });
+
+            let member_names: Vec<_> = struct_def
+                .members
+                .iter()
+                .map(|member| syn::Ident::new(&member.name, proc_macro2::Span::call_site()))
+                .collect();
+
+            let member_definitions_for_constructor = struct_def.members.iter().map(|member| {
+                let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+                let member_type = get_rust_type(&member.type_name);
+                quote! { #member_name: #member_type }
+            });
+
+            let member_conversions = struct_def.members.iter().map(|member| {
+                let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
+                quote! {
+                    (
+                        Identifier::try_from(stringify!(#member_name)).unwrap(),
+                        match self.#member_name.to_value() {
+                            Value::Plaintext(p) => p,
+                            _ => panic!("Expected plaintext value"),
+                        }
+                    )
+                }
+            });
+
             quote! {
-                let #member_name = {
-                    let member_id = &Identifier::try_from(stringify!(#member_name)).unwrap();
-                    let entry = struct_members.get(member_id).unwrap();
-                    <#member_type>::from_value(Value::Plaintext(entry.clone()))
-                };
-            }
-        });
-        
-        let member_names: Vec<_> = struct_def.members.iter().map(|member| {
-            syn::Ident::new(&member.name, proc_macro2::Span::call_site())
-        }).collect();
-        
-        let member_definitions_for_constructor = struct_def.members.iter().map(|member| {
-            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
-            let member_type = get_rust_type(&member.type_name);
-            quote! { #member_name: #member_type }
-        });
-        
-        let member_conversions = struct_def.members.iter().map(|member| {
-            let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
-            quote! {
-                (
-                    Identifier::try_from(stringify!(#member_name)).unwrap(),
-                    match self.#member_name.to_value() {
-                        Value::Plaintext(p) => p,
-                        _ => panic!("Expected plaintext value"),
-                    }
-                )
-            }
-        });
-        
-        quote! {
-            #[derive(Debug, Clone, Copy)]
-            pub struct #struct_name {
-                #(#member_definitions),*
-            }
-            
-            impl ToValue<Nw> for #struct_name {
-                fn to_value(&self) -> Value<Nw> {
-                    let members = IndexMap::from([
-                        #(#member_conversions),*
-                    ]);
-                    Value::Plaintext(Plaintext::Struct(members, std::sync::OnceLock::new()))
+                #[derive(Debug, Clone, Copy)]
+                pub struct #struct_name {
+                    #(#member_definitions),*
                 }
-            }
-            
-            impl FromValue<Nw> for #struct_name {
-                fn from_value(value: Value<Nw>) -> Self {
-                    match value {
-                        Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
-                            #(#member_extractions)*
-                            Self {
-                                #(#member_names),*
-                            }
-                        },
-                        _ => panic!("Expected struct type"),
+
+                impl ToValue<Nw> for #struct_name {
+                    fn to_value(&self) -> Value<Nw> {
+                        let members = IndexMap::from([
+                            #(#member_conversions),*
+                        ]);
+                        Value::Plaintext(Plaintext::Struct(members, std::sync::OnceLock::new()))
+                    }
+                }
+
+                impl FromValue<Nw> for #struct_name {
+                    fn from_value(value: Value<Nw>) -> Self {
+                        match value {
+                            Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
+                                #(#member_extractions)*
+                                Self {
+                                    #(#member_names),*
+                                }
+                            },
+                            _ => panic!("Expected struct type"),
+                        }
+                    }
+                }
+
+                impl #struct_name {
+                    pub fn new(#(#member_definitions_for_constructor),*) -> Self {
+                        Self {
+                            #(#member_names),*
+                        }
                     }
                 }
             }
-            
-            impl #struct_name {
-                pub fn new(#(#member_definitions_for_constructor),*) -> Self {
-                    Self {
-                        #(#member_names),*
-                    }
-                }
-            }
-        }
-    }).collect()
+        })
+        .collect()
 }
 fn generate_function_implementations(
-    functions: &[crate::signature::FunctionBinding], 
+    functions: &[crate::signature::FunctionBinding],
     program_name: &str,
     aleo_type: &proc_macro2::TokenStream,
+    dep_additions: &[proc_macro2::TokenStream],
 ) -> Vec<proc_macro2::TokenStream> {
     functions.iter().map(|function| {
         let function_name = syn::Ident::new(&function.name, proc_macro2::Span::call_site());
@@ -442,6 +536,7 @@ fn generate_function_implementations(
                 let store = ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?;
                 let vm = VM::from(store)?;
                 
+                wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let program: Program<Nw> = {
                     let response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
                         .call()
@@ -454,6 +549,9 @@ fn generate_function_implementations(
                 };
                 
                 let process = vm.process();
+
+                #(#dep_additions)*
+
                 process.write().add_program(&program)?;
                 
                 let authorization = process.read().authorize::<#aleo_type, _>(

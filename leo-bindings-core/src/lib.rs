@@ -1,7 +1,7 @@
-pub mod signature;
 pub mod generator;
+pub mod signature;
 pub mod types;
 
-pub use signature::*;
 pub use generator::*;
+pub use signature::*;
 pub use types::*;

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 pub struct InitialJson {
+    pub imports: Option<HashMap<String, serde_json::Value>>,
     pub program_scopes: HashMap<String, ProgramScope>,
 }
 
@@ -91,7 +92,7 @@ pub struct CompositeType {
 #[derive(Debug, Deserialize)]
 pub struct ArrayType {
     pub element_type: Box<TypeInfo>,
-    pub length: serde_json::Value, // Store raw JSON for now, parse size in normalize_type
+    pub length: serde_json::Value,
 }
 
 #[derive(Debug, Deserialize)]
@@ -100,6 +101,7 @@ pub struct FutureType {}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimplifiedBindings {
     pub program_name: String,
+    pub imports: Vec<String>,
     pub records: Vec<RecordDef>,
     pub structs: Vec<RecordDef>,
     pub functions: Vec<FunctionBinding>,
@@ -144,6 +146,18 @@ pub struct OutputType {
 
 pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let initial_json: InitialJson = serde_json::from_str(input)?;
+
+    let imports: Vec<String> = initial_json
+        .imports
+        .as_ref()
+        .map(|imports_map| {
+            imports_map
+                .keys()
+                .filter(|import_name| *import_name != "credits")
+                .cloned()
+                .collect()
+        })
+        .unwrap_or_default();
 
     let (program_name, program_scope) = initial_json
         .program_scopes
@@ -267,6 +281,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
 
     let simplified = SimplifiedBindings {
         program_name,
+        imports,
         records,
         structs,
         functions,
@@ -318,13 +333,28 @@ fn extract_array_size(length_json: &serde_json::Value) -> String {
                 if let Some(array) = integer_array.as_array() {
                     if array.len() == 2 {
                         if let Some(size_str) = array[1].as_str() {
-                            return size_str.to_string();
+                            let size = size_str
+                                .trim_end_matches("u8")
+                                .trim_end_matches("u16")
+                                .trim_end_matches("u32")
+                                .trim_end_matches("u64")
+                                .trim_end_matches("u128")
+                                .trim_end_matches("i8")
+                                .trim_end_matches("i16")
+                                .trim_end_matches("i32")
+                                .trim_end_matches("i64")
+                                .trim_end_matches("i128");
+                            return size.to_string();
                         }
                     }
+                }
+            }
+            else if let Some(unsuffixed_str) = variant.get("Unsuffixed") {
+                if let Some(size_str) = unsuffixed_str.as_str() {
+                    return size_str.to_string();
                 }
             }
         }
     }
     "UNKNOWN_SIZE".to_string()
 }
-
