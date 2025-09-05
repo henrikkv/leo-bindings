@@ -491,6 +491,15 @@ checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "convert_case"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "convert_case"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb402b8d4c85569410425650ce3eddc7d698ed96d39a73f941b08fb63082f1e7"
@@ -812,7 +821,7 @@ version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bda628edc44c4bb645fbe0f758797143e4e07926f7ebf4e9bdfbd3d2ce621df3"
 dependencies = [
- "convert_case",
+ "convert_case 0.7.1",
  "proc-macro2",
  "quote 1.0.40",
  "syn 2.0.106",
@@ -1669,6 +1678,7 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
+ "convert_case 0.6.0",
  "indexmap",
  "leo-lang",
  "proc-macro2",
@@ -1677,6 +1687,27 @@ dependencies = [
  "serde_json",
  "snarkvm",
  "syn 2.0.106",
+]
+
+[[package]]
+name = "leo-bindings-credits"
+version = "0.1.0"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "http",
+ "indexmap",
+ "leo-ast",
+ "leo-bindings",
+ "leo-bindings-core",
+ "leo-bindings-macro",
+ "leo-lang",
+ "leo-package",
+ "leo-span",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+ "ureq 2.12.1",
 ]
 
 [[package]]
@@ -4228,6 +4259,7 @@ dependencies = [
  "leo-ast",
  "leo-bindings",
  "leo-bindings-core",
+ "leo-bindings-credits",
  "leo-bindings-macro",
  "leo-lang",
  "leo-package",

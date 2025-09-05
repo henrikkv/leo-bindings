@@ -1,0 +1,430 @@
+{
+  "program_name": "credits",
+  "imports": [],
+  "records": [
+    {
+      "name": "credits",
+      "members": [
+        {
+          "name": "owner",
+          "type": "address",
+          "mode": "private"
+        },
+        {
+          "name": "microcredits",
+          "type": "u64",
+          "mode": "private"
+        }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "name": "committee_state",
+      "members": [
+        {
+          "name": "is_open",
+          "type": "boolean",
+          "mode": "none"
+        },
+        {
+          "name": "commission",
+          "type": "u8",
+          "mode": "none"
+        }
+      ]
+    },
+    {
+      "name": "bond_state",
+      "members": [
+        {
+          "name": "validator",
+          "type": "address",
+          "mode": "none"
+        },
+        {
+          "name": "microcredits",
+          "type": "u64",
+          "mode": "none"
+        }
+      ]
+    },
+    {
+      "name": "unbond_state",
+      "members": [
+        {
+          "name": "microcredits",
+          "type": "u64",
+          "mode": "none"
+        },
+        {
+          "name": "height",
+          "type": "u32",
+          "mode": "none"
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "name": "committee",
+      "key_type": "address",
+      "value_type": "committee_state"
+    },
+    {
+      "name": "delegated",
+      "key_type": "address",
+      "value_type": "u64"
+    },
+    {
+      "name": "metadata",
+      "key_type": "address",
+      "value_type": "u32"
+    },
+    {
+      "name": "bonded",
+      "key_type": "address",
+      "value_type": "bond_state"
+    },
+    {
+      "name": "unbonding",
+      "key_type": "address",
+      "value_type": "unbond_state"
+    },
+    {
+      "name": "account",
+      "key_type": "address",
+      "value_type": "u64"
+    },
+    {
+      "name": "withdraw",
+      "key_type": "address",
+      "value_type": "address"
+    },
+    {
+      "name": "pool",
+      "key_type": "address",
+      "value_type": "u64"
+    }
+  ],
+  "functions": [
+    {
+      "name": "bond_validator",
+      "inputs": [
+        {
+          "name": "withdrawal_address",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        },
+        {
+          "name": "commission",
+          "type": "u8",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "bond_public",
+      "inputs": [
+        {
+          "name": "validator",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "withdrawal_address",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "unbond_public",
+      "inputs": [
+        {
+          "name": "staker",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "claim_unbond_public",
+      "inputs": [
+        {
+          "name": "staker",
+          "type": "address",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "set_validator_state",
+      "inputs": [
+        {
+          "name": "is_open",
+          "type": "boolean",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "transfer_public",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "transfer_public_as_signer",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "transfer_private",
+      "inputs": [
+        {
+          "name": "sender_record",
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "mode": "private"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "private"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "transfer_private_to_public",
+      "inputs": [
+        {
+          "name": "sender_record",
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "mode": "public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "transfer_public_to_private",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "mode": "private"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "join",
+      "inputs": [
+        {
+          "name": "first_record",
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "name": "second_record",
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "split",
+      "inputs": [
+        {
+          "name": "record",
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "private"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "fee_private",
+      "inputs": [
+        {
+          "name": "sender_record",
+          "type": "credits",
+          "mode": "private"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        },
+        {
+          "name": "priority_fee",
+          "type": "u64",
+          "mode": "public"
+        },
+        {
+          "name": "deployment_id",
+          "type": "field",
+          "mode": "public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "fee_public",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "public"
+        },
+        {
+          "name": "priority_fee",
+          "type": "u64",
+          "mode": "public"
+        },
+        {
+          "name": "deployment_id",
+          "type": "field",
+          "mode": "public"
+        }
+      ],
+      "outputs": [],
+      "is_async": true
+    },
+    {
+      "name": "upgrade",
+      "inputs": [
+        {
+          "name": "record",
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "credits",
+          "mode": "private"
+        }
+      ],
+      "is_async": true
+    }
+  ]
+}

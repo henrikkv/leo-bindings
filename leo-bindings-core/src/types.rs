@@ -1,3 +1,4 @@
+use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::quote;
 use snarkvm::prelude::*;
@@ -38,7 +39,8 @@ pub fn get_rust_type(type_name: &str) -> TokenStream {
         "Future" => quote! { Future<Nw> },
         "Ciphertext" => quote! { Ciphertext<Nw> },
         other => {
-            let type_ident = syn::Ident::new(other, proc_macro2::Span::call_site());
+            let type_ident =
+                syn::Ident::new(&other.to_case(Case::Pascal), proc_macro2::Span::call_site());
             quote! { #type_ident }
         }
     }

@@ -61,3 +61,41 @@ pub fn generate_bindings(input: TokenStream) -> TokenStream {
 
     expanded.into()
 }
+
+// Used to generate bindings for programs that can not compile with the newest compiler
+#[proc_macro]
+pub fn generate_bindings_from_simple_json(input: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(input as MacroArgs);
+    let network = args.network;
+
+    let program_modules: Vec<proc_macro2::TokenStream> = args
+        .json_paths
+        .elems
+        .iter()
+        .map(|json_path_expr| {
+            if let syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Str(json_path),
+                ..
+            }) = json_path_expr
+            {
+                let json_path_value = json_path.value();
+
+                let json_content =
+                    std::fs::read_to_string(&json_path_value).expect("Failed to read JSON");
+
+                let simplified: SimplifiedBindings = serde_json::from_str(&json_content)
+                    .expect("Failed to parse as SimplifiedBindings");
+
+                generate_program_module(&simplified, network.clone())
+            } else {
+                panic!("Expected string literal for JSON path");
+            }
+        })
+        .collect();
+
+    let expanded = quote::quote! {
+        #(#program_modules)*
+    };
+
+    expanded.into()
+}

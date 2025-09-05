@@ -2,6 +2,7 @@ use crate::signature::SimplifiedBindings;
 use crate::types::get_rust_type;
 use proc_macro2::TokenStream;
 use quote::quote;
+use convert_case::{Case, Casing};
 
 fn get_network_info(
     network_type: &syn::Path,
@@ -176,26 +177,7 @@ pub fn generate_code_from_simplified(
 
                 #(#deployment_calls)*
 
-                let target_program_name_symbol = leo_span::Symbol::intern(stringify!(#program_name));
-                let target_program = package.programs.iter()
-                    .find(|p| p.name == target_program_name_symbol)
-                    .ok_or_else(|| anyhow!("Program '{}' not found in package", stringify!(#program_name)))?;
-
-                let aleo_name = format!("{}.aleo", target_program.name);
-                let aleo_path = if package.manifest.program == aleo_name {
-                    package.build_directory().join("main.aleo")
-                } else {
-                    package.imports_directory().join(aleo_name)
-                };
-
-                let bytecode = std::fs::read_to_string(aleo_path.clone())
-                    .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?;
-
-                let program: Program<Nw> = bytecode.parse()
-                    .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
-
-                let program_id = program.id();
-
+                let program_id = ProgramID::<Nw>::from_str(&format!("{}.aleo", stringify!(#program_name))).unwrap();
                 let program_exists = {
                     let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, program_id))
                         .call();
@@ -210,7 +192,26 @@ pub fn generate_code_from_simplified(
                         }
                     }
                 };
+
                 if !program_exists {
+                    let target_program_name_symbol = leo_span::Symbol::intern(stringify!(#program_name));
+                    let target_program = package.programs.iter()
+                        .find(|p| p.name == target_program_name_symbol)
+                        .ok_or_else(|| anyhow!("Program '{}' not found in package", stringify!(#program_name)))?;
+
+                    let aleo_name = format!("{}.aleo", target_program.name);
+                    let aleo_path = if package.manifest.program == aleo_name {
+                        package.build_directory().join("main.aleo")
+                    } else {
+                        package.imports_directory().join(aleo_name)
+                    };
+
+                    let bytecode = std::fs::read_to_string(aleo_path.clone())
+                        .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?;
+
+                    let program: Program<Nw> = bytecode.parse()
+                        .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
+
                     println!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
                     let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
@@ -257,7 +258,7 @@ pub fn generate_code_from_simplified(
 
 fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
-        let record_name = syn::Ident::new(&record.name, proc_macro2::Span::call_site());
+        let record_name = syn::Ident::new(&record.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
 
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
@@ -275,9 +276,9 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             let mode = &member.mode;
 
-            let entry_creation = match mode.as_str() {
-                "Public" => quote! { Entry::Public(plaintext_value) },
-                "Private" => quote! { Entry::Private(plaintext_value) },
+            let entry_creation = match mode.to_lowercase().as_str() {
+                "public" => quote! { Entry::Public(plaintext_value) },
+                "private" => quote! { Entry::Private(plaintext_value) },
                 _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
             };
 
@@ -301,13 +302,13 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             let field_name = &member.name;
             let mode = &member.mode;
 
-            let entry_extraction = match mode.as_str() {
-                "Public" => quote! {
+            let entry_extraction = match mode.to_lowercase().as_str() {
+                "public" => quote! {
                     let Entry::Public(plaintext) = entry else {
                         panic!("Expected Public entry for field '{}', but found different entry type", #field_name);
                     };
                 },
-                "Private" => quote! {
+                "private" => quote! {
                     let Entry::Private(plaintext) = entry else {
                         panic!("Expected Private entry for field '{}', but found different entry type", #field_name);
                     };
@@ -424,7 +425,7 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
     structs
         .iter()
         .map(|struct_def| {
-            let struct_name = syn::Ident::new(&struct_def.name, proc_macro2::Span::call_site());
+            let struct_name = syn::Ident::new(&struct_def.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
 
             let member_definitions = struct_def.members.iter().map(|member| {
                 let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());

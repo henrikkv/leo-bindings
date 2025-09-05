@@ -1,21 +1,31 @@
 #[test]
 fn token() {
     use leo_bindings::utils::*;
+    use leo_bindings_credits::credits_aleo::*;
     use std::str::FromStr;
     use tokenexample::token_aleo::token;
 
     const ENDPOINT: &str = "http://localhost:3030";
-    let alice: Account<snarkvm::console::network::TestnetV0> =
+    let rng = &mut rand::thread_rng();
+    let alice =
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
+    let bob = Account::new(rng).unwrap();
+
+    let credits = credits::new(&alice, ENDPOINT).unwrap();
+    let balance_before = credits.get_account(alice.address()).unwrap();
+    dbg!(balance_before);
+    credits
+        .transfer_public(&alice, bob.address(), 1_000_000_000_000)
+        .unwrap();
+    let balance_after = credits.get_account(alice.address()).unwrap();
+    dbg!(balance_after);
 
     let token = token::new(&alice, ENDPOINT).unwrap();
-
-    wait_for_program_availability("token.aleo", ENDPOINT, 60).unwrap();
 
     let rec = token.mint_private(&alice, alice.address(), 100).unwrap();
     dbg!(&rec);
     let (rec1, rec2) = token
-        .transfer_private(&alice, rec, alice.address(), 10)
+        .transfer_private(&alice, rec, bob.address(), 10)
         .unwrap();
     dbg!(&rec1);
     dbg!(&rec2);
