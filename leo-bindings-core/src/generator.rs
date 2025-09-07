@@ -130,6 +130,7 @@ pub fn generate_code_from_simplified(
         use snarkvm::ledger::store::ConsensusStore;
         use snarkvm::ledger::block::{Execution, Output, Transaction, Transition};
         use snarkvm::synthesizer::VM;
+        use snarkvm::synthesizer::process::execution_cost_v2;
         use snarkvm::prelude::ConsensusVersion;
         use snarkvm::ledger::query::{QueryTrait, Query};
         use snarkvm::circuit;
@@ -259,6 +260,7 @@ pub fn generate_code_from_simplified(
 fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
+        let record_name_encrypted = syn::Ident::new(&format!("{}Encrypted", &record.name.as_str()), proc_macro2::Span::call_site());
 
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
@@ -270,7 +272,6 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             }
         });
         let extra_record_fields = quote! { __nonce: Group<Nw>, __version: U8<Nw> };
-
 
         let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
@@ -518,127 +519,17 @@ fn generate_function_implementations(
 ) -> Vec<proc_macro2::TokenStream> {
     functions.iter().map(|function| {
         let function_name = syn::Ident::new(&function.name, proc_macro2::Span::call_site());
+
         let input_params: Vec<TokenStream> = function.inputs.iter().map(|input| {
             let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
             let param_type = crate::types::get_rust_type(&input.type_name);
             quote! { #param_name: #param_type }
         }).collect();
-
         let input_conversions: Vec<TokenStream> = function.inputs.iter().map(|input| {
                 let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
                 quote! { (#param_name).to_value() }
             })
             .collect();
-
-        let transaction_execution_body = quote! {
-            let program_id = ProgramID::try_from(format!("{}.aleo", #program_name).as_str()).unwrap();
-            let function_id = Identifier::from_str(&stringify!(#function_name).to_string()).unwrap();
-            let function_args: Vec<Value<Nw>> = vec![
-                #(#input_conversions),*
-            ];
-            let rng = &mut rand::thread_rng();
-
-            let locator = Locator::<Nw>::new(program_id, function_id);
-
-            let (execution_response, transaction): (Response<Nw>, Transaction<Nw>) = {
-                let store = ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?;
-                let vm = VM::from(store)?;
-
-                wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let program: Program<Nw> = {
-                    let response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
-                        .call()
-                        .map_err(|e| anyhow!("Failed to fetch program: {}", e))?;
-                    let json_response: serde_json::Value = response.into_json()?;
-                    json_response.as_str()
-                        .ok_or_else(|| anyhow!("Expected program string in JSON response"))?
-                        .to_string()
-                        .parse()?
-                };
-
-                let process = vm.process();
-
-                #(#dep_additions)*
-
-                process.write().add_program(&program)?;
-
-                let authorization = process.read().authorize::<#aleo_type, _>(
-                    account.private_key(),
-                    program_id,
-                    function_id,
-                    function_args.iter(),
-                    rng,
-                )?;
-
-                let (execution_response, _trace) = process.read().execute::<#aleo_type, _>(authorization.clone(), rng)?;
-                let transaction = vm.execute(
-                    account.private_key(),
-                    (program_id, function_id),
-                    function_args.iter(),
-                    None,
-                    0,
-                    Some(&Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str()) as &dyn QueryTrait<Nw>),
-                    rng,
-                )?;
-                (execution_response, transaction)
-            };
-
-            let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
-            let storage_cost = transaction
-                .execution()
-                .ok_or_else(|| anyhow!("The transaction does not contain an execution"))?
-                .size_in_bytes()?;
-
-            if public_balance < storage_cost {
-                bail!(
-                    "❌ The public balance of {} is insufficient to pay the base fee for `{}`",
-                    public_balance,
-                    locator.to_string()
-                );
-            }
-
-            match broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH) {
-                Ok(_) => {
-                    wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
-                },
-                Err(e) => {
-                    eprintln!("❌ Failed to broadcast transaction for '{}': {}", locator.to_string(), e);
-                    return Err(e);
-                }
-            }
-
-            let function_outputs: Vec<Value<Nw>> = {
-                let response_outputs = execution_response.outputs();
-                let execution = match transaction {
-                    Transaction::Execute(_, _, execution, _) => execution,
-                    _ => panic!("Not an execution."),
-                };
-
-                let target_transition = execution.transitions()
-                    .find(|transition| {
-                        transition.function_name().to_string() == stringify!(#function_name)
-                    })
-                    .expect("Could not find transition for the target function");
-
-                response_outputs.iter().enumerate().map(|(index, response_output)| {
-                    let transition_output = target_transition.outputs().get(index)
-                        .expect("Output index mismatch between response and transition");
-
-                    match (response_output, transition_output) {
-                        (Value::Record(_), snarkvm::ledger::block::Output::Record(_, _, Some(network_record), _)) => {
-                            match network_record.decrypt(account.view_key()) {
-                                Ok(plaintext_record) => Value::Record(plaintext_record),
-                                Err(e) => {
-                                    eprintln!("Failed to decrypt network record: {}", e);
-                                    response_output.clone()
-                                }
-                            }
-                        },
-                        _ => response_output.clone()
-                    }
-                }).collect()
-            };
-        };
 
         let (function_return_type, function_return_conversions) = match function.outputs.len() {
             0 => (
@@ -682,12 +573,70 @@ fn generate_function_implementations(
 
         quote! {
             pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
-                println!("Creating tx: {}.{}({})",
-                    #program_name,
-                    stringify!(#function_name),
-                    #param_names_string);
+                let program_id = ProgramID::try_from(format!("{}.aleo", #program_name).as_str()).unwrap();
 
-                #transaction_execution_body
+                let function_id = Identifier::from_str(&stringify!(#function_name).to_string()).unwrap();
+                let function_args: Vec<Value<Nw>> = vec![#(#input_conversions),*];
+
+                let rng = &mut rand::thread_rng();
+                let locator = Locator::<Nw>::new(program_id, function_id);
+
+                println!("Creating tx: {}.{}({})", #program_name, stringify!(#function_name), #param_names_string);
+
+                let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
+                let query = Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str());
+                
+                wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let program: Program<Nw> = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
+                    .call().map_err(|e| anyhow!("Failed to fetch program: {}", e))?
+                    .into_json::<serde_json::Value>()?
+                    .as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?
+                    .parse()?;
+
+                let process = vm.process();
+                #(#dep_additions)*
+                process.write().add_program(&program)?;
+
+                let transaction = vm.execute(
+                    account.private_key(),
+                    (program_id, function_id),
+                    function_args.iter(),
+                    None,
+                    0,
+                    Some(&query as &dyn QueryTrait<Nw>),
+                    rng,
+                )?;
+
+                let authorization = process.read().authorize::<#aleo_type, _>(
+                    account.private_key(), program_id, function_id, function_args.iter(), rng
+                )?;
+                let (execution_response, _) = process.read().execute::<#aleo_type, _>(authorization, rng)?;
+
+                let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
+                let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
+                let (total_cost, _) = execution_cost_v2(&process.read(), execution)?;
+                
+                ensure!(public_balance >= total_cost, 
+                    "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
+
+                broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH)?;
+                wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
+
+                // Extract outputs with record decryption
+                let target_transition = execution.transitions()
+                    .find(|t| t.function_name().to_string() == stringify!(#function_name))
+                    .expect("Target function transition not found");
+
+                let function_outputs: Vec<Value<Nw>> = execution_response.outputs().iter()
+                    .enumerate()
+                    .map(|(i, output)| match (output, target_transition.outputs().get(i)) {
+                        (Value::Record(_), Some(snarkvm::ledger::block::Output::Record(_, _, Some(record), _))) => {
+                            record.decrypt(account.view_key()).map(Value::Record).unwrap_or_else(|_| output.clone())
+                        },
+                        _ => output.clone()
+                    })
+                    .collect();
+
                 #function_return_conversions
             }
         }
