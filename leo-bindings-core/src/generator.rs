@@ -105,7 +105,7 @@ pub fn generate_code_from_simplified(
                     let json_response: serde_json::Value = response.into_json()?;
                     json_response.as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?.to_string().parse()?
                 };
-                process.write().add_program(&dep_program)?;
+                vm.process().write().add_program(&dep_program)?;
             }
         }).collect();
 
@@ -579,6 +579,7 @@ fn generate_function_implementations(
                     .as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?
                     .parse()?;
 
+                let endpoint = &self.endpoint;
                 #(#dep_additions)*
                 vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
                     .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
