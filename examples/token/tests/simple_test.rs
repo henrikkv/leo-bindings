@@ -22,10 +22,10 @@ fn token() {
 
     let token = token::new(&alice, ENDPOINT).unwrap();
 
-    let rec = token.mint_private(&alice, alice.address(), 100).unwrap();
+    let rec = token.mint_private(&alice, bob.address(), 100).unwrap();
     dbg!(&rec);
     let (rec1, rec2) = token
-        .transfer_private(&alice, rec, bob.address(), 10)
+        .transfer_private(&bob, rec, bob.address(), 10)
         .unwrap();
     dbg!(&rec1);
     dbg!(&rec2);

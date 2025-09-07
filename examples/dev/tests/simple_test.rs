@@ -10,6 +10,11 @@ fn dev() {
 
     let dev = dev::new(&alice, ENDPOINT).unwrap();
 
+    let user: User = dev.create_user(&alice, alice.address(), 0, 0).unwrap();
+    dbg!(&user);
+    let balance = dev.consume_user(&alice, user).unwrap();
+    dbg!(balance);
+
     let balance_before = dev.get_balances(0).unwrap();
     dbg!(&balance_before);
 
@@ -41,8 +46,4 @@ fn dev() {
         )
         .unwrap();
     dbg!(result);
-    let user = dev.create_user(&alice, alice.address(), 0, 0).unwrap();
-    dbg!(&user);
-    let balance = dev.consume_user(&alice, user).unwrap();
-    dbg!(balance);
 }

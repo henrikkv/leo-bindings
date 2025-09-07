@@ -129,6 +129,7 @@ pub fn generate_code_from_simplified(
         use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
         use snarkvm::ledger::store::ConsensusStore;
         use snarkvm::ledger::block::{Execution, Output, Transaction, Transition};
+        use snarkvm::console::program::{Record, Plaintext, Ciphertext};
         use snarkvm::synthesizer::VM;
         use snarkvm::synthesizer::process::execution_cost_v2;
         use snarkvm::prelude::ConsensusVersion;
@@ -260,7 +261,6 @@ pub fn generate_code_from_simplified(
 fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
-        let record_name_encrypted = syn::Ident::new(&format!("{}Encrypted", &record.name.as_str()), proc_macro2::Span::call_site());
 
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
@@ -386,20 +386,6 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
             }
 
             impl #record_name {
-                pub fn from_record(record: Record<Nw, Plaintext<Nw>>) -> Self {
-                    Self::from_value(Value::Record(record))
-                }
-
-                pub fn from_encrypted_record(
-                    record: Record<Nw, Ciphertext<Nw>>,
-                    view_key: &ViewKey<Nw>
-                ) -> Result<Self, anyhow::Error> {
-                    match record.decrypt(view_key) {
-                        Ok(decrypted_record) => Ok(Self::from_record(decrypted_record)),
-                        Err(e) => Err(anyhow::anyhow!("Failed to decrypt record: {}", e))
-                    }
-                }
-
                 pub fn to_record(&self) -> Result<Record<Nw, Plaintext<Nw>>, anyhow::Error> {
                     let data = IndexMap::from([
                         #(#member_conversions),*
@@ -514,7 +500,7 @@ fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
 fn generate_function_implementations(
     functions: &[crate::signature::FunctionBinding],
     program_name: &str,
-    aleo_type: &proc_macro2::TokenStream,
+    _aleo_type: &proc_macro2::TokenStream,
     dep_additions: &[proc_macro2::TokenStream],
 ) -> Vec<proc_macro2::TokenStream> {
     functions.iter().map(|function| {
@@ -593,11 +579,11 @@ fn generate_function_implementations(
                     .as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?
                     .parse()?;
 
-                let process = vm.process();
                 #(#dep_additions)*
-                process.write().add_program(&program)?;
+                vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
+                    .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
 
-                let transaction = vm.execute(
+                let (transaction, response) = vm.execute_with_response(
                     account.private_key(),
                     (program_id, function_id),
                     function_args.iter(),
@@ -605,16 +591,11 @@ fn generate_function_implementations(
                     0,
                     Some(&query as &dyn QueryTrait<Nw>),
                     rng,
-                )?;
-
-                let authorization = process.read().authorize::<#aleo_type, _>(
-                    account.private_key(), program_id, function_id, function_args.iter(), rng
-                )?;
-                let (execution_response, _) = process.read().execute::<#aleo_type, _>(authorization, rng)?;
+                ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
 
                 let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
                 let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
-                let (total_cost, _) = execution_cost_v2(&process.read(), execution)?;
+                let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
                 
                 ensure!(public_balance >= total_cost, 
                     "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
@@ -622,20 +603,7 @@ fn generate_function_implementations(
                 broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH)?;
                 wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
 
-                // Extract outputs with record decryption
-                let target_transition = execution.transitions()
-                    .find(|t| t.function_name().to_string() == stringify!(#function_name))
-                    .expect("Target function transition not found");
-
-                let function_outputs: Vec<Value<Nw>> = execution_response.outputs().iter()
-                    .enumerate()
-                    .map(|(i, output)| match (output, target_transition.outputs().get(i)) {
-                        (Value::Record(_), Some(snarkvm::ledger::block::Output::Record(_, _, Some(record), _))) => {
-                            record.decrypt(account.view_key()).map(Value::Record).unwrap_or_else(|_| output.clone())
-                        },
-                        _ => output.clone()
-                    })
-                    .collect();
+                let function_outputs: Vec<Value<Nw>> = response.outputs().to_vec();
 
                 #function_return_conversions
             }
