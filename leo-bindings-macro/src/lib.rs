@@ -39,8 +39,10 @@ pub fn generate_bindings(input: TokenStream) -> TokenStream {
             {
                 let json_path_value = json_path.value();
 
+                let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+                let json_path = std::path::Path::new(&manifest_dir).join(&json_path_value);
                 let json_content =
-                    std::fs::read_to_string(&json_path_value).expect("Failed to read JSON");
+                    std::fs::read_to_string(&json_path).expect("Failed to read JSON");
 
                 let signatures_json =
                     get_signatures(&json_content).expect("Failed to extract signatures");
@@ -80,8 +82,10 @@ pub fn generate_bindings_from_simple_json(input: TokenStream) -> TokenStream {
             {
                 let json_path_value = json_path.value();
 
+                let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+                let json_path = std::path::Path::new(&manifest_dir).join(&json_path_value);
                 let json_content =
-                    std::fs::read_to_string(&json_path_value).expect("Failed to read JSON");
+                    std::fs::read_to_string(&json_path).expect("Failed to read JSON");
 
                 let simplified: SimplifiedBindings = serde_json::from_str(&json_content)
                     .expect("Failed to parse as SimplifiedBindings");
