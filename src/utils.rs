@@ -1,6 +1,8 @@
-use anyhow::{bail, ensure};
+use anyhow::{anyhow, bail};
 use snarkvm::prelude::*;
 use std::str::FromStr;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
 /// A helper struct for an Aleo account (from snarkOS).
 #[derive(Clone, Debug)]
@@ -95,42 +97,11 @@ pub fn broadcast_transaction<N: Network>(
     transaction: Transaction<N>,
     endpoint: &str,
     network_path: &str,
-) -> Result<String, anyhow::Error> {
-    let transaction_id = transaction.id();
-    ensure!(
-        !transaction.is_fee(),
-        "The transaction is a fee transaction and cannot be broadcast"
-    );
-
-    match ureq::post(&format!(
-        "{}/{}/transaction/broadcast",
-        endpoint, network_path
-    ))
-    .send_json(&transaction)
-    {
-        Ok(id) => {
-            let response_string = id.into_string()?.trim_matches('\"').to_string();
-            ensure!( response_string == transaction_id.to_string(), "The response does not match the transaction id. ({response_string} != {transaction_id})");
-            println!("⌛ Broadcasting execution of tx: {transaction_id} to: {endpoint}");
-            Ok(response_string)
-        }
-        Err(error) => {
-            let error_message = match error {
-                ureq::Error::Status(code, response) => {
-                    format!(
-                        "(status code {code}: {:?})",
-                        response.into_string().unwrap_or_default()
-                    )
-                }
-                ureq::Error::Transport(err) => format!("({err})"),
-            };
-            bail!(
-                "❌ Failed to broadcast execution to {}: {}",
-                endpoint,
-                error_message
-            )
-        }
-    }
+) -> Result<(), anyhow::Error> {
+    ureq::post(&format!("{endpoint}/{network_path}/transaction/broadcast"))
+        .send_json(&transaction)
+        .map(|_| ())
+        .map_err(|error| anyhow!("Failed to broadcast transaction {error}"))
 }
 
 pub fn wait_for_transaction_confirmation<N: Network>(
@@ -138,39 +109,27 @@ pub fn wait_for_transaction_confirmation<N: Network>(
     endpoint: &str,
     network_path: &str,
     timeout_secs: u64,
-) -> Result<bool, anyhow::Error> {
-    use std::thread::sleep;
-    use std::time::{Duration, Instant};
-
-    print!("⌛ Waiting for confirmation of tx: {}", transaction_id);
-
+) -> Result<(), anyhow::Error> {
     let start_time = Instant::now();
-    let timeout_duration = Duration::from_secs(timeout_secs);
-
     loop {
-        if start_time.elapsed() > timeout_duration {
-            return Err(anyhow!(
-                "Transaction confirmation timeout after {} seconds",
-                timeout_secs
-            ));
+        if start_time.elapsed() > Duration::from_secs(timeout_secs) {
+            return Err(anyhow!("Transaction timeout after {timeout_secs} seconds"));
         }
-
-        // Try to get the transaction via REST API (same pattern as Query)
-        let response = ureq::get(&format!(
-            "{}/{}/transaction/{}",
-            endpoint, network_path, transaction_id
-        ))
-        .call();
-
-        match response {
-            Ok(_) => {
-                println!("\n✅ Confirmed tx: {}", transaction_id);
-                return Ok(true);
+        let url = &format!("{endpoint}/{network_path}/transaction/confirmed/{transaction_id}");
+        match ureq::get(url).call() {
+            Ok(response) => {
+                if let Ok(json) = response.into_json::<serde_json::Value>() {
+                    if let Some(status) = json.get("status").and_then(|s| s.as_str()) {
+                        match status {
+                            "accepted" => return Ok(()),
+                            "rejected" => return Err(anyhow!("❌ Transaction rejected: {json}")),
+                            _ => return Err(anyhow!("⚠️ Status '{status}': {json}")),
+                        }
+                    }
+                }
             }
             Err(_) => {
-                print!(".");
-                std::io::stdout().flush().unwrap();
-                sleep(Duration::from_secs(2));
+                sleep(Duration::from_secs(1));
             }
         }
     }
@@ -180,34 +139,15 @@ pub fn wait_for_program_availability(
     program_id: &str,
     endpoint: &str,
     timeout_secs: u64,
-) -> Result<(), Box<dyn std::error::Error>> {
-    println!(
-        "🔄 Test: Waiting for program '{}' to become available via API...",
-        program_id
-    );
-    let start = std::time::Instant::now();
-
+) -> Result<(), anyhow::Error> {
+    let start_time = Instant::now();
     loop {
-        if start.elapsed().as_secs() > timeout_secs {
-            return Err(format!("Timeout waiting for program {}", program_id).into());
+        if start_time.elapsed() > Duration::from_secs(timeout_secs) {
+            return Err(anyhow!("Timeout waiting for program {program_id}"));
         }
-
-        let response = ureq::get(&format!("{}/testnet/program/{}", endpoint, program_id)).call();
-        match response {
-            Ok(_) => {
-                println!("✅ Test: Program '{}' is now available via API", program_id);
-                return Ok(());
-            }
-            Err(_) => {
-                if start.elapsed().as_secs().is_multiple_of(5) {
-                    println!(
-                        "⏳ Test: Still waiting for program availability... ({}/{})",
-                        start.elapsed().as_secs(),
-                        timeout_secs
-                    );
-                }
-                std::thread::sleep(std::time::Duration::from_secs(1));
-            }
+        match ureq::get(&format!("{endpoint}/testnet/program/{program_id}")).call() {
+            Ok(_) => return Ok(()),
+            Err(_) => sleep(Duration::from_secs(1)),
         }
     }
 }

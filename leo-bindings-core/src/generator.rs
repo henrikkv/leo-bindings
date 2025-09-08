@@ -98,7 +98,7 @@ pub fn generate_code_from_simplified(
         .map(|import_name| {
             let dep_program_id = format!("{}.aleo", import_name);
             quote! {
-                let dep_program_id = ProgramID::<Nw>::from_str(#dep_program_id).unwrap();
+                let dep_program_id = ProgramID::<Nw>::from_str(#dep_program_id)?;
                 wait_for_program_availability(&dep_program_id.to_string(), endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let dep_program: Program<Nw> = {
                     let response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, dep_program_id)).call().map_err(|e| anyhow!("Failed to fetch dependency program: {}", e))?;
@@ -179,7 +179,7 @@ pub fn generate_code_from_simplified(
 
                 #(#deployment_calls)*
 
-                let program_id = ProgramID::<Nw>::from_str(&format!("{}.aleo", stringify!(#program_name))).unwrap();
+                let program_id = ProgramID::<Nw>::from_str(&format!("{}.aleo", stringify!(#program_name)))?;
                 let program_exists = {
                     let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, program_id))
                         .call();
