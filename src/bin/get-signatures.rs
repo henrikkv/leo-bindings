@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     let input_content = std::fs::read_to_string(&args.input)?;
-    let signatures_json = get_signatures(&input_content)?;
+    let signatures_json = get_signatures(input_content);
 
     if let Some(output_path) = args.output {
         std::fs::write(&output_path, &signatures_json)?;

@@ -1,105 +1,78 @@
 use leo_bindings_core::generator::generate_program_module;
-use leo_bindings_core::signature::{get_signatures, SimplifiedBindings};
+use leo_bindings_core::signature::get_signatures;
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, Token};
+use syn::{parse_macro_input, Expr, Token};
 
 // Struct to parse macro arguments
 struct MacroArgs {
     network: syn::Path,
-    json_paths: syn::ExprArray,
+    snapshot_paths: syn::ExprArray,
+    signature_paths: syn::ExprArray,
 }
 
 impl syn::parse::Parse for MacroArgs {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let network = input.parse()?;
         input.parse::<Token![,]>()?;
-        let json_paths = input.parse()?;
+        let snapshot_paths = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let signature_paths = input.parse()?;
 
         Ok(MacroArgs {
             network,
-            json_paths,
+            snapshot_paths,
+            signature_paths,
         })
     }
 }
 
+fn read_json_string_from_path_expr(expr: Expr) -> String {
+    if let syn::Expr::Lit(syn::ExprLit {
+        lit: syn::Lit::Str(json_path),
+        ..
+    }) = expr
+    {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let json_path = std::path::Path::new(&manifest_dir).join(json_path.value());
+        std::fs::read_to_string(&json_path).expect("Failed to read JSON")
+    } else {
+        panic!("Path is not a string")
+    }
+}
+
+/// Generates Rust bindings for Leo programs.
+///
+/// # Parameters
+/// - `network`: Example: `snarkvm::console::network::TestnetV0`
+/// - `snapshot_paths`: Array of relative path strings to dev.initial.json files generated with `leo build --enable-initial-ast-snapshot`
+/// - `signature_paths`: Array of relative path strings to pre-processed signature JSON files
 #[proc_macro]
 pub fn generate_bindings(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as MacroArgs);
     let network = args.network;
 
     let program_modules: Vec<proc_macro2::TokenStream> = args
-        .json_paths
+        .snapshot_paths
         .elems
-        .iter()
-        .map(|json_path_expr| {
-            if let syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Str(json_path),
-                ..
-            }) = json_path_expr
-            {
-                let json_path_value = json_path.value();
-
-                let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-                let json_path = std::path::Path::new(&manifest_dir).join(&json_path_value);
-                let json_content =
-                    std::fs::read_to_string(&json_path).expect("Failed to read JSON");
-
-                let signatures_json =
-                    get_signatures(&json_content).expect("Failed to extract signatures");
-
-                let simplified: SimplifiedBindings = serde_json::from_str(&signatures_json)
-                    .expect("Failed to parse simplified JSON");
-
-                generate_program_module(&simplified, network.clone())
-            } else {
-                panic!("Expected string literal for JSON path");
-            }
+        .into_iter()
+        .map(read_json_string_from_path_expr)
+        .map(get_signatures)
+        .chain(
+            args.signature_paths
+                .elems
+                .into_iter()
+                .map(read_json_string_from_path_expr),
+        )
+        .map(|json| {
+            generate_program_module(
+                &serde_json::from_str(&json).expect("Failed to parse signatures from json"),
+                network.clone(),
+            )
         })
         .collect();
 
-    let expanded = quote::quote! {
+    quote::quote! {
         #(#program_modules)*
-    };
-
-    expanded.into()
-}
-
-// Used to generate bindings for programs that can not compile with the newest compiler
-#[proc_macro]
-pub fn generate_bindings_from_simple_json(input: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(input as MacroArgs);
-    let network = args.network;
-
-    let program_modules: Vec<proc_macro2::TokenStream> = args
-        .json_paths
-        .elems
-        .iter()
-        .map(|json_path_expr| {
-            if let syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Str(json_path),
-                ..
-            }) = json_path_expr
-            {
-                let json_path_value = json_path.value();
-
-                let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-                let json_path = std::path::Path::new(&manifest_dir).join(&json_path_value);
-                let json_content =
-                    std::fs::read_to_string(&json_path).expect("Failed to read JSON");
-
-                let simplified: SimplifiedBindings = serde_json::from_str(&json_content)
-                    .expect("Failed to parse as SimplifiedBindings");
-
-                generate_program_module(&simplified, network.clone())
-            } else {
-                panic!("Expected string literal for JSON path");
-            }
-        })
-        .collect();
-
-    let expanded = quote::quote! {
-        #(#program_modules)*
-    };
-
-    expanded.into()
+    }
+    .into()
 }

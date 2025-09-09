@@ -1,3 +1,7 @@
-use leo_bindings_macro::generate_bindings_from_simple_json;
+use leo_bindings_macro::generate_bindings;
 
-generate_bindings_from_simple_json!(snarkvm::console::network::TestnetV0, ["simplified.json"]);
+generate_bindings!(
+    snarkvm::console::network::TestnetV0,
+    [],
+    ["simplified.json"]
+);

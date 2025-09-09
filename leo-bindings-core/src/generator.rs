@@ -258,7 +258,7 @@ pub fn generate_code_from_simplified(
     expanded
 }
 
-fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
+fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
 
@@ -408,7 +408,7 @@ fn generate_records(records: &[crate::signature::RecordDef]) -> Vec<proc_macro2:
     }).collect()
 }
 
-fn generate_structs(structs: &[crate::signature::RecordDef]) -> Vec<proc_macro2::TokenStream> {
+fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
     structs
         .iter()
         .map(|struct_def| {

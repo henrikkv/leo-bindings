@@ -2,70 +2,70 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
-pub struct InitialJson {
-    pub imports: Option<HashMap<String, serde_json::Value>>,
-    pub program_scopes: HashMap<String, ProgramScope>,
+struct InitialJson {
+    imports: Option<HashMap<String, serde_json::Value>>,
+    program_scopes: HashMap<String, ProgramScope>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct ProgramScope {
-    pub program_id: ProgramId,
-    pub structs: Vec<(String, StructDef)>,
-    pub mappings: Vec<(String, MappingDef)>,
-    pub functions: Vec<(String, FunctionDef)>,
+struct ProgramScope {
+    program_id: ProgramId,
+    structs: Vec<(String, StructDef)>,
+    mappings: Vec<(String, MappingDef)>,
+    functions: Vec<(String, FunctionDef)>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct ProgramId {
-    pub name: Identifier,
+struct ProgramId {
+    name: Identifier,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Identifier {
-    pub name: String,
+struct Identifier {
+    name: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct StructDef {
-    pub identifier: Identifier,
-    pub members: Vec<StructMember>,
-    pub is_record: bool,
+struct StructDef {
+    identifier: Identifier,
+    members: Vec<StructMember>,
+    is_record: bool,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct StructMember {
-    pub identifier: Identifier,
+struct StructMember {
+    identifier: Identifier,
     #[serde(rename = "type_")]
-    pub type_info: TypeInfo,
-    pub mode: String, // "None", "Public", "Private", "Constant"
+    type_info: TypeInfo,
+    mode: String, // "None", "Public", "Private", "Constant"
 }
 
 #[derive(Debug, Deserialize)]
-pub struct FunctionDef {
-    pub identifier: Identifier,
-    pub variant: String,
-    pub input: Vec<Parameter>,
-    pub output: Vec<OutputParameter>,
+struct FunctionDef {
+    identifier: Identifier,
+    variant: String,
+    input: Vec<Parameter>,
+    output: Vec<OutputParameter>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Parameter {
-    pub identifier: Identifier,
+struct Parameter {
+    identifier: Identifier,
     #[serde(rename = "type_")]
-    pub type_info: TypeInfo,
-    pub mode: String,
+    type_info: TypeInfo,
+    mode: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct OutputParameter {
+struct OutputParameter {
     #[serde(rename = "type_")]
-    pub type_info: TypeInfo,
-    pub mode: String,
+    type_info: TypeInfo,
+    mode: String,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-pub enum TypeInfo {
+enum TypeInfo {
     Simple(String),
     Integer {
         #[serde(rename = "Integer")]
@@ -86,40 +86,34 @@ pub enum TypeInfo {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CompositeType {
-    pub id: Identifier,
+struct CompositeType {
+    id: Identifier,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct ArrayType {
-    pub element_type: Box<TypeInfo>,
-    pub length: serde_json::Value,
+struct ArrayType {
+    element_type: Box<TypeInfo>,
+    length: serde_json::Value,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct MappingDef {
-    pub identifier: Identifier,
-    pub key_type: TypeInfo,
-    pub value_type: TypeInfo,
+struct MappingDef {
+    identifier: Identifier,
+    key_type: TypeInfo,
+    value_type: TypeInfo,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct FutureType {}
+struct FutureType {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimplifiedBindings {
     pub program_name: String,
     pub imports: Vec<String>,
-    pub records: Vec<RecordDef>,
-    pub structs: Vec<RecordDef>,
+    pub records: Vec<StructBinding>,
+    pub structs: Vec<StructBinding>,
     pub mappings: Vec<MappingBinding>,
     pub functions: Vec<FunctionBinding>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RecordDef {
-    pub name: String,
-    pub members: Vec<MemberDef>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -136,6 +130,13 @@ pub struct FunctionBinding {
     pub inputs: Vec<InputParam>,
     pub outputs: Vec<OutputType>,
     pub is_async: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StructBinding {
+    pub name: String,
+    pub members: Vec<MemberDef>,
+    pub is_record: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -160,8 +161,8 @@ pub struct OutputType {
     pub mode: String,
 }
 
-pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let initial_json: InitialJson = serde_json::from_str(input)?;
+pub fn get_signatures(input: String) -> String {
+    let initial_json: InitialJson = serde_json::from_str(&input).unwrap();
 
     let imports: Vec<String> = initial_json
         .imports
@@ -175,69 +176,29 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         })
         .unwrap_or_default();
 
-    let (program_name, program_scope) = initial_json
-        .program_scopes
+    let (program_name, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();
+
+    let (records, structs): (Vec<StructBinding>, Vec<StructBinding>) = program_scope
+        .structs
         .into_iter()
-        .next()
-        .ok_or("No program scope found")?;
-
-    let structs_data = program_scope.structs;
-
-    let records: Vec<RecordDef> = structs_data
-        .iter()
-        .filter_map(|(_, struct_def)| {
-            if struct_def.is_record {
-                let members = struct_def
-                    .members
-                    .iter()
-                    .map(|member| MemberDef {
-                        name: member.identifier.name.clone(),
-                        type_name: normalize_type(&member.type_info),
-                        mode: if member.mode == "Public" {
-                            "Public".to_string()
-                        } else {
-                            "Private".to_string()
-                        },
-                    })
-                    .collect();
-
-                Some(RecordDef {
-                    name: struct_def.identifier.name.clone(),
-                    members,
+        .map(|(_, struct_def)| {
+            let members = struct_def
+                .members
+                .into_iter()
+                .map(|member| MemberDef {
+                    name: member.identifier.name,
+                    type_name: normalize_type(&member.type_info),
+                    mode: member.mode,
                 })
-            } else {
-                None
+                .collect();
+
+            StructBinding {
+                name: struct_def.identifier.name,
+                members,
+                is_record: struct_def.is_record,
             }
         })
-        .collect();
-
-    let structs: Vec<RecordDef> = structs_data
-        .into_iter()
-        .filter_map(|(_, struct_def)| {
-            if !struct_def.is_record {
-                let members = struct_def
-                    .members
-                    .into_iter()
-                    .map(|member| MemberDef {
-                        name: member.identifier.name,
-                        type_name: normalize_type(&member.type_info),
-                        mode: if member.mode == "Public" {
-                            "Public".to_string()
-                        } else {
-                            "Private".to_string()
-                        },
-                    })
-                    .collect();
-
-                Some(RecordDef {
-                    name: struct_def.identifier.name,
-                    members,
-                })
-            } else {
-                None
-            }
-        })
-        .collect();
+        .partition(|binding| binding.is_record);
 
     let functions: Vec<FunctionBinding> = program_scope
         .functions
@@ -250,11 +211,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .map(|param| InputParam {
                         name: param.identifier.name,
                         type_name: normalize_type(&param.type_info),
-                        mode: if param.mode == "Public" {
-                            "Public".to_string()
-                        } else {
-                            "Private".to_string()
-                        },
+                        mode: param.mode,
                     })
                     .collect();
 
@@ -263,11 +220,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
                     .into_iter()
                     .map(|output| OutputType {
                         type_name: normalize_type(&output.type_info),
-                        mode: if output.mode == "Public" {
-                            "Public".to_string()
-                        } else {
-                            "Private".to_string()
-                        },
+                        mode: output.mode,
                     })
                     .collect();
 
@@ -314,7 +267,7 @@ pub fn get_signatures(input: &str) -> Result<String, Box<dyn std::error::Error>>
         functions,
     };
 
-    serde_json::to_string_pretty(&simplified).map_err(|e| e.into())
+    serde_json::to_string_pretty(&simplified).unwrap()
 }
 
 fn normalize_type(type_info: &TypeInfo) -> String {
