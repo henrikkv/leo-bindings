@@ -169,6 +169,9 @@ pub fn generate_code_from_simplified(
 
                 let result = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+                std::env::set_var("NETWORK", #network_path);
+                std::env::set_var("PRIVATE_KEY", deployer.private_key().to_string());
+                std::env::set_var("ENDPOINT", endpoint);
                 let package = Package::from_directory(
                     crate_dir,
                     crate_dir,
