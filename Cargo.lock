@@ -836,9 +836,9 @@ dependencies = [
  "http",
  "indexmap",
  "leo-ast",
- "leo-bindings",
- "leo-bindings-core",
- "leo-bindings-macro",
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "leo-bindings-macro 0.1.0",
  "leo-lang",
  "leo-package",
  "leo-span",
@@ -1021,6 +1021,29 @@ checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "external"
+version = "0.1.0"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "http",
+ "indexmap",
+ "leo-ast",
+ "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-macro 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-lang",
+ "leo-package",
+ "leo-span",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+ "tokio",
+ "ureq 2.12.1",
+ "war",
 ]
 
 [[package]]
@@ -1660,8 +1683,30 @@ dependencies = [
  "clap",
  "http",
  "indexmap",
- "leo-bindings-core",
- "leo-bindings-macro",
+ "leo-bindings-core 0.1.0",
+ "leo-bindings-macro 0.1.0",
+ "leo-lang",
+ "proc-macro2",
+ "quote 1.0.40",
+ "serde",
+ "serde_json",
+ "snarkvm",
+ "syn 2.0.106",
+ "ureq 2.12.1",
+]
+
+[[package]]
+name = "leo-bindings"
+version = "0.1.0"
+source = "git+https://github.com/henrikkv/leo-bindings#5e014f5aad3d75f02c5bb9ef888f7125d9d6a80b"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "clap",
+ "http",
+ "indexmap",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-macro 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-lang",
  "proc-macro2",
  "quote 1.0.40",
@@ -1690,6 +1735,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "leo-bindings-core"
+version = "0.1.0"
+source = "git+https://github.com/henrikkv/leo-bindings#5e014f5aad3d75f02c5bb9ef888f7125d9d6a80b"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "convert_case 0.6.0",
+ "indexmap",
+ "leo-lang",
+ "proc-macro2",
+ "quote 1.0.40",
+ "serde",
+ "serde_json",
+ "snarkvm",
+ "syn 2.0.106",
+]
+
+[[package]]
 name = "leo-bindings-credits"
 version = "0.1.0"
 dependencies = [
@@ -1698,9 +1761,31 @@ dependencies = [
  "http",
  "indexmap",
  "leo-ast",
- "leo-bindings",
- "leo-bindings-core",
- "leo-bindings-macro",
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "leo-bindings-macro 0.1.0",
+ "leo-lang",
+ "leo-package",
+ "leo-span",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+ "ureq 2.12.1",
+]
+
+[[package]]
+name = "leo-bindings-credits"
+version = "0.1.0"
+source = "git+https://github.com/henrikkv/leo-bindings#5e014f5aad3d75f02c5bb9ef888f7125d9d6a80b"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "http",
+ "indexmap",
+ "leo-ast",
+ "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-macro 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-lang",
  "leo-package",
  "leo-span",
@@ -1714,7 +1799,19 @@ dependencies = [
 name = "leo-bindings-macro"
 version = "0.1.0"
 dependencies = [
- "leo-bindings-core",
+ "leo-bindings-core 0.1.0",
+ "proc-macro2",
+ "quote 1.0.40",
+ "serde_json",
+ "syn 2.0.106",
+]
+
+[[package]]
+name = "leo-bindings-macro"
+version = "0.1.0"
+source = "git+https://github.com/henrikkv/leo-bindings#5e014f5aad3d75f02c5bb9ef888f7125d9d6a80b"
+dependencies = [
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "proc-macro2",
  "quote 1.0.40",
  "serde_json",
@@ -4257,10 +4354,10 @@ dependencies = [
  "http",
  "indexmap",
  "leo-ast",
- "leo-bindings",
- "leo-bindings-core",
- "leo-bindings-credits",
- "leo-bindings-macro",
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "leo-bindings-credits 0.1.0",
+ "leo-bindings-macro 0.1.0",
  "leo-lang",
  "leo-package",
  "leo-span",
@@ -4618,6 +4715,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa7760aed19e106de2c7c0b581b509f2f25d3dacaf737cb82ac61bc6d760b0e"
 dependencies = [
  "try-lock",
+]
+
+[[package]]
+name = "war"
+version = "0.1.0"
+source = "git+https://github.com/henrikkv/berlin#1bf49d08a454ce322ca84cc0b60b2b8b4bf5c207"
+dependencies = [
+ "aleo-std",
+ "anyhow",
+ "indexmap",
+ "leo-ast",
+ "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-credits 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-lang",
+ "leo-package",
+ "leo-span",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+ "ureq 2.12.1",
 ]
 
 [[package]]

@@ -168,9 +168,10 @@ pub fn generate_code_from_simplified(
                 use std::path::Path;
 
                 let result = create_session_if_not_set_then(|_| {
+                let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
                 let package = Package::from_directory(
-                    Path::new("."),
-                    Path::new("."),
+                    crate_dir,
+                    crate_dir,
                     false,
                     false,
                     NETWORK_NAME,
