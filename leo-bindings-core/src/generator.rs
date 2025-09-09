@@ -279,7 +279,7 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
 
             let entry_creation = match mode.to_lowercase().as_str() {
                 "public" => quote! { Entry::Public(plaintext_value) },
-                "private" => quote! { Entry::Private(plaintext_value) },
+                "private" | "none" => quote! { Entry::Private(plaintext_value) },
                 _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
             };
 
@@ -309,7 +309,7 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
                         panic!("Expected Public entry for field '{}', but found different entry type", #field_name);
                     };
                 },
-                "private" => quote! {
+                "private" | "none" => quote! {
                     let Entry::Private(plaintext) = entry else {
                         panic!("Expected Private entry for field '{}', but found different entry type", #field_name);
                     };
