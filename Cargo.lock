@@ -1698,7 +1698,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#5d2e1d42a4e29fb2d6eab89b9abd1ad68e6f89b3"
+source = "git+https://github.com/henrikkv/leo-bindings#396bf85345eb27ba51dff0d95c72d7e9ab0fe5e4"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1737,7 +1737,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-core"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#5d2e1d42a4e29fb2d6eab89b9abd1ad68e6f89b3"
+source = "git+https://github.com/henrikkv/leo-bindings#396bf85345eb27ba51dff0d95c72d7e9ab0fe5e4"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1776,7 +1776,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-credits"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#5d2e1d42a4e29fb2d6eab89b9abd1ad68e6f89b3"
+source = "git+https://github.com/henrikkv/leo-bindings#396bf85345eb27ba51dff0d95c72d7e9ab0fe5e4"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1809,7 +1809,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-macro"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#5d2e1d42a4e29fb2d6eab89b9abd1ad68e6f89b3"
+source = "git+https://github.com/henrikkv/leo-bindings#396bf85345eb27ba51dff0d95c72d7e9ab0fe5e4"
 dependencies = [
  "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "proc-macro2",

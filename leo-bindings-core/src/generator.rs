@@ -163,23 +163,40 @@ pub fn generate_code_from_simplified(
 
         impl #program_name {
             pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
-                use leo_package::Package;
+                use leo_package::{Package, Manifest, Env};
                 use leo_span::create_session_if_not_set_then;
                 use std::path::Path;
 
                 let result = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-                std::env::set_var("NETWORK", #network_path);
-                std::env::set_var("PRIVATE_KEY", deployer.private_key().to_string());
-                std::env::set_var("ENDPOINT", endpoint);
-                let package = Package::from_directory(
+                
+                let package = match Package::from_directory(
                     crate_dir,
                     crate_dir,
                     false,
                     false,
                     NETWORK_NAME,
                     endpoint,
-                )?;
+                ) {
+                    Ok(pkg) => pkg,
+                    Err(_) => {
+                        let manifest = Manifest {
+                            program: format!("{}.aleo", stringify!(#program_name)),
+                            version: "0.1.0".to_string(),
+                            description: "External binding".to_string(),
+                            license: "MIT".to_string(),
+                            dependencies: None,
+                            dev_dependencies: None,
+                        };
+                        let env = Env::new(NETWORK_NAME, deployer.private_key().to_string(), endpoint.to_string());
+                        Package {
+                            base_directory: crate_dir.canonicalize()?,
+                            programs: Vec::new(),
+                            manifest,
+                            env,
+                        }
+                    }
+                };
 
                 #(#deployment_calls)*
 
