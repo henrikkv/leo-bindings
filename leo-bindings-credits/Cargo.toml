@@ -9,17 +9,13 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings = { path = "../" }
-leo-bindings-core = { path = "../leo-bindings-core" }
-leo-bindings-macro = { path = "../leo-bindings-macro" }
-anyhow = "1.0"
-indexmap = "2.0"
-rand = "0.8"
-ureq = { version = "2.6", features = ["json"] }
-aleo-std = { version = "1.0.1", features = ["storage"] }
-http = "1.0"
 snarkvm = "4.1.0"
-leo-lang = "3.1.0"
+anyhow = "1.0"
+leo-span = "3.1.0"
 leo-package = "3.1.0"
 leo-ast = "3.1.0"
-leo-span = "3.1.0"
+ureq = { version = "2.6", features = ["json"] }
 serde_json = "1.0"
+indexmap = "2.0"
+rand = "0.8"
+aleo-std = { version = "1.0.1", features = ["storage"] }

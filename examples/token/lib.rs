@@ -1,4 +1,4 @@
-use leo_bindings_macro::generate_bindings;
+use leo_bindings::generate_bindings;
 
 generate_bindings!(
     snarkvm::console::network::TestnetV0,

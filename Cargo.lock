@@ -833,19 +833,14 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
- "http",
  "indexmap",
  "leo-ast",
  "leo-bindings 0.1.0",
- "leo-bindings-core 0.1.0",
- "leo-bindings-macro 0.1.0",
- "leo-lang",
  "leo-package",
  "leo-span",
  "rand 0.8.5",
  "serde_json",
  "snarkvm",
- "tokio",
  "ureq 2.12.1",
 ]
 
@@ -1027,22 +1022,7 @@ dependencies = [
 name = "external"
 version = "0.1.0"
 dependencies = [
- "aleo-std",
- "anyhow",
- "http",
- "indexmap",
- "leo-ast",
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
- "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
- "leo-bindings-macro 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
- "leo-lang",
- "leo-package",
- "leo-span",
- "rand 0.8.5",
- "serde_json",
- "snarkvm",
- "tokio",
- "ureq 2.12.1",
  "war",
 ]
 
@@ -1678,20 +1658,12 @@ dependencies = [
 name = "leo-bindings"
 version = "0.1.0"
 dependencies = [
- "aleo-std",
  "anyhow",
  "clap",
- "http",
- "indexmap",
  "leo-bindings-core 0.1.0",
  "leo-bindings-macro 0.1.0",
- "leo-lang",
- "proc-macro2",
- "quote 1.0.40",
- "serde",
  "serde_json",
  "snarkvm",
- "syn 2.0.106",
  "ureq 2.12.1",
 ]
 
@@ -1725,7 +1697,6 @@ dependencies = [
  "anyhow",
  "convert_case 0.6.0",
  "indexmap",
- "leo-lang",
  "proc-macro2",
  "quote 1.0.40",
  "serde",
@@ -1758,13 +1729,9 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
- "http",
  "indexmap",
  "leo-ast",
  "leo-bindings 0.1.0",
- "leo-bindings-core 0.1.0",
- "leo-bindings-macro 0.1.0",
- "leo-lang",
  "leo-package",
  "leo-span",
  "rand 0.8.5",
@@ -4351,20 +4318,15 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
- "http",
  "indexmap",
  "leo-ast",
  "leo-bindings 0.1.0",
- "leo-bindings-core 0.1.0",
  "leo-bindings-credits 0.1.0",
- "leo-bindings-macro 0.1.0",
- "leo-lang",
  "leo-package",
  "leo-span",
  "rand 0.8.5",
  "serde_json",
  "snarkvm",
- "tokio",
  "ureq 2.12.1",
 ]
 
@@ -4379,24 +4341,10 @@ dependencies = [
  "io-uring",
  "libc",
  "mio",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "slab",
  "socket2 0.6.0",
- "tokio-macros",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
-dependencies = [
- "proc-macro2",
- "quote 1.0.40",
- "syn 2.0.106",
 ]
 
 [[package]]

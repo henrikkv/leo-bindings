@@ -12,6 +12,5 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 aleo-std = { version = "1.0.1", features = ["storage"] }
 snarkvm = "4.1.0"
-leo-lang = "3.1.0"
 anyhow = "1.0"
 convert_case = "0.6"
