@@ -3,6 +3,9 @@ name = "leo-bindings-macro"
 version.workspace = true
 edition.workspace = true
 
+[features]
+tracked = []
+
 [lib]
 proc-macro = true
 

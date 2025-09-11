@@ -1,3 +1,5 @@
+#![feature(track_path)]
+
 use leo_bindings_core::generator::generate_program_module;
 use leo_bindings_core::signature::get_signatures;
 use proc_macro::TokenStream;
@@ -34,6 +36,8 @@ fn read_json_string_from_path_expr(expr: Expr) -> String {
     {
         let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
         let json_path = std::path::Path::new(&manifest_dir).join(json_path.value());
+        // Ensures the bindings update after recompiling a leo program
+        proc_macro::tracked_path::path(json_path.to_str().unwrap());
         std::fs::read_to_string(&json_path).expect("Failed to read JSON")
     } else {
         panic!("Path is not a string")
