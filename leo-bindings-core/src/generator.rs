@@ -144,6 +144,7 @@ pub fn generate_code_from_simplified(
         use std::fmt;
         use std::thread::sleep;
         use std::time::Duration;
+        use http;
         use leo_bindings::{ToValue, FromValue};
         use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
 
@@ -163,7 +164,7 @@ pub fn generate_code_from_simplified(
 
         impl #program_name {
             pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
-                use leo_package::{Package, Manifest, Env};
+                use leo_package::{Package, Manifest};
                 use leo_span::create_session_if_not_set_then;
                 use std::path::Path;
 
@@ -175,8 +176,8 @@ pub fn generate_code_from_simplified(
                     crate_dir,
                     false,
                     false,
-                    NETWORK_NAME,
-                    endpoint,
+                    Some(NETWORK_NAME),
+                    Some(endpoint),
                 ) {
                     Ok(pkg) => pkg,
                     Err(_) => {
@@ -185,15 +186,14 @@ pub fn generate_code_from_simplified(
                             version: "0.1.0".to_string(),
                             description: "External binding".to_string(),
                             license: "MIT".to_string(),
+                            leo: Default::default(),
                             dependencies: None,
                             dev_dependencies: None,
                         };
-                        let env = Env::new(NETWORK_NAME, deployer.private_key().to_string(), endpoint.to_string());
                         Package {
                             base_directory: crate_dir.canonicalize()?,
                             programs: Vec::new(),
                             manifest,
-                            env,
                         }
                     }
                 };
@@ -238,7 +238,7 @@ pub fn generate_code_from_simplified(
                     println!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
                     let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                    let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint);
+                    let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint.parse::<http::uri::Uri>()?);
                     let process = vm.process();
 
                      #(#dep_additions)*
@@ -591,7 +591,7 @@ fn generate_function_implementations(
                 println!("Creating tx: {}.{}({})", #program_name, stringify!(#function_name), #param_names_string);
 
                 let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                let query = Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.as_str());
+                let query = Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.parse::<http::uri::Uri>()?);
                 
                 wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let program: Program<Nw> = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))

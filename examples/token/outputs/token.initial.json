@@ -1,4 +1,5 @@
 {
+  "modules": {},
   "imports": {},
   "stubs": {},
   "program_scopes": {
@@ -127,35 +128,50 @@
                     "expression": {
                       "Call": {
                         "function": {
-                          "name": "finalize_mint_public",
-                          "id": 20
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "finalize_mint_public",
+                            "id": 20
+                          },
+                          "absolute_path": null,
+                          "id": 21
                         },
                         "const_arguments": [],
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 21
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 22
+                              },
+                              "absolute_path": null,
+                              "id": 23
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "amount",
-                              "id": 22
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "amount",
+                                "id": 24
+                              },
+                              "absolute_path": null,
+                              "id": 25
                             }
                           }
                         ],
                         "program": "token",
-                        "id": 23
+                        "id": 26
                       }
                     },
-                    "id": 24
+                    "id": 27
                   }
                 }
               ],
-              "id": 25
+              "id": 28
             },
-            "id": 26
+            "id": 29
           }
         ],
         [
@@ -165,29 +181,29 @@
             "variant": "Transition",
             "identifier": {
               "name": "mint_private",
-              "id": 51
+              "id": 62
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 52
+                  "id": 63
                 },
                 "mode": "None",
                 "type_": "Address",
-                "id": 53
+                "id": 64
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 54
+                  "id": 65
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 55
+                "id": 66
               }
             ],
             "output": [
@@ -195,22 +211,32 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 56
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 67
+                      },
+                      "absolute_path": null,
+                      "id": 68
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 57
+                "id": 69
               }
             ],
             "output_type": {
               "Composite": {
-                "id": {
-                  "name": "Token",
-                  "id": 56
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "Token",
+                    "id": 67
+                  },
+                  "absolute_path": null,
+                  "id": 68
                 },
                 "const_arguments": [],
                 "program": null
@@ -222,49 +248,64 @@
                   "Return": {
                     "expression": {
                       "Struct": {
-                        "name": {
-                          "name": "Token",
-                          "id": 58
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 70
+                          },
+                          "absolute_path": null,
+                          "id": 71
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 59
+                              "id": 72
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "receiver",
-                                "id": 60
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "receiver",
+                                  "id": 73
+                                },
+                                "absolute_path": null,
+                                "id": 74
                               }
                             },
-                            "id": 61
+                            "id": 75
                           },
                           {
                             "identifier": {
                               "name": "amount",
-                              "id": 62
+                              "id": 76
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "amount",
-                                "id": 63
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "amount",
+                                  "id": 77
+                                },
+                                "absolute_path": null,
+                                "id": 78
                               }
                             },
-                            "id": 64
+                            "id": 79
                           }
                         ],
-                        "id": 65
+                        "id": 80
                       }
                     },
-                    "id": 66
+                    "id": 81
                   }
                 }
               ],
-              "id": 67
+              "id": 82
             },
-            "id": 68
+            "id": 83
           }
         ],
         [
@@ -274,29 +315,29 @@
             "variant": "AsyncTransition",
             "identifier": {
               "name": "transfer_public",
-              "id": 69
+              "id": 84
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 70
+                  "id": 85
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 71
+                "id": 86
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 72
+                  "id": 87
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 73
+                "id": 88
               }
             ],
             "output": [
@@ -309,7 +350,7 @@
                     "is_explicit": false
                   }
                 },
-                "id": 74
+                "id": 89
               }
             ],
             "output_type": {
@@ -326,50 +367,70 @@
                     "expression": {
                       "Call": {
                         "function": {
-                          "name": "finalize_transfer_public",
-                          "id": 75
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "finalize_transfer_public",
+                            "id": 90
+                          },
+                          "absolute_path": null,
+                          "id": 91
                         },
                         "const_arguments": [],
                         "arguments": [
                           {
                             "MemberAccess": {
                               "inner": {
-                                "Identifier": {
-                                  "name": "self",
-                                  "id": 76
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "self",
+                                    "id": 92
+                                  },
+                                  "absolute_path": null,
+                                  "id": 92
                                 }
                               },
                               "name": {
                                 "name": "caller",
-                                "id": 77
+                                "id": 93
                               },
-                              "id": 78
+                              "id": 94
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 79
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 95
+                              },
+                              "absolute_path": null,
+                              "id": 96
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "amount",
-                              "id": 80
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "amount",
+                                "id": 97
+                              },
+                              "absolute_path": null,
+                              "id": 98
                             }
                           }
                         ],
                         "program": "token",
-                        "id": 81
+                        "id": 99
                       }
                     },
-                    "id": 82
+                    "id": 100
                   }
                 }
               ],
-              "id": 83
+              "id": 101
             },
-            "id": 84
+            "id": 102
           }
         ],
         [
@@ -379,47 +440,52 @@
             "variant": "Transition",
             "identifier": {
               "name": "transfer_private",
-              "id": 128
+              "id": 162
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "sender",
-                  "id": 129
+                  "id": 163
                 },
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 130
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 164
+                      },
+                      "absolute_path": null,
+                      "id": 165
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 131
+                "id": 166
               },
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 132
+                  "id": 167
                 },
                 "mode": "None",
                 "type_": "Address",
-                "id": 133
+                "id": 168
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 134
+                  "id": 169
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 135
+                "id": 170
               }
             ],
             "output": [
@@ -427,29 +493,39 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 136
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 171
+                      },
+                      "absolute_path": null,
+                      "id": 172
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 137
+                "id": 173
               },
               {
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 138
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 174
+                      },
+                      "absolute_path": null,
+                      "id": 175
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 139
+                "id": 176
               }
             ],
             "output_type": {
@@ -457,9 +533,14 @@
                 "elements": [
                   {
                     "Composite": {
-                      "id": {
-                        "name": "Token",
-                        "id": 136
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "Token",
+                          "id": 171
+                        },
+                        "absolute_path": null,
+                        "id": 172
                       },
                       "const_arguments": [],
                       "program": null
@@ -467,9 +548,14 @@
                   },
                   {
                     "Composite": {
-                      "id": {
-                        "name": "Token",
-                        "id": 138
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "Token",
+                          "id": 174
+                        },
+                        "absolute_path": null,
+                        "id": 175
                       },
                       "const_arguments": [],
                       "program": null
@@ -485,7 +571,7 @@
                     "place": {
                       "Single": {
                         "name": "difference",
-                        "id": 140
+                        "id": 177
                       }
                     },
                     "type_": {
@@ -496,29 +582,39 @@
                         "left": {
                           "MemberAccess": {
                             "inner": {
-                              "Identifier": {
-                                "name": "sender",
-                                "id": 141
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "sender",
+                                  "id": 178
+                                },
+                                "absolute_path": null,
+                                "id": 179
                               }
                             },
                             "name": {
                               "name": "amount",
-                              "id": 142
+                              "id": 180
                             },
-                            "id": 143
+                            "id": 181
                           }
                         },
                         "right": {
-                          "Identifier": {
-                            "name": "amount",
-                            "id": 144
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "amount",
+                              "id": 182
+                            },
+                            "absolute_path": null,
+                            "id": 183
                           }
                         },
                         "op": "Sub",
-                        "id": 145
+                        "id": 184
                       }
                     },
-                    "id": 146
+                    "id": 185
                   }
                 },
                 {
@@ -526,14 +622,19 @@
                     "place": {
                       "Single": {
                         "name": "remaining",
-                        "id": 147
+                        "id": 186
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "Token",
-                          "id": 148
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 187
+                          },
+                          "absolute_path": null,
+                          "id": 188
                         },
                         "const_arguments": [],
                         "program": null
@@ -541,52 +642,67 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "Token",
-                          "id": 149
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 189
+                          },
+                          "absolute_path": null,
+                          "id": 190
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 150
+                              "id": 191
                             },
                             "expression": {
                               "MemberAccess": {
                                 "inner": {
-                                  "Identifier": {
-                                    "name": "sender",
-                                    "id": 151
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "sender",
+                                      "id": 192
+                                    },
+                                    "absolute_path": null,
+                                    "id": 193
                                   }
                                 },
                                 "name": {
                                   "name": "owner",
-                                  "id": 152
+                                  "id": 194
                                 },
-                                "id": 153
+                                "id": 195
                               }
                             },
-                            "id": 154
+                            "id": 196
                           },
                           {
                             "identifier": {
                               "name": "amount",
-                              "id": 155
+                              "id": 197
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "difference",
-                                "id": 156
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "difference",
+                                  "id": 198
+                                },
+                                "absolute_path": null,
+                                "id": 199
                               }
                             },
-                            "id": 157
+                            "id": 200
                           }
                         ],
-                        "id": 158
+                        "id": 201
                       }
                     },
-                    "id": 159
+                    "id": 202
                   }
                 },
                 {
@@ -594,14 +710,19 @@
                     "place": {
                       "Single": {
                         "name": "transferred",
-                        "id": 160
+                        "id": 203
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "Token",
-                          "id": 161
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 204
+                          },
+                          "absolute_path": null,
+                          "id": 205
                         },
                         "const_arguments": [],
                         "program": null
@@ -609,43 +730,58 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "Token",
-                          "id": 162
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 206
+                          },
+                          "absolute_path": null,
+                          "id": 207
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 163
+                              "id": 208
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "receiver",
-                                "id": 164
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "receiver",
+                                  "id": 209
+                                },
+                                "absolute_path": null,
+                                "id": 210
                               }
                             },
-                            "id": 165
+                            "id": 211
                           },
                           {
                             "identifier": {
                               "name": "amount",
-                              "id": 166
+                              "id": 212
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "amount",
-                                "id": 167
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "amount",
+                                  "id": 213
+                                },
+                                "absolute_path": null,
+                                "id": 214
                               }
                             },
-                            "id": 168
+                            "id": 215
                           }
                         ],
-                        "id": 169
+                        "id": 216
                       }
                     },
-                    "id": 170
+                    "id": 217
                   }
                 },
                 {
@@ -654,28 +790,38 @@
                       "Tuple": {
                         "elements": [
                           {
-                            "Identifier": {
-                              "name": "remaining",
-                              "id": 171
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "remaining",
+                                "id": 218
+                              },
+                              "absolute_path": null,
+                              "id": 219
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "transferred",
-                              "id": 172
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "transferred",
+                                "id": 220
+                              },
+                              "absolute_path": null,
+                              "id": 221
                             }
                           }
                         ],
-                        "id": 173
+                        "id": 222
                       }
                     },
-                    "id": 174
+                    "id": 223
                   }
                 }
               ],
-              "id": 175
+              "id": 224
             },
-            "id": 176
+            "id": 225
           }
         ],
         [
@@ -685,47 +831,52 @@
             "variant": "AsyncTransition",
             "identifier": {
               "name": "transfer_private_to_public",
-              "id": 177
+              "id": 226
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "sender",
-                  "id": 178
+                  "id": 227
                 },
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 179
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 228
+                      },
+                      "absolute_path": null,
+                      "id": 229
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 180
+                "id": 230
               },
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 181
+                  "id": 231
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 182
+                "id": 232
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 183
+                  "id": 233
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 184
+                "id": 234
               }
             ],
             "output": [
@@ -733,15 +884,20 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 185
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 235
+                      },
+                      "absolute_path": null,
+                      "id": 236
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 186
+                "id": 237
               },
               {
                 "mode": "None",
@@ -752,7 +908,7 @@
                     "is_explicit": false
                   }
                 },
-                "id": 187
+                "id": 238
               }
             ],
             "output_type": {
@@ -760,9 +916,14 @@
                 "elements": [
                   {
                     "Composite": {
-                      "id": {
-                        "name": "Token",
-                        "id": 185
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "Token",
+                          "id": 235
+                        },
+                        "absolute_path": null,
+                        "id": 236
                       },
                       "const_arguments": [],
                       "program": null
@@ -785,7 +946,7 @@
                     "place": {
                       "Single": {
                         "name": "difference",
-                        "id": 188
+                        "id": 239
                       }
                     },
                     "type_": {
@@ -796,29 +957,39 @@
                         "left": {
                           "MemberAccess": {
                             "inner": {
-                              "Identifier": {
-                                "name": "sender",
-                                "id": 189
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "sender",
+                                  "id": 240
+                                },
+                                "absolute_path": null,
+                                "id": 241
                               }
                             },
                             "name": {
                               "name": "amount",
-                              "id": 190
+                              "id": 242
                             },
-                            "id": 191
+                            "id": 243
                           }
                         },
                         "right": {
-                          "Identifier": {
-                            "name": "amount",
-                            "id": 192
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "amount",
+                              "id": 244
+                            },
+                            "absolute_path": null,
+                            "id": 245
                           }
                         },
                         "op": "Sub",
-                        "id": 193
+                        "id": 246
                       }
                     },
-                    "id": 194
+                    "id": 247
                   }
                 },
                 {
@@ -826,14 +997,19 @@
                     "place": {
                       "Single": {
                         "name": "remaining",
-                        "id": 195
+                        "id": 248
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "Token",
-                          "id": 196
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 249
+                          },
+                          "absolute_path": null,
+                          "id": 250
                         },
                         "const_arguments": [],
                         "program": null
@@ -841,52 +1017,67 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "Token",
-                          "id": 197
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 251
+                          },
+                          "absolute_path": null,
+                          "id": 252
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 198
+                              "id": 253
                             },
                             "expression": {
                               "MemberAccess": {
                                 "inner": {
-                                  "Identifier": {
-                                    "name": "sender",
-                                    "id": 199
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "sender",
+                                      "id": 254
+                                    },
+                                    "absolute_path": null,
+                                    "id": 255
                                   }
                                 },
                                 "name": {
                                   "name": "owner",
-                                  "id": 200
+                                  "id": 256
                                 },
-                                "id": 201
+                                "id": 257
                               }
                             },
-                            "id": 202
+                            "id": 258
                           },
                           {
                             "identifier": {
                               "name": "amount",
-                              "id": 203
+                              "id": 259
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "difference",
-                                "id": 204
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "difference",
+                                  "id": 260
+                                },
+                                "absolute_path": null,
+                                "id": 261
                               }
                             },
-                            "id": 205
+                            "id": 262
                           }
                         ],
-                        "id": 206
+                        "id": 263
                       }
                     },
-                    "id": 207
+                    "id": 264
                   }
                 },
                 {
@@ -895,47 +1086,67 @@
                       "Tuple": {
                         "elements": [
                           {
-                            "Identifier": {
-                              "name": "remaining",
-                              "id": 208
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "remaining",
+                                "id": 265
+                              },
+                              "absolute_path": null,
+                              "id": 266
                             }
                           },
                           {
                             "Call": {
                               "function": {
-                                "name": "finalize_transfer_priv_to_pub",
-                                "id": 209
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "finalize_transfer_priv_to_pub",
+                                  "id": 267
+                                },
+                                "absolute_path": null,
+                                "id": 268
                               },
                               "const_arguments": [],
                               "arguments": [
                                 {
-                                  "Identifier": {
-                                    "name": "receiver",
-                                    "id": 210
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "receiver",
+                                      "id": 269
+                                    },
+                                    "absolute_path": null,
+                                    "id": 270
                                   }
                                 },
                                 {
-                                  "Identifier": {
-                                    "name": "amount",
-                                    "id": 211
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "amount",
+                                      "id": 271
+                                    },
+                                    "absolute_path": null,
+                                    "id": 272
                                   }
                                 }
                               ],
                               "program": "token",
-                              "id": 212
+                              "id": 273
                             }
                           }
                         ],
-                        "id": 213
+                        "id": 274
                       }
                     },
-                    "id": 214
+                    "id": 275
                   }
                 }
               ],
-              "id": 215
+              "id": 276
             },
-            "id": 216
+            "id": 277
           }
         ],
         [
@@ -945,29 +1156,29 @@
             "variant": "AsyncTransition",
             "identifier": {
               "name": "transfer_public_to_private",
-              "id": 241
+              "id": 310
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 242
+                  "id": 311
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 243
+                "id": 312
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 244
+                  "id": 313
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 245
+                "id": 314
               }
             ],
             "output": [
@@ -975,15 +1186,20 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "Token",
-                      "id": 246
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Token",
+                        "id": 315
+                      },
+                      "absolute_path": null,
+                      "id": 316
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 247
+                "id": 317
               },
               {
                 "mode": "None",
@@ -994,7 +1210,7 @@
                     "is_explicit": false
                   }
                 },
-                "id": 248
+                "id": 318
               }
             ],
             "output_type": {
@@ -1002,9 +1218,14 @@
                 "elements": [
                   {
                     "Composite": {
-                      "id": {
-                        "name": "Token",
-                        "id": 246
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "Token",
+                          "id": 315
+                        },
+                        "absolute_path": null,
+                        "id": 316
                       },
                       "const_arguments": [],
                       "program": null
@@ -1027,14 +1248,19 @@
                     "place": {
                       "Single": {
                         "name": "transferred",
-                        "id": 249
+                        "id": 319
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "Token",
-                          "id": 250
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 320
+                          },
+                          "absolute_path": null,
+                          "id": 321
                         },
                         "const_arguments": [],
                         "program": null
@@ -1042,43 +1268,58 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "Token",
-                          "id": 251
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Token",
+                            "id": 322
+                          },
+                          "absolute_path": null,
+                          "id": 323
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 252
+                              "id": 324
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "receiver",
-                                "id": 253
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "receiver",
+                                  "id": 325
+                                },
+                                "absolute_path": null,
+                                "id": 326
                               }
                             },
-                            "id": 254
+                            "id": 327
                           },
                           {
                             "identifier": {
                               "name": "amount",
-                              "id": 255
+                              "id": 328
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "amount",
-                                "id": 256
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "amount",
+                                  "id": 329
+                                },
+                                "absolute_path": null,
+                                "id": 330
                               }
                             },
-                            "id": 257
+                            "id": 331
                           }
                         ],
-                        "id": 258
+                        "id": 332
                       }
                     },
-                    "id": 259
+                    "id": 333
                   }
                 },
                 {
@@ -1087,56 +1328,76 @@
                       "Tuple": {
                         "elements": [
                           {
-                            "Identifier": {
-                              "name": "transferred",
-                              "id": 260
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "transferred",
+                                "id": 334
+                              },
+                              "absolute_path": null,
+                              "id": 335
                             }
                           },
                           {
                             "Call": {
                               "function": {
-                                "name": "finalize_transfer_pub_to_priv",
-                                "id": 261
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "finalize_transfer_pub_to_priv",
+                                  "id": 336
+                                },
+                                "absolute_path": null,
+                                "id": 337
                               },
                               "const_arguments": [],
                               "arguments": [
                                 {
                                   "MemberAccess": {
                                     "inner": {
-                                      "Identifier": {
-                                        "name": "self",
-                                        "id": 262
+                                      "Path": {
+                                        "qualifier": [],
+                                        "identifier": {
+                                          "name": "self",
+                                          "id": 338
+                                        },
+                                        "absolute_path": null,
+                                        "id": 338
                                       }
                                     },
                                     "name": {
                                       "name": "caller",
-                                      "id": 263
+                                      "id": 339
                                     },
-                                    "id": 264
+                                    "id": 340
                                   }
                                 },
                                 {
-                                  "Identifier": {
-                                    "name": "amount",
-                                    "id": 265
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "amount",
+                                      "id": 341
+                                    },
+                                    "absolute_path": null,
+                                    "id": 342
                                   }
                                 }
                               ],
                               "program": "token",
-                              "id": 266
+                              "id": 343
                             }
                           }
                         ],
-                        "id": 267
+                        "id": 344
                       }
                     },
-                    "id": 268
+                    "id": 345
                   }
                 }
               ],
-              "id": 269
+              "id": 346
             },
-            "id": 270
+            "id": 347
           }
         ],
         [
@@ -1146,29 +1407,29 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_mint_public",
-              "id": 27
+              "id": 30
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 28
+                  "id": 31
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 29
+                "id": 32
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 30
+                  "id": 33
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 31
+                "id": 34
               }
             ],
             "output": [],
@@ -1180,7 +1441,7 @@
                     "place": {
                       "Single": {
                         "name": "current_amount",
-                        "id": 32
+                        "id": 35
                       }
                     },
                     "type_": {
@@ -1190,28 +1451,38 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 33
+                          "id": 36
                         },
                         "name": {
                           "name": "get_or_use",
-                          "id": 34
+                          "id": 37
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 35
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 39
+                              },
+                              "absolute_path": null,
+                              "id": 40
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 36
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 41
+                              },
+                              "absolute_path": null,
+                              "id": 42
                             }
                           },
                           {
                             "Literal": {
-                              "id": 37,
+                              "id": 43,
                               "variant": {
                                 "Integer": [
                                   "U64",
@@ -1221,10 +1492,10 @@
                             }
                           }
                         ],
-                        "id": 38
+                        "id": 44
                       }
                     },
-                    "id": 39
+                    "id": 45
                   }
                 },
                 {
@@ -1233,54 +1504,74 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 40
+                          "id": 46
                         },
                         "name": {
                           "name": "set",
-                          "id": 41
+                          "id": 47
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 42
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 49
+                              },
+                              "absolute_path": null,
+                              "id": 50
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 43
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 51
+                              },
+                              "absolute_path": null,
+                              "id": 52
                             }
                           },
                           {
                             "Binary": {
                               "left": {
-                                "Identifier": {
-                                  "name": "current_amount",
-                                  "id": 44
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "current_amount",
+                                    "id": 53
+                                  },
+                                  "absolute_path": null,
+                                  "id": 54
                                 }
                               },
                               "right": {
-                                "Identifier": {
-                                  "name": "amount",
-                                  "id": 45
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "amount",
+                                    "id": 55
+                                  },
+                                  "absolute_path": null,
+                                  "id": 56
                                 }
                               },
                               "op": "Add",
-                              "id": 46
+                              "id": 57
                             }
                           }
                         ],
-                        "id": 47
+                        "id": 58
                       }
                     },
-                    "id": 48
+                    "id": 59
                   }
                 }
               ],
-              "id": 49
+              "id": 60
             },
-            "id": 50
+            "id": 61
           }
         ],
         [
@@ -1290,38 +1581,38 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_transfer_public",
-              "id": 85
+              "id": 103
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "sender",
-                  "id": 86
+                  "id": 104
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 87
+                "id": 105
               },
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 88
+                  "id": 106
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 89
+                "id": 107
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 90
+                  "id": 108
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 91
+                "id": 109
               }
             ],
             "output": [],
@@ -1333,7 +1624,7 @@
                     "place": {
                       "Single": {
                         "name": "sender_amount",
-                        "id": 92
+                        "id": 110
                       }
                     },
                     "type_": {
@@ -1343,28 +1634,38 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 93
+                          "id": 111
                         },
                         "name": {
                           "name": "get_or_use",
-                          "id": 94
+                          "id": 112
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 95
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 114
+                              },
+                              "absolute_path": null,
+                              "id": 115
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "sender",
-                              "id": 96
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "sender",
+                                "id": 116
+                              },
+                              "absolute_path": null,
+                              "id": 117
                             }
                           },
                           {
                             "Literal": {
-                              "id": 97,
+                              "id": 118,
                               "variant": {
                                 "Integer": [
                                   "U64",
@@ -1374,10 +1675,10 @@
                             }
                           }
                         ],
-                        "id": 98
+                        "id": 119
                       }
                     },
-                    "id": 99
+                    "id": 120
                   }
                 },
                 {
@@ -1386,48 +1687,68 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 100
+                          "id": 121
                         },
                         "name": {
                           "name": "set",
-                          "id": 101
+                          "id": 122
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 102
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 124
+                              },
+                              "absolute_path": null,
+                              "id": 125
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "sender",
-                              "id": 103
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "sender",
+                                "id": 126
+                              },
+                              "absolute_path": null,
+                              "id": 127
                             }
                           },
                           {
                             "Binary": {
                               "left": {
-                                "Identifier": {
-                                  "name": "sender_amount",
-                                  "id": 104
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "sender_amount",
+                                    "id": 128
+                                  },
+                                  "absolute_path": null,
+                                  "id": 129
                                 }
                               },
                               "right": {
-                                "Identifier": {
-                                  "name": "amount",
-                                  "id": 105
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "amount",
+                                    "id": 130
+                                  },
+                                  "absolute_path": null,
+                                  "id": 131
                                 }
                               },
                               "op": "Sub",
-                              "id": 106
+                              "id": 132
                             }
                           }
                         ],
-                        "id": 107
+                        "id": 133
                       }
                     },
-                    "id": 108
+                    "id": 134
                   }
                 },
                 {
@@ -1435,7 +1756,7 @@
                     "place": {
                       "Single": {
                         "name": "receiver_amount",
-                        "id": 109
+                        "id": 135
                       }
                     },
                     "type_": {
@@ -1445,28 +1766,38 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 110
+                          "id": 136
                         },
                         "name": {
                           "name": "get_or_use",
-                          "id": 111
+                          "id": 137
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 112
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 139
+                              },
+                              "absolute_path": null,
+                              "id": 140
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 113
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 141
+                              },
+                              "absolute_path": null,
+                              "id": 142
                             }
                           },
                           {
                             "Literal": {
-                              "id": 114,
+                              "id": 143,
                               "variant": {
                                 "Integer": [
                                   "U64",
@@ -1476,10 +1807,10 @@
                             }
                           }
                         ],
-                        "id": 115
+                        "id": 144
                       }
                     },
-                    "id": 116
+                    "id": 145
                   }
                 },
                 {
@@ -1488,54 +1819,74 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 117
+                          "id": 146
                         },
                         "name": {
                           "name": "set",
-                          "id": 118
+                          "id": 147
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 119
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 149
+                              },
+                              "absolute_path": null,
+                              "id": 150
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 120
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 151
+                              },
+                              "absolute_path": null,
+                              "id": 152
                             }
                           },
                           {
                             "Binary": {
                               "left": {
-                                "Identifier": {
-                                  "name": "receiver_amount",
-                                  "id": 121
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "receiver_amount",
+                                    "id": 153
+                                  },
+                                  "absolute_path": null,
+                                  "id": 154
                                 }
                               },
                               "right": {
-                                "Identifier": {
-                                  "name": "amount",
-                                  "id": 122
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "amount",
+                                    "id": 155
+                                  },
+                                  "absolute_path": null,
+                                  "id": 156
                                 }
                               },
                               "op": "Add",
-                              "id": 123
+                              "id": 157
                             }
                           }
                         ],
-                        "id": 124
+                        "id": 158
                       }
                     },
-                    "id": 125
+                    "id": 159
                   }
                 }
               ],
-              "id": 126
+              "id": 160
             },
-            "id": 127
+            "id": 161
           }
         ],
         [
@@ -1545,29 +1896,29 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_transfer_priv_to_pub",
-              "id": 217
+              "id": 278
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "receiver",
-                  "id": 218
+                  "id": 279
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 219
+                "id": 280
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 220
+                  "id": 281
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 221
+                "id": 282
               }
             ],
             "output": [],
@@ -1579,7 +1930,7 @@
                     "place": {
                       "Single": {
                         "name": "current_amount",
-                        "id": 222
+                        "id": 283
                       }
                     },
                     "type_": {
@@ -1589,28 +1940,38 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 223
+                          "id": 284
                         },
                         "name": {
                           "name": "get_or_use",
-                          "id": 224
+                          "id": 285
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 225
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 287
+                              },
+                              "absolute_path": null,
+                              "id": 288
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 226
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 289
+                              },
+                              "absolute_path": null,
+                              "id": 290
                             }
                           },
                           {
                             "Literal": {
-                              "id": 227,
+                              "id": 291,
                               "variant": {
                                 "Integer": [
                                   "U64",
@@ -1620,10 +1981,10 @@
                             }
                           }
                         ],
-                        "id": 228
+                        "id": 292
                       }
                     },
-                    "id": 229
+                    "id": 293
                   }
                 },
                 {
@@ -1632,54 +1993,74 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 230
+                          "id": 294
                         },
                         "name": {
                           "name": "set",
-                          "id": 231
+                          "id": 295
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 232
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 297
+                              },
+                              "absolute_path": null,
+                              "id": 298
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "receiver",
-                              "id": 233
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "receiver",
+                                "id": 299
+                              },
+                              "absolute_path": null,
+                              "id": 300
                             }
                           },
                           {
                             "Binary": {
                               "left": {
-                                "Identifier": {
-                                  "name": "current_amount",
-                                  "id": 234
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "current_amount",
+                                    "id": 301
+                                  },
+                                  "absolute_path": null,
+                                  "id": 302
                                 }
                               },
                               "right": {
-                                "Identifier": {
-                                  "name": "amount",
-                                  "id": 235
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "amount",
+                                    "id": 303
+                                  },
+                                  "absolute_path": null,
+                                  "id": 304
                                 }
                               },
                               "op": "Add",
-                              "id": 236
+                              "id": 305
                             }
                           }
                         ],
-                        "id": 237
+                        "id": 306
                       }
                     },
-                    "id": 238
+                    "id": 307
                   }
                 }
               ],
-              "id": 239
+              "id": 308
             },
-            "id": 240
+            "id": 309
           }
         ],
         [
@@ -1689,29 +2070,29 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_transfer_pub_to_priv",
-              "id": 271
+              "id": 348
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "sender",
-                  "id": 272
+                  "id": 349
                 },
                 "mode": "Public",
                 "type_": "Address",
-                "id": 273
+                "id": 350
               },
               {
                 "identifier": {
                   "name": "amount",
-                  "id": 274
+                  "id": 351
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 275
+                "id": 352
               }
             ],
             "output": [],
@@ -1723,7 +2104,7 @@
                     "place": {
                       "Single": {
                         "name": "current_amount",
-                        "id": 276
+                        "id": 353
                       }
                     },
                     "type_": {
@@ -1733,28 +2114,38 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 277
+                          "id": 354
                         },
                         "name": {
                           "name": "get_or_use",
-                          "id": 278
+                          "id": 355
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 279
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 357
+                              },
+                              "absolute_path": null,
+                              "id": 358
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "sender",
-                              "id": 280
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "sender",
+                                "id": 359
+                              },
+                              "absolute_path": null,
+                              "id": 360
                             }
                           },
                           {
                             "Literal": {
-                              "id": 281,
+                              "id": 361,
                               "variant": {
                                 "Integer": [
                                   "U64",
@@ -1764,10 +2155,10 @@
                             }
                           }
                         ],
-                        "id": 282
+                        "id": 362
                       }
                     },
-                    "id": 283
+                    "id": 363
                   }
                 },
                 {
@@ -1776,54 +2167,74 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 284
+                          "id": 364
                         },
                         "name": {
                           "name": "set",
-                          "id": 285
+                          "id": 365
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "account",
-                              "id": 286
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "account",
+                                "id": 367
+                              },
+                              "absolute_path": null,
+                              "id": 368
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "sender",
-                              "id": 287
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "sender",
+                                "id": 369
+                              },
+                              "absolute_path": null,
+                              "id": 370
                             }
                           },
                           {
                             "Binary": {
                               "left": {
-                                "Identifier": {
-                                  "name": "current_amount",
-                                  "id": 288
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "current_amount",
+                                    "id": 371
+                                  },
+                                  "absolute_path": null,
+                                  "id": 372
                                 }
                               },
                               "right": {
-                                "Identifier": {
-                                  "name": "amount",
-                                  "id": 289
+                                "Path": {
+                                  "qualifier": [],
+                                  "identifier": {
+                                    "name": "amount",
+                                    "id": 373
+                                  },
+                                  "absolute_path": null,
+                                  "id": 374
                                 }
                               },
                               "op": "Sub",
-                              "id": 290
+                              "id": 375
                             }
                           }
                         ],
-                        "id": 291
+                        "id": 376
                       }
                     },
-                    "id": 292
+                    "id": 377
                   }
                 }
               ],
-              "id": 293
+              "id": 378
             },
-            "id": 294
+            "id": 379
           }
         ]
       ],

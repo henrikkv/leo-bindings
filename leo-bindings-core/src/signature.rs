@@ -83,11 +83,25 @@ enum TypeInfo {
         #[serde(rename = "Future")]
         future: FutureType,
     },
+    Tuple {
+        #[serde(rename = "Tuple")]
+        tuple: TupleType,
+    },
 }
 
 #[derive(Debug, Deserialize)]
 struct CompositeType {
-    id: Identifier,
+    path: PathType,
+    const_arguments: Vec<serde_json::Value>,
+    program: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PathType {
+    qualifier: Vec<serde_json::Value>,
+    identifier: Identifier,
+    absolute_path: Option<serde_json::Value>,
+    id: u64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -105,6 +119,11 @@ struct MappingDef {
 
 #[derive(Debug, Deserialize)]
 struct FutureType {}
+
+#[derive(Debug, Deserialize)]
+struct TupleType {
+    elements: Vec<TypeInfo>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimplifiedBindings {
@@ -286,13 +305,19 @@ fn normalize_type(type_info: &TypeInfo) -> String {
             "I128" => "i128".to_string(),
             _ => format!("Unknown_Integer_{}", int_type),
         },
-        TypeInfo::Composite { composite: comp } => comp.id.name.clone(),
+        TypeInfo::Composite { composite: comp } => comp.path.identifier.name.clone(),
         TypeInfo::Array { array } => {
             let element_type = normalize_type(&array.element_type);
             let size = extract_array_size(&array.length);
             format!("[{}; {}]", element_type, size)
         }
         TypeInfo::Future { .. } => "Future".to_string(),
+        TypeInfo::Tuple { tuple } => {
+            let element_types: Vec<String> = tuple.elements.iter()
+                .map(normalize_type)
+                .collect();
+            format!("({})", element_types.join(", "))
+        },
     }
 }
 

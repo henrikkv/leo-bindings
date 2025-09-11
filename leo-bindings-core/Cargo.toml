@@ -1,16 +1,17 @@
 [package]
 name = "leo-bindings-core"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-indexmap = "2.0"
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full"] }
-aleo-std = { version = "1.0.1", features = ["storage"] }
-snarkvm = "4.1.0"
-anyhow = "1.0"
-convert_case = "0.6"
+serde = { workspace = true }
+serde_json = { workspace = true }
+indexmap = { workspace = true }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+aleo-std = { workspace = true }
+snarkvm = { workspace = true }
+anyhow = { workspace = true }
+convert_case = { workspace = true }
+http = { workspace = true }

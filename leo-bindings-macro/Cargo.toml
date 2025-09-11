@@ -1,14 +1,14 @@
 [package]
 name = "leo-bindings-macro"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 proc-macro = true
 
 [dependencies]
 leo-bindings-core = { path = "../leo-bindings-core" }
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full"] }
-serde_json = "1.0"
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+serde_json = { workspace = true }

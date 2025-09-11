@@ -1,4 +1,5 @@
 {
+  "modules": {},
   "imports": {},
   "stubs": {},
   "program_scopes": {
@@ -20,32 +21,6 @@
           {
             "identifier": {
               "name": "A",
-              "id": 26
-            },
-            "const_parameters": [],
-            "members": [
-              {
-                "mode": "None",
-                "identifier": {
-                  "name": "number",
-                  "id": 27
-                },
-                "type_": {
-                  "Integer": "U64"
-                },
-                "id": 28
-              }
-            ],
-            "external": null,
-            "is_record": false,
-            "id": 29
-          }
-        ],
-        [
-          "B",
-          {
-            "identifier": {
-              "name": "B",
               "id": 30
             },
             "const_parameters": [],
@@ -57,32 +32,63 @@
                   "id": 31
                 },
                 "type_": {
-                  "Integer": "U32"
+                  "Integer": "U64"
                 },
                 "id": 32
+              }
+            ],
+            "external": null,
+            "is_record": false,
+            "id": 33
+          }
+        ],
+        [
+          "B",
+          {
+            "identifier": {
+              "name": "B",
+              "id": 34
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "number",
+                  "id": 35
+                },
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 36
               },
               {
                 "mode": "None",
                 "identifier": {
                   "name": "a",
-                  "id": 33
+                  "id": 37
                 },
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "A",
-                      "id": 34
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "A",
+                        "id": 38
+                      },
+                      "absolute_path": null,
+                      "id": 39
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 35
+                "id": 40
               }
             ],
             "external": null,
             "is_record": false,
-            "id": 36
+            "id": 41
           }
         ],
         [
@@ -90,7 +96,7 @@
           {
             "identifier": {
               "name": "User",
-              "id": 137
+              "id": 159
             },
             "const_parameters": [],
             "members": [
@@ -98,37 +104,37 @@
                 "mode": "None",
                 "identifier": {
                   "name": "owner",
-                  "id": 138
+                  "id": 160
                 },
                 "type_": "Address",
-                "id": 139
+                "id": 161
               },
               {
                 "mode": "None",
                 "identifier": {
                   "name": "id",
-                  "id": 140
+                  "id": 162
                 },
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 141
+                "id": 163
               },
               {
                 "mode": "Public",
                 "identifier": {
                   "name": "balance",
-                  "id": 142
+                  "id": 164
                 },
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 143
+                "id": 165
               }
             ],
             "external": "dev",
             "is_record": true,
-            "id": 144
+            "id": 166
           }
         ]
       ],
@@ -161,15 +167,20 @@
             },
             "value_type": {
               "Composite": {
-                "id": {
-                  "name": "B",
-                  "id": 9
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 9
+                  },
+                  "absolute_path": null,
+                  "id": 10
                 },
                 "const_arguments": [],
                 "program": null
               }
             },
-            "id": 10
+            "id": 11
           }
         ]
       ],
@@ -181,31 +192,31 @@
             "variant": "Transition",
             "identifier": {
               "name": "main",
-              "id": 11
+              "id": 12
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "a",
-                  "id": 12
+                  "id": 13
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U32"
                 },
-                "id": 13
+                "id": 14
               },
               {
                 "identifier": {
                   "name": "b",
-                  "id": 14
+                  "id": 15
                 },
                 "mode": "Public",
                 "type_": {
                   "Integer": "U32"
                 },
-                "id": 15
+                "id": 16
               }
             ],
             "output": [
@@ -214,7 +225,7 @@
                 "type_": {
                   "Integer": "U32"
                 },
-                "id": 16
+                "id": 17
               }
             ],
             "output_type": {
@@ -227,7 +238,7 @@
                     "place": {
                       "Single": {
                         "name": "c",
-                        "id": 17
+                        "id": 18
                       }
                     },
                     "type_": {
@@ -236,39 +247,54 @@
                     "value": {
                       "Binary": {
                         "left": {
-                          "Identifier": {
-                            "name": "a",
-                            "id": 18
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "a",
+                              "id": 19
+                            },
+                            "absolute_path": null,
+                            "id": 20
                           }
                         },
                         "right": {
-                          "Identifier": {
-                            "name": "b",
-                            "id": 19
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "b",
+                              "id": 21
+                            },
+                            "absolute_path": null,
+                            "id": 22
                           }
                         },
                         "op": "Add",
-                        "id": 20
+                        "id": 23
                       }
                     },
-                    "id": 21
+                    "id": 24
                   }
                 },
                 {
                   "Return": {
                     "expression": {
-                      "Identifier": {
-                        "name": "c",
-                        "id": 22
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "c",
+                          "id": 25
+                        },
+                        "absolute_path": null,
+                        "id": 26
                       }
                     },
-                    "id": 23
+                    "id": 27
                   }
                 }
               ],
-              "id": 24
+              "id": 28
             },
-            "id": 25
+            "id": 29
           }
         ],
         [
@@ -278,27 +304,32 @@
             "variant": "Transition",
             "identifier": {
               "name": "nested",
-              "id": 37
+              "id": 42
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "b",
-                  "id": 38
+                  "id": 43
                 },
                 "mode": "Public",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "B",
-                      "id": 39
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 44
+                      },
+                      "absolute_path": null,
+                      "id": 45
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 40
+                "id": 46
               }
             ],
             "output": [
@@ -306,22 +337,32 @@
                 "mode": "Public",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "B",
-                      "id": 41
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 47
+                      },
+                      "absolute_path": null,
+                      "id": 48
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 42
+                "id": 49
               }
             ],
             "output_type": {
               "Composite": {
-                "id": {
-                  "name": "B",
-                  "id": 41
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 47
+                  },
+                  "absolute_path": null,
+                  "id": 48
                 },
                 "const_arguments": [],
                 "program": null
@@ -334,64 +375,18 @@
                     "place": {
                       "Single": {
                         "name": "resulta",
-                        "id": 43
+                        "id": 50
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "A",
-                          "id": 44
-                        },
-                        "const_arguments": [],
-                        "program": null
-                      }
-                    },
-                    "value": {
-                      "Struct": {
-                        "name": {
-                          "name": "A",
-                          "id": 45
-                        },
-                        "const_arguments": [],
-                        "members": [
-                          {
-                            "identifier": {
-                              "name": "number",
-                              "id": 46
-                            },
-                            "expression": {
-                              "Literal": {
-                                "id": 47,
-                                "variant": {
-                                  "Integer": [
-                                    "U64",
-                                    "1"
-                                  ]
-                                }
-                              }
-                            },
-                            "id": 48
-                          }
-                        ],
-                        "id": 49
-                      }
-                    },
-                    "id": 50
-                  }
-                },
-                {
-                  "Definition": {
-                    "place": {
-                      "Single": {
-                        "name": "resultb",
-                        "id": 51
-                      }
-                    },
-                    "type_": {
-                      "Composite": {
-                        "id": {
-                          "name": "B",
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 51
+                          },
+                          "absolute_path": null,
                           "id": 52
                         },
                         "const_arguments": [],
@@ -400,20 +395,86 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "B",
-                          "id": 53
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 53
+                          },
+                          "absolute_path": null,
+                          "id": 54
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "number",
-                              "id": 54
+                              "id": 55
                             },
                             "expression": {
                               "Literal": {
-                                "id": 55,
+                                "id": 56,
+                                "variant": {
+                                  "Integer": [
+                                    "U64",
+                                    "1"
+                                  ]
+                                }
+                              }
+                            },
+                            "id": 57
+                          }
+                        ],
+                        "id": 58
+                      }
+                    },
+                    "id": 59
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "resultb",
+                        "id": 60
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 61
+                          },
+                          "absolute_path": null,
+                          "id": 62
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 63
+                          },
+                          "absolute_path": null,
+                          "id": 64
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "number",
+                              "id": 65
+                            },
+                            "expression": {
+                              "Literal": {
+                                "id": 66,
                                 "variant": {
                                   "Integer": [
                                     "U32",
@@ -422,43 +483,53 @@
                                 }
                               }
                             },
-                            "id": 56
+                            "id": 67
                           },
                           {
                             "identifier": {
                               "name": "a",
-                              "id": 57
+                              "id": 68
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "resulta",
-                                "id": 58
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "resulta",
+                                  "id": 69
+                                },
+                                "absolute_path": null,
+                                "id": 70
                               }
                             },
-                            "id": 59
+                            "id": 71
                           }
                         ],
-                        "id": 60
+                        "id": 72
                       }
                     },
-                    "id": 61
+                    "id": 73
                   }
                 },
                 {
                   "Return": {
                     "expression": {
-                      "Identifier": {
-                        "name": "resultb",
-                        "id": 62
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "resultb",
+                          "id": 74
+                        },
+                        "absolute_path": null,
+                        "id": 75
                       }
                     },
-                    "id": 63
+                    "id": 76
                   }
                 }
               ],
-              "id": 64
+              "id": 77
             },
-            "id": 65
+            "id": 78
           }
         ],
         [
@@ -468,38 +539,43 @@
             "variant": "AsyncTransition",
             "identifier": {
               "name": "store_nested",
-              "id": 66
+              "id": 79
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "b",
-                  "id": 67
+                  "id": 80
                 },
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "B",
-                      "id": 68
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 81
+                      },
+                      "absolute_path": null,
+                      "id": 82
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 69
+                "id": 83
               },
               {
                 "identifier": {
                   "name": "id",
-                  "id": 70
+                  "id": 84
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 71
+                "id": 85
               }
             ],
             "output": [
@@ -512,7 +588,7 @@
                     "is_explicit": false
                   }
                 },
-                "id": 72
+                "id": 86
               }
             ],
             "output_type": {
@@ -529,35 +605,50 @@
                     "expression": {
                       "Call": {
                         "function": {
-                          "name": "finalize_store_nested",
-                          "id": 73
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "finalize_store_nested",
+                            "id": 87
+                          },
+                          "absolute_path": null,
+                          "id": 88
                         },
                         "const_arguments": [],
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "b",
-                              "id": 74
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 89
+                              },
+                              "absolute_path": null,
+                              "id": 90
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "id",
-                              "id": 75
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 91
+                              },
+                              "absolute_path": null,
+                              "id": 92
                             }
                           }
                         ],
                         "program": "dev",
-                        "id": 76
+                        "id": 93
                       }
                     },
-                    "id": 77
+                    "id": 94
                   }
                 }
               ],
-              "id": 78
+              "id": 95
             },
-            "id": 79
+            "id": 96
           }
         ],
         [
@@ -567,14 +658,14 @@
             "variant": "Transition",
             "identifier": {
               "name": "nested_array",
-              "id": 95
+              "id": 117
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "a",
-                  "id": 96
+                  "id": 118
                 },
                 "mode": "None",
                 "type_": {
@@ -586,7 +677,7 @@
                         },
                         "length": {
                           "Literal": {
-                            "id": 97,
+                            "id": 119,
                             "variant": {
                               "Integer": [
                                 "U8",
@@ -599,7 +690,7 @@
                     },
                     "length": {
                       "Literal": {
-                        "id": 98,
+                        "id": 120,
                         "variant": {
                           "Integer": [
                             "U8",
@@ -610,7 +701,7 @@
                     }
                   }
                 },
-                "id": 99
+                "id": 121
               }
             ],
             "output": [
@@ -625,7 +716,7 @@
                         },
                         "length": {
                           "Literal": {
-                            "id": 100,
+                            "id": 122,
                             "variant": {
                               "Integer": [
                                 "U8",
@@ -638,7 +729,7 @@
                     },
                     "length": {
                       "Literal": {
-                        "id": 101,
+                        "id": 123,
                         "variant": {
                           "Integer": [
                             "U8",
@@ -649,7 +740,7 @@
                     }
                   }
                 },
-                "id": 102
+                "id": 124
               }
             ],
             "output_type": {
@@ -661,7 +752,7 @@
                     },
                     "length": {
                       "Literal": {
-                        "id": 100,
+                        "id": 122,
                         "variant": {
                           "Integer": [
                             "U8",
@@ -674,7 +765,7 @@
                 },
                 "length": {
                   "Literal": {
-                    "id": 101,
+                    "id": 123,
                     "variant": {
                       "Integer": [
                         "U8",
@@ -697,236 +788,6 @@
                               "elements": [
                                 {
                                   "Literal": {
-                                    "id": 103,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 104,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 105,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 106,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 107,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                }
-                              ],
-                              "id": 108
-                            }
-                          },
-                          {
-                            "Array": {
-                              "elements": [
-                                {
-                                  "Literal": {
-                                    "id": 109,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 110,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 111,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 112,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 113,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                }
-                              ],
-                              "id": 114
-                            }
-                          },
-                          {
-                            "Array": {
-                              "elements": [
-                                {
-                                  "Literal": {
-                                    "id": 115,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 116,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 117,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 118,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 119,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                }
-                              ],
-                              "id": 120
-                            }
-                          },
-                          {
-                            "Array": {
-                              "elements": [
-                                {
-                                  "Literal": {
-                                    "id": 121,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 122,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 123,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 124,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "Literal": {
                                     "id": 125,
                                     "variant": {
                                       "Integer": [
@@ -935,14 +796,18 @@
                                       ]
                                     }
                                   }
-                                }
-                              ],
-                              "id": 126
-                            }
-                          },
-                          {
-                            "Array": {
-                              "elements": [
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 126,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
                                 {
                                   "Literal": {
                                     "id": 127,
@@ -975,18 +840,14 @@
                                       ]
                                     }
                                   }
-                                },
-                                {
-                                  "Literal": {
-                                    "id": 130,
-                                    "variant": {
-                                      "Integer": [
-                                        "U8",
-                                        "0"
-                                      ]
-                                    }
-                                  }
-                                },
+                                }
+                              ],
+                              "id": 130
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
                                 {
                                   "Literal": {
                                     "id": 131,
@@ -997,22 +858,252 @@
                                       ]
                                     }
                                   }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 132,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 133,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 134,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 135,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
                                 }
                               ],
-                              "id": 132
+                              "id": 136
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 137,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 138,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 139,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 140,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 141,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 142
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 143,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 144,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 145,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 146,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 147,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 148
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 149,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 150,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 151,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 152,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 153,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 154
                             }
                           }
                         ],
-                        "id": 133
+                        "id": 155
                       }
                     },
-                    "id": 134
+                    "id": 156
                   }
                 }
               ],
-              "id": 135
+              "id": 157
             },
-            "id": 136
+            "id": 158
           }
         ],
         [
@@ -1022,40 +1113,40 @@
             "variant": "Transition",
             "identifier": {
               "name": "create_user",
-              "id": 145
+              "id": 167
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "owner",
-                  "id": 146
+                  "id": 168
                 },
                 "mode": "None",
                 "type_": "Address",
-                "id": 147
+                "id": 169
               },
               {
                 "identifier": {
                   "name": "id",
-                  "id": 148
+                  "id": 170
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 149
+                "id": 171
               },
               {
                 "identifier": {
                   "name": "balance",
-                  "id": 150
+                  "id": 172
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 151
+                "id": 173
               }
             ],
             "output": [
@@ -1063,22 +1154,32 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "User",
-                      "id": 152
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 174
+                      },
+                      "absolute_path": null,
+                      "id": 175
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 153
+                "id": 176
               }
             ],
             "output_type": {
               "Composite": {
-                "id": {
-                  "name": "User",
-                  "id": 152
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "User",
+                    "id": 174
+                  },
+                  "absolute_path": null,
+                  "id": 175
                 },
                 "const_arguments": [],
                 "program": null
@@ -1091,14 +1192,19 @@
                     "place": {
                       "Single": {
                         "name": "user",
-                        "id": 154
+                        "id": 177
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "User",
-                          "id": 155
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 178
+                          },
+                          "absolute_path": null,
+                          "id": 179
                         },
                         "const_arguments": [],
                         "program": null
@@ -1106,73 +1212,98 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "User",
-                          "id": 156
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 180
+                          },
+                          "absolute_path": null,
+                          "id": 181
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 157
+                              "id": 182
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "owner",
-                                "id": 158
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "owner",
+                                  "id": 183
+                                },
+                                "absolute_path": null,
+                                "id": 184
                               }
                             },
-                            "id": 159
+                            "id": 185
                           },
                           {
                             "identifier": {
                               "name": "id",
-                              "id": 160
+                              "id": 186
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "id",
-                                "id": 161
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 187
+                                },
+                                "absolute_path": null,
+                                "id": 188
                               }
                             },
-                            "id": 162
+                            "id": 189
                           },
                           {
                             "identifier": {
                               "name": "balance",
-                              "id": 163
+                              "id": 190
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "balance",
-                                "id": 164
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 191
+                                },
+                                "absolute_path": null,
+                                "id": 192
                               }
                             },
-                            "id": 165
+                            "id": 193
                           }
                         ],
-                        "id": 166
+                        "id": 194
                       }
                     },
-                    "id": 167
+                    "id": 195
                   }
                 },
                 {
                   "Return": {
                     "expression": {
-                      "Identifier": {
-                        "name": "user",
-                        "id": 168
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "user",
+                          "id": 196
+                        },
+                        "absolute_path": null,
+                        "id": 197
                       }
                     },
-                    "id": 169
+                    "id": 198
                   }
                 }
               ],
-              "id": 170
+              "id": 199
             },
-            "id": 171
+            "id": 200
           }
         ],
         [
@@ -1182,27 +1313,32 @@
             "variant": "Transition",
             "identifier": {
               "name": "consume_user",
-              "id": 172
+              "id": 201
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "user",
-                  "id": 173
+                  "id": 202
                 },
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "User",
-                      "id": 174
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 203
+                      },
+                      "absolute_path": null,
+                      "id": 204
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 175
+                "id": 205
               }
             ],
             "output": [
@@ -1211,7 +1347,7 @@
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 176
+                "id": 206
               }
             ],
             "output_type": {
@@ -1224,25 +1360,30 @@
                     "expression": {
                       "MemberAccess": {
                         "inner": {
-                          "Identifier": {
-                            "name": "user",
-                            "id": 177
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "user",
+                              "id": 207
+                            },
+                            "absolute_path": null,
+                            "id": 208
                           }
                         },
                         "name": {
                           "name": "balance",
-                          "id": 178
+                          "id": 209
                         },
-                        "id": 179
+                        "id": 210
                       }
                     },
-                    "id": 180
+                    "id": 211
                   }
                 }
               ],
-              "id": 181
+              "id": 212
             },
-            "id": 182
+            "id": 213
           }
         ],
         [
@@ -1252,31 +1393,31 @@
             "variant": "AsyncTransition",
             "identifier": {
               "name": "asynchronous",
-              "id": 183
+              "id": 214
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "balance",
-                  "id": 184
+                  "id": 215
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 185
+                "id": 216
               },
               {
                 "identifier": {
                   "name": "id",
-                  "id": 186
+                  "id": 217
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 187
+                "id": 218
               }
             ],
             "output": [
@@ -1284,15 +1425,20 @@
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "User",
-                      "id": 188
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 219
+                      },
+                      "absolute_path": null,
+                      "id": 220
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 189
+                "id": 221
               },
               {
                 "mode": "None",
@@ -1303,7 +1449,7 @@
                     "is_explicit": false
                   }
                 },
-                "id": 190
+                "id": 222
               }
             ],
             "output_type": {
@@ -1311,9 +1457,14 @@
                 "elements": [
                   {
                     "Composite": {
-                      "id": {
-                        "name": "User",
-                        "id": 188
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "User",
+                          "id": 219
+                        },
+                        "absolute_path": null,
+                        "id": 220
                       },
                       "const_arguments": [],
                       "program": null
@@ -1336,14 +1487,19 @@
                     "place": {
                       "Single": {
                         "name": "user",
-                        "id": 191
+                        "id": 223
                       }
                     },
                     "type_": {
                       "Composite": {
-                        "id": {
-                          "name": "User",
-                          "id": 192
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 224
+                          },
+                          "absolute_path": null,
+                          "id": 225
                         },
                         "const_arguments": [],
                         "program": null
@@ -1351,65 +1507,85 @@
                     },
                     "value": {
                       "Struct": {
-                        "name": {
-                          "name": "User",
-                          "id": 193
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 226
+                          },
+                          "absolute_path": null,
+                          "id": 227
                         },
                         "const_arguments": [],
                         "members": [
                           {
                             "identifier": {
                               "name": "owner",
-                              "id": 194
+                              "id": 228
                             },
                             "expression": {
                               "MemberAccess": {
                                 "inner": {
-                                  "Identifier": {
-                                    "name": "self",
-                                    "id": 195
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "self",
+                                      "id": 229
+                                    },
+                                    "absolute_path": null,
+                                    "id": 229
                                   }
                                 },
                                 "name": {
                                   "name": "caller",
-                                  "id": 196
+                                  "id": 230
                                 },
-                                "id": 197
+                                "id": 231
                               }
                             },
-                            "id": 198
+                            "id": 232
                           },
                           {
                             "identifier": {
                               "name": "id",
-                              "id": 199
+                              "id": 233
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "id",
-                                "id": 200
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 234
+                                },
+                                "absolute_path": null,
+                                "id": 235
                               }
                             },
-                            "id": 201
+                            "id": 236
                           },
                           {
                             "identifier": {
                               "name": "balance",
-                              "id": 202
+                              "id": 237
                             },
                             "expression": {
-                              "Identifier": {
-                                "name": "balance",
-                                "id": 203
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 238
+                                },
+                                "absolute_path": null,
+                                "id": 239
                               }
                             },
-                            "id": 204
+                            "id": 240
                           }
                         ],
-                        "id": 205
+                        "id": 241
                       }
                     },
-                    "id": 206
+                    "id": 242
                   }
                 },
                 {
@@ -1418,47 +1594,67 @@
                       "Tuple": {
                         "elements": [
                           {
-                            "Identifier": {
-                              "name": "user",
-                              "id": 207
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "user",
+                                "id": 243
+                              },
+                              "absolute_path": null,
+                              "id": 244
                             }
                           },
                           {
                             "Call": {
                               "function": {
-                                "name": "finalize_asynchronous",
-                                "id": 208
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "finalize_asynchronous",
+                                  "id": 245
+                                },
+                                "absolute_path": null,
+                                "id": 246
                               },
                               "const_arguments": [],
                               "arguments": [
                                 {
-                                  "Identifier": {
-                                    "name": "balance",
-                                    "id": 209
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "balance",
+                                      "id": 247
+                                    },
+                                    "absolute_path": null,
+                                    "id": 248
                                   }
                                 },
                                 {
-                                  "Identifier": {
-                                    "name": "id",
-                                    "id": 210
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "id",
+                                      "id": 249
+                                    },
+                                    "absolute_path": null,
+                                    "id": 250
                                   }
                                 }
                               ],
                               "program": "dev",
-                              "id": 211
+                              "id": 251
                             }
                           }
                         ],
-                        "id": 212
+                        "id": 252
                       }
                     },
-                    "id": 213
+                    "id": 253
                   }
                 }
               ],
-              "id": 214
+              "id": 254
             },
-            "id": 215
+            "id": 255
           }
         ],
         [
@@ -1468,38 +1664,43 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_store_nested",
-              "id": 80
+              "id": 97
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "b",
-                  "id": 81
+                  "id": 98
                 },
                 "mode": "None",
                 "type_": {
                   "Composite": {
-                    "id": {
-                      "name": "B",
-                      "id": 82
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 99
+                      },
+                      "absolute_path": null,
+                      "id": 100
                     },
                     "const_arguments": [],
                     "program": null
                   }
                 },
-                "id": 83
+                "id": 101
               },
               {
                 "identifier": {
                   "name": "id",
-                  "id": 84
+                  "id": 102
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 85
+                "id": 103
               }
             ],
             "output": [],
@@ -1512,42 +1713,57 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 86
+                          "id": 104
                         },
                         "name": {
                           "name": "set",
-                          "id": 87
+                          "id": 105
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "bs",
-                              "id": 88
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "bs",
+                                "id": 107
+                              },
+                              "absolute_path": null,
+                              "id": 108
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "id",
-                              "id": 89
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 109
+                              },
+                              "absolute_path": null,
+                              "id": 110
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "b",
-                              "id": 90
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 111
+                              },
+                              "absolute_path": null,
+                              "id": 112
                             }
                           }
                         ],
-                        "id": 91
+                        "id": 113
                       }
                     },
-                    "id": 92
+                    "id": 114
                   }
                 }
               ],
-              "id": 93
+              "id": 115
             },
-            "id": 94
+            "id": 116
           }
         ],
         [
@@ -1557,31 +1773,31 @@
             "variant": "AsyncFunction",
             "identifier": {
               "name": "finalize_asynchronous",
-              "id": 216
+              "id": 256
             },
             "const_parameters": [],
             "input": [
               {
                 "identifier": {
                   "name": "balance",
-                  "id": 217
+                  "id": 257
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 218
+                "id": 258
               },
               {
                 "identifier": {
                   "name": "id",
-                  "id": 219
+                  "id": 259
                 },
                 "mode": "None",
                 "type_": {
                   "Integer": "U64"
                 },
-                "id": 220
+                "id": 260
               }
             ],
             "output": [],
@@ -1594,42 +1810,57 @@
                       "AssociatedFunction": {
                         "variant": {
                           "name": "Mapping",
-                          "id": 221
+                          "id": 261
                         },
                         "name": {
                           "name": "set",
-                          "id": 222
+                          "id": 262
                         },
                         "arguments": [
                           {
-                            "Identifier": {
-                              "name": "balances",
-                              "id": 223
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "balances",
+                                "id": 264
+                              },
+                              "absolute_path": null,
+                              "id": 265
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "id",
-                              "id": 224
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 266
+                              },
+                              "absolute_path": null,
+                              "id": 267
                             }
                           },
                           {
-                            "Identifier": {
-                              "name": "balance",
-                              "id": 225
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "balance",
+                                "id": 268
+                              },
+                              "absolute_path": null,
+                              "id": 269
                             }
                           }
                         ],
-                        "id": 226
+                        "id": 270
                       }
                     },
-                    "id": 227
+                    "id": 271
                   }
                 }
               ],
-              "id": 228
+              "id": 272
             },
-            "id": 229
+            "id": 273
           }
         ]
       ],

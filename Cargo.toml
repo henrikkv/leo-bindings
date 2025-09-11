@@ -1,20 +1,43 @@
 [workspace]
 members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external"]
 
-[package]
-name = "leo-bindings"
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
+
+[workspace.dependencies]
+snarkvm = { version = "4.2.0" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+indexmap = "2.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
+aleo-std = { version = "1.0.1", features = ["storage"] }
+convert_case = "0.6"
+http = "1.0"
+ureq = { version = "2.6", features = ["json"] }
+rand = "0.8"
+clap = { version = "4.0", features = ["derive"] }
+leo-span = "3.2.0"
+leo-package = "3.2.0"
+leo-ast = "3.2.0"
+
+[package]
+name = "leo-bindings"
+version.workspace = true
+edition.workspace = true
 
 [[bin]]
 name = "get-signatures"
 path = "src/bin/get-signatures.rs"
 
 [dependencies]
-serde_json = "1.0"
-clap = { version = "4.0", features = ["derive"] }
-snarkvm = "4.1.0"
-anyhow = "1.0"
-ureq = { version = "2.6", features = ["json"] }
+serde_json = { workspace = true }
+clap = { workspace = true }
+snarkvm = { workspace = true }
+anyhow = { workspace = true }
+ureq = { workspace = true }
 leo-bindings-macro = { path = "leo-bindings-macro" }
 leo-bindings-core = { path = "leo-bindings-core" }

@@ -1,7 +1,7 @@
 [package]
 name = "token"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 name = "tokenexample"
@@ -10,13 +10,14 @@ path = "lib.rs"
 [dependencies]
 leo-bindings = { path = "../../" }
 leo-bindings-credits = { path = "../../leo-bindings-credits/" }
-snarkvm = "4.1.0"
-anyhow = "1.0"
-leo-span = "3.1.0"
-leo-package = "3.1.0"
-leo-ast = "3.1.0"
-ureq = { version = "2.6", features = ["json"] }
-serde_json = "1.0"
-indexmap = "2.0"
-aleo-std = { version = "1.0.1", features = ["storage"] }
-rand = "0.8"
+snarkvm = { workspace = true }
+anyhow = { workspace = true }
+leo-span = { workspace = true }
+leo-package = { workspace = true }
+leo-ast = { workspace = true }
+ureq = { workspace = true }
+serde_json = { workspace = true }
+indexmap = { workspace = true }
+aleo-std = { workspace = true }
+rand = { workspace = true }
+http = { workspace = true }
