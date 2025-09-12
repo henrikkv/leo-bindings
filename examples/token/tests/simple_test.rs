@@ -2,12 +2,13 @@
 fn token() {
     use leo_bindings::utils::*;
     use leo_bindings_credits::credits_aleo::*;
+    use snarkvm::console::network::TestnetV0;
     use std::str::FromStr;
     use tokenexample::token_aleo::token;
 
     const ENDPOINT: &str = "http://localhost:3030";
     let rng = &mut rand::thread_rng();
-    let alice =
+    let alice: Account<TestnetV0> =
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
     let bob = Account::new(rng).unwrap();
 

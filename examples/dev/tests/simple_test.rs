@@ -2,15 +2,16 @@
 fn dev() {
     use devtest::dev_aleo::*;
     use leo_bindings::utils::*;
+    use snarkvm::prelude::TestnetV0;
     use std::str::FromStr;
 
     const ENDPOINT: &str = "http://localhost:3030";
-    let alice: Account<snarkvm::console::network::TestnetV0> =
+    let alice: Account<TestnetV0> =
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
 
     let dev = dev::new(&alice, ENDPOINT).unwrap();
 
-    let user: User = dev.create_user(&alice, alice.address(), 0, 0).unwrap();
+    let user = dev.create_user(&alice, alice.address(), 0, 0).unwrap();
     dbg!(&user);
     let balance = dev.consume_user(&alice, user).unwrap();
     dbg!(balance);

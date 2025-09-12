@@ -138,6 +138,7 @@ pub fn wait_for_transaction_confirmation<N: Network>(
 pub fn wait_for_program_availability(
     program_id: &str,
     endpoint: &str,
+    network_path: &str,
     timeout_secs: u64,
 ) -> Result<(), anyhow::Error> {
     let start_time = Instant::now();
@@ -145,7 +146,7 @@ pub fn wait_for_program_availability(
         if start_time.elapsed() > Duration::from_secs(timeout_secs) {
             return Err(anyhow!("Timeout waiting for program {program_id}"));
         }
-        match ureq::get(&format!("{endpoint}/testnet/program/{program_id}")).call() {
+        match ureq::get(&format!("{endpoint}/{network_path}/program/{program_id}")).call() {
             Ok(_) => return Ok(()),
             Err(_) => sleep(Duration::from_secs(1)),
         }

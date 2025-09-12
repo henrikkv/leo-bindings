@@ -4,40 +4,9 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use convert_case::{Case, Casing};
 
-fn get_network_info(
-    network_type: &syn::Path,
-) -> (
-    &'static str,
-    proc_macro2::TokenStream,
-    proc_macro2::TokenStream,
-) {
-    let path_str = quote!(#network_type).to_string();
-    match path_str.as_str() {
-        s if s.contains("TestnetV0") => (
-            "testnet",
-            quote! { NetworkName::TestnetV0 },
-            quote! { snarkvm::circuit::network::AleoTestnetV0 },
-        ),
-        s if s.contains("MainnetV0") => (
-            "mainnet",
-            quote! { NetworkName::MainnetV0 },
-            quote! { snarkvm::circuit::network::AleoV0 },
-        ),
-        s if s.contains("CanaryV0") => (
-            "canary",
-            quote! { NetworkName::CanaryV0 },
-            quote! { snarkvm::circuit::network::AleoCanaryV0 },
-        ),
-        _ => panic!(
-            "Unsupported network type: {}. Supported types: TestnetV0, MainnetV0, CanaryV0",
-            path_str
-        ),
-    }
-}
 
 pub fn generate_program_module(
     simplified: &SimplifiedBindings,
-    network_type: syn::Path,
 ) -> TokenStream {
     let module_name = syn::Ident::new(
         &format!("{}_aleo", simplified.program_name.to_lowercase()),
@@ -54,7 +23,7 @@ pub fn generate_program_module(
         .collect();
 
     let program_code =
-        generate_code_from_simplified(simplified, network_type, Some(dependency_modules));
+        generate_code_from_simplified(simplified, dependency_modules);
 
     quote! {
         pub mod #module_name {
@@ -65,12 +34,9 @@ pub fn generate_program_module(
 
 pub fn generate_code_from_simplified(
     simplified: &SimplifiedBindings,
-    network_type: syn::Path,
-    dependency_modules: Option<Vec<(String, String)>>,
+    dependency_modules: Vec<(String, String)>,
 ) -> TokenStream {
     let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
-
-    let (network_path, network_name, aleo_type) = get_network_info(&network_type);
 
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
@@ -82,8 +48,7 @@ pub fn generate_code_from_simplified(
         .map(|import_name| {
             let dep_struct_name = syn::Ident::new(import_name, proc_macro2::Span::call_site());
             dependency_modules
-                .as_ref()
-                .and_then(|deps| deps.iter().find(|(name, _)| name == import_name))
+                .iter().find(|(name, _)| name == import_name)
                 .map_or_else(
                     || quote! { #dep_struct_name::new(deployer, endpoint)?; },
                     |(_, module_name)| {
@@ -98,10 +63,10 @@ pub fn generate_code_from_simplified(
         .map(|import_name| {
             let dep_program_id = format!("{}.aleo", import_name);
             quote! {
-                let dep_program_id = ProgramID::<Nw>::from_str(#dep_program_id)?;
-                wait_for_program_availability(&dep_program_id.to_string(), endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let dep_program: Program<Nw> = {
-                    let response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, dep_program_id)).call().map_err(|e| anyhow!("Failed to fetch dependency program: {}", e))?;
+                let dep_program_id = ProgramID::<N>::from_str(#dep_program_id)?;
+                wait_for_program_availability(&dep_program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let dep_program: Program<N> = {
+                    let response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dep_program_id)).call().map_err(|e| anyhow!("Failed to fetch dependency program: {}", e))?;
                     let json_response: serde_json::Value = response.into_json()?;
                     json_response.as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?.to_string().parse()?
                 };
@@ -112,7 +77,6 @@ pub fn generate_code_from_simplified(
     let function_implementations = generate_function_implementations(
         &simplified.functions,
         &simplified.program_name,
-        &aleo_type,
         &dep_additions,
     );
 
@@ -148,22 +112,18 @@ pub fn generate_code_from_simplified(
         use leo_bindings::{ToValue, FromValue};
         use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
 
-        type Nw = #network_type;
-
         #(#records)*
 
         #(#structs)*
 
-        pub struct #program_name {
+        pub struct #program_name<N: Network> {
             pub package: Package,
             pub endpoint: String,
+            _phantom: std::marker::PhantomData<N>,
         }
 
-        const NETWORK_PATH: &str = #network_path;
-        const NETWORK_NAME: NetworkName = #network_name;
-
-        impl #program_name {
-            pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
+        impl<N: Network> #program_name<N> {
+            pub fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> {
                 use leo_package::{Package, Manifest};
                 use leo_span::create_session_if_not_set_then;
                 use std::path::Path;
@@ -176,7 +136,7 @@ pub fn generate_code_from_simplified(
                     crate_dir,
                     false,
                     false,
-                    Some(NETWORK_NAME),
+                    Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
                     Some(endpoint),
                 ) {
                     Ok(pkg) => pkg,
@@ -200,9 +160,9 @@ pub fn generate_code_from_simplified(
 
                 #(#deployment_calls)*
 
-                let program_id = ProgramID::<Nw>::from_str(&format!("{}.aleo", stringify!(#program_name)))?;
+                let program_id = ProgramID::<N>::from_str(&format!("{}.aleo", stringify!(#program_name)))?;
                 let program_exists = {
-                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, NETWORK_PATH, program_id))
+                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, program_id))
                         .call();
                     match check_response {
                         Ok(_) => {
@@ -232,13 +192,13 @@ pub fn generate_code_from_simplified(
                     let bytecode = std::fs::read_to_string(aleo_path.clone())
                         .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?;
 
-                    let program: Program<Nw> = bytecode.parse()
+                    let program: Program<N> = bytecode.parse()
                         .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
 
                     println!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
-                    let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                    let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint.parse::<http::uri::Uri>()?);
+                    let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
+                    let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
                     let process = vm.process();
 
                      #(#dep_additions)*
@@ -254,17 +214,18 @@ pub fn generate_code_from_simplified(
 
                     println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
 
-                    let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, NETWORK_PATH))
+                    let response = ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, N::SHORT_NAME))
                         .send_json(&transaction)?;
 
-                    wait_for_transaction_confirmation::<Nw>(&transaction.id(), endpoint, NETWORK_PATH, 60)?;
-                    wait_for_program_availability(&program_id.to_string(), endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
+                    wait_for_transaction_confirmation::<N>(&transaction.id(), endpoint, N::SHORT_NAME, 60)?;
+                    wait_for_program_availability(&program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
                 }
 
-                    Ok(Self {
-                        package,
-                        endpoint: endpoint.to_string(),
-                    })
+                Ok(Self {
+                    package,
+                    endpoint: endpoint.to_string(),
+                    _phantom: std::marker::PhantomData,
+                })
                 });
 
                 result
@@ -286,13 +247,13 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
         let member_definitions = record.members.iter().map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
             if member.name == "owner" {
-                quote! { #member_name: Owner<Nw, Plaintext<Nw>> }
+                quote! { #member_name: Owner<N, Plaintext<N>> }
             } else {
                 let member_type = get_rust_type(&member.type_name);
                 quote! { #member_name: #member_type }
             }
         });
-        let extra_record_fields = quote! { __nonce: Group<Nw>, __version: U8<Nw> };
+        let extra_record_fields = quote! { __nonce: Group<N>, __version: U8<N> };
 
         let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
             let member_name = syn::Ident::new(&member.name, proc_macro2::Span::call_site());
@@ -375,13 +336,13 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
 
         quote! {
             #[derive(Debug, Clone)]
-            pub struct #record_name {
+            pub struct #record_name<N: Network> {
                 #(#member_definitions),*,
                 #extra_record_fields
             }
 
-            impl ToValue<Nw> for #record_name {
-                fn to_value(&self) -> Value<Nw> {
+            impl<N: Network> ToValue<N> for #record_name<N> {
+                fn to_value(&self) -> Value<N> {
                     match self.to_record() {
                         Ok(rec) => Value::Record(rec),
                         Err(e) => panic!("Failed to convert to Record: {}", e),
@@ -389,8 +350,8 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
                 }
             }
 
-            impl FromValue<Nw> for #record_name {
-                fn from_value(value: Value<Nw>) -> Self {
+            impl<N: Network> FromValue<N> for #record_name<N> {
+                fn from_value(value: Value<N>) -> Self {
                     match value {
                         Value::Record(record) => {
 
@@ -406,8 +367,8 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
                 }
             }
 
-            impl #record_name {
-                pub fn to_record(&self) -> Result<Record<Nw, Plaintext<Nw>>, anyhow::Error> {
+            impl<N: Network> #record_name<N> {
+                pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
                     let data = IndexMap::from([
                         #(#member_conversions),*
                     ]);
@@ -415,7 +376,7 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
                     let nonce = self.__nonce.clone();
                     let version = self.__version.clone();
 
-                    Record::<Nw, Plaintext<Nw>>::from_plaintext(
+                    Record::<N, Plaintext<N>>::from_plaintext(
                         owner,
                         data,
                         nonce,
@@ -480,12 +441,13 @@ fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_mac
 
             quote! {
                 #[derive(Debug, Clone, Copy)]
-                pub struct #struct_name {
-                    #(#member_definitions),*
+                pub struct #struct_name<N: Network> {
+                    #(#member_definitions),*,
+                    _phantom: std::marker::PhantomData<N>
                 }
 
-                impl ToValue<Nw> for #struct_name {
-                    fn to_value(&self) -> Value<Nw> {
+                impl<N: Network> ToValue<N> for #struct_name<N> {
+                    fn to_value(&self) -> Value<N> {
                         let members = IndexMap::from([
                             #(#member_conversions),*
                         ]);
@@ -493,13 +455,14 @@ fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_mac
                     }
                 }
 
-                impl FromValue<Nw> for #struct_name {
-                    fn from_value(value: Value<Nw>) -> Self {
+                impl<N: Network> FromValue<N> for #struct_name<N> {
+                    fn from_value(value: Value<N>) -> Self {
                         match value {
                             Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
                                 #(#member_extractions)*
                                 Self {
-                                    #(#member_names),*
+                                    #(#member_names),*,
+                                    _phantom: std::marker::PhantomData
                                 }
                             },
                             _ => panic!("Expected struct type"),
@@ -507,10 +470,11 @@ fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_mac
                     }
                 }
 
-                impl #struct_name {
+                impl<N: Network> #struct_name<N> {
                     pub fn new(#(#member_definitions_for_constructor),*) -> Self {
                         Self {
-                            #(#member_names),*
+                            #(#member_names),*,
+                            _phantom: std::marker::PhantomData
                         }
                     }
                 }
@@ -521,7 +485,6 @@ fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_mac
 fn generate_function_implementations(
     functions: &[crate::signature::FunctionBinding],
     program_name: &str,
-    _aleo_type: &proc_macro2::TokenStream,
     dep_additions: &[proc_macro2::TokenStream],
 ) -> Vec<proc_macro2::TokenStream> {
     functions.iter().map(|function| {
@@ -579,22 +542,22 @@ fn generate_function_implementations(
             .join(", ");
 
         quote! {
-            pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
+            pub fn #function_name(&self, account: &Account<N>, #(#input_params),*) -> #function_return_type {
                 let program_id = ProgramID::try_from(format!("{}.aleo", #program_name).as_str()).unwrap();
 
                 let function_id = Identifier::from_str(&stringify!(#function_name).to_string()).unwrap();
-                let function_args: Vec<Value<Nw>> = vec![#(#input_conversions),*];
+                let function_args: Vec<Value<N>> = vec![#(#input_conversions),*];
 
                 let rng = &mut rand::thread_rng();
-                let locator = Locator::<Nw>::new(program_id, function_id);
+                let locator = Locator::<N>::new(program_id, function_id);
 
                 println!("Creating tx: {}.{}({})", #program_name, stringify!(#function_name), #param_names_string);
 
-                let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                let query = Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.parse::<http::uri::Uri>()?);
+                let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
+                let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
                 
-                wait_for_program_availability(&program_id.to_string(), &self.endpoint, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let program: Program<Nw> = ureq::get(&format!("{}/{}/program/{}", self.endpoint, NETWORK_PATH, program_id))
+                wait_for_program_availability(&program_id.to_string(), &self.endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let program: Program<N> = ureq::get(&format!("{}/{}/program/{}", self.endpoint, N::SHORT_NAME, program_id))
                     .call().map_err(|e| anyhow!("Failed to fetch program: {}", e))?
                     .into_json::<serde_json::Value>()?
                     .as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?
@@ -611,21 +574,21 @@ fn generate_function_implementations(
                     function_args.iter(),
                     None,
                     0,
-                    Some(&query as &dyn QueryTrait<Nw>),
+                    Some(&query as &dyn QueryTrait<N>),
                     rng,
                 ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
 
-                let public_balance = get_public_balance(&account.address(), &self.endpoint, NETWORK_PATH)?;
+                let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME)?;
                 let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
                 let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
                 
                 ensure!(public_balance >= total_cost, 
                     "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
 
-                broadcast_transaction(transaction.clone(), &self.endpoint, NETWORK_PATH)?;
-                wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, NETWORK_PATH, 30)?;
+                broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
+                wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
 
-                let function_outputs: Vec<Value<Nw>> = response.outputs().to_vec();
+                let function_outputs: Vec<Value<N>> = response.outputs().to_vec();
 
                 #function_return_conversions
             }
@@ -648,16 +611,16 @@ fn generate_mapping_implementations(
                 let program_id = format!("{}.aleo", #program_name);
                 let mapping_name = #mapping_name;
                 
-                let key_value: Value<Nw> = key.to_value();
+                let key_value: Value<N> = key.to_value();
                 let url = format!("{}/{}/program/{}/mapping/{}/{}", 
-                    self.endpoint, NETWORK_PATH, program_id, mapping_name, 
+                    self.endpoint, N::SHORT_NAME, program_id, mapping_name, 
                     key_value.to_string().replace("\"", ""));
                 
                 let response = ureq::get(&url).call();
                 
                 match response {
                     Ok(response) => {
-                        let value: Option<Value<Nw>> = response.into_json()?;
+                        let value: Option<Value<N>> = response.into_json()?;
                         match value {
                             Some(val) => Ok(Some(<#value_type>::from_value(val))),
                             None => Ok(None),
