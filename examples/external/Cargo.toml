@@ -12,3 +12,4 @@ leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 
 [dev-dependencies]
 war = { git = "https://github.com/henrikkv/berlin" }
+snarkvm = { version = "4.2.0" }

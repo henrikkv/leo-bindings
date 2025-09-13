@@ -39,5 +39,12 @@ clap = { workspace = true }
 snarkvm = { workspace = true }
 anyhow = { workspace = true }
 ureq = { workspace = true }
+indexmap = { workspace = true }
+leo-span = { workspace = true }
+leo-package = { workspace = true }
+leo-ast = { workspace = true }
+aleo-std = { workspace = true }
+http = { workspace = true }
+rand = { workspace = true }
 leo-bindings-macro = { path = "leo-bindings-macro" }
 leo-bindings-core = { path = "leo-bindings-core" }

@@ -87,6 +87,8 @@ pub fn generate_code_from_simplified(
     );
 
     let expanded = quote! {
+        use leo_bindings::{anyhow, snarkvm, indexmap, serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand};
+        
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
         use indexmap::IndexMap;
@@ -104,12 +106,10 @@ pub fn generate_code_from_simplified(
         use leo_ast::NetworkName;
         use leo_span::create_session_if_not_set_then;
         use aleo_std::StorageMode;
-        use serde_json;
         use std::str::FromStr;
         use std::fmt;
         use std::thread::sleep;
         use std::time::Duration;
-        use http;
         use leo_bindings::{ToValue, FromValue};
         use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
 

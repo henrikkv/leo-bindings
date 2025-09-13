@@ -9,14 +9,6 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings = { path = "../../" }
+
+[dev-dependencies]
 snarkvm = { workspace = true }
-anyhow = { workspace = true }
-leo-span = { workspace = true }
-leo-package = { workspace = true }
-leo-ast = { workspace = true }
-ureq = { workspace = true }
-serde_json = { workspace = true }
-indexmap = { workspace = true }
-rand = { workspace = true }
-aleo-std = { workspace = true }
-http = { workspace = true }
