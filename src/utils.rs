@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail};
+use anyhow::anyhow;
 use snarkvm::prelude::*;
 use std::str::FromStr;
 use std::thread::sleep;
@@ -64,32 +64,27 @@ pub fn get_public_balance<N: Network>(
     address: &Address<N>,
     endpoint: &str,
     network_path: &str,
-) -> Result<u64, anyhow::Error> {
-    let credits = ProgramID::<N>::from_str("credits.aleo")?;
-    let account_mapping = Identifier::<N>::from_str("account")?;
+) -> u64 {
+    let credits = ProgramID::<N>::from_str("credits.aleo").unwrap();
+    let account_mapping = Identifier::<N>::from_str("account").unwrap();
 
     let response = ureq::get(&format!(
         "{endpoint}/{network_path}/program/{credits}/mapping/{account_mapping}/{address}"
     ))
     .call();
 
-    let balance: Result<Option<Value<N>>, anyhow::Error> = match response {
-        Ok(response) => response.into_json().map_err(|err| err.into()),
-        Err(err) => match err {
-            ureq::Error::Status(_status, response) => {
-                bail!(response
-                    .into_string()
-                    .unwrap_or("Response too large!".to_owned()))
-            }
-            err => bail!(err),
-        },
+    let balance: Option<Value<N>> = match response {
+        Ok(mut response) => {
+            let json_text = response.body_mut().read_to_string().unwrap();
+            serde_json::from_str::<Option<Value<N>>>(&json_text).unwrap()
+        }
+        Err(err) => panic!("{}", err),
     };
 
     match balance {
-        Ok(Some(Value::Plaintext(Plaintext::Literal(Literal::<N>::U64(amount), _)))) => Ok(*amount),
-        Ok(None) => Ok(0),
-        Ok(Some(..)) => bail!("Failed to deserialize balance for {address}"),
-        Err(err) => bail!("Failed to fetch balance for {address}: {err}"),
+        Some(Value::Plaintext(Plaintext::Literal(Literal::<N>::U64(amount), _))) => *amount,
+        None => 0,
+        Some(..) => panic!("Failed to deserialize balance for {address}"),
     }
 }
 
@@ -117,20 +112,20 @@ pub fn wait_for_transaction_confirmation<N: Network>(
         }
         let url = &format!("{endpoint}/{network_path}/transaction/confirmed/{transaction_id}");
         match ureq::get(url).call() {
-            Ok(response) => {
-                if let Ok(json) = response.into_json::<serde_json::Value>() {
-                    if let Some(status) = json.get("status").and_then(|s| s.as_str()) {
-                        match status {
-                            "accepted" => return Ok(()),
-                            "rejected" => return Err(anyhow!("❌ Transaction rejected: {json}")),
-                            _ => return Err(anyhow!("⚠️ Status '{status}': {json}")),
-                        }
-                    }
+            Ok(mut response) => {
+                let json_text = response.body_mut().read_to_string().unwrap();
+                let json: serde_json::Value = serde_json::from_str(&json_text).unwrap();
+                let status = json.get("status").and_then(|s| s.as_str()).unwrap();
+                match status {
+                    "accepted" => return Ok(()),
+                    "rejected" => panic!("❌ Transaction rejected: {json}"),
+                    _ => panic!("⚠️ Status '{status}': {json}"),
                 }
             }
-            Err(_) => {
+            Err(ureq::Error::StatusCode(500)) => {
                 sleep(Duration::from_secs(1));
             }
+            Err(e) => panic!("❌ Error fetching transaction: {}", e),
         }
     }
 }

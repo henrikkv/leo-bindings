@@ -9,15 +9,9 @@ struct InitialJson {
 
 #[derive(Debug, Deserialize)]
 struct ProgramScope {
-    program_id: ProgramId,
     structs: Vec<(String, StructDef)>,
     mappings: Vec<(String, MappingDef)>,
     functions: Vec<(String, FunctionDef)>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ProgramId {
-    name: Identifier,
 }
 
 #[derive(Debug, Deserialize)]
@@ -81,6 +75,7 @@ enum TypeInfo {
     },
     Future {
         #[serde(rename = "Future")]
+        #[allow(dead_code)]
         future: FutureType,
     },
     Tuple {
@@ -92,16 +87,11 @@ enum TypeInfo {
 #[derive(Debug, Deserialize)]
 struct CompositeType {
     path: PathType,
-    const_arguments: Vec<serde_json::Value>,
-    program: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Deserialize)]
 struct PathType {
-    qualifier: Vec<serde_json::Value>,
     identifier: Identifier,
-    absolute_path: Option<serde_json::Value>,
-    id: u64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -118,7 +108,14 @@ struct MappingDef {
 }
 
 #[derive(Debug, Deserialize)]
-struct FutureType {}
+struct FutureType {
+    #[allow(dead_code)]
+    inputs: Vec<serde_json::Value>,
+    #[allow(dead_code)]
+    location: Option<serde_json::Value>,
+    #[allow(dead_code)]
+    is_explicit: bool,
+}
 
 #[derive(Debug, Deserialize)]
 struct TupleType {
@@ -313,11 +310,9 @@ fn normalize_type(type_info: &TypeInfo) -> String {
         }
         TypeInfo::Future { .. } => "Future".to_string(),
         TypeInfo::Tuple { tuple } => {
-            let element_types: Vec<String> = tuple.elements.iter()
-                .map(normalize_type)
-                .collect();
+            let element_types: Vec<String> = tuple.elements.iter().map(normalize_type).collect();
             format!("({})", element_types.join(", "))
-        },
+        }
     }
 }
 

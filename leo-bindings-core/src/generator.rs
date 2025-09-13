@@ -66,9 +66,10 @@ pub fn generate_code_from_simplified(
                 let dep_program_id = ProgramID::<N>::from_str(#dep_program_id)?;
                 wait_for_program_availability(&dep_program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let dep_program: Program<N> = {
-                    let response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dep_program_id)).call().map_err(|e| anyhow!("Failed to fetch dependency program: {}", e))?;
-                    let json_response: serde_json::Value = response.into_json()?;
-                    json_response.as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?.to_string().parse()?
+                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dep_program_id)).call().unwrap();
+                    let json_text = response.body_mut().read_to_string().unwrap();
+                    let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
+                    json_response.as_str().unwrap().to_string().parse().unwrap()
                 };
                 vm.process().write().add_program(&dep_program)?;
             }
@@ -557,11 +558,13 @@ fn generate_function_implementations(
                 let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
                 
                 wait_for_program_availability(&program_id.to_string(), &self.endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let program: Program<N> = ureq::get(&format!("{}/{}/program/{}", self.endpoint, N::SHORT_NAME, program_id))
-                    .call().map_err(|e| anyhow!("Failed to fetch program: {}", e))?
-                    .into_json::<serde_json::Value>()?
-                    .as_str().ok_or_else(|| anyhow!("Expected program string in JSON response"))?
-                    .parse()?;
+                let program: Program<N> = {
+                    let mut response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, N::SHORT_NAME, program_id))
+                        .call().unwrap();
+                    let json_text = response.body_mut().read_to_string().unwrap();
+                    let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
+                    json_response.as_str().unwrap().parse().unwrap()
+                };
 
                 let endpoint = &self.endpoint;
                 #(#dep_additions)*
@@ -578,13 +581,14 @@ fn generate_function_implementations(
                     rng,
                 ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
 
-                let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME)?;
+                let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
                 let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
                 let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
                 
                 ensure!(public_balance >= total_cost, 
                     "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
 
+                println!("📡 Broadcasting tx: {}",transaction.id());
                 broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
                 wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
 
@@ -607,7 +611,7 @@ fn generate_mapping_implementations(
         let value_type = crate::types::get_rust_type(&mapping.value_type);
 
         quote! {
-            pub fn #getter_name(&self, key: #key_type) -> Result<Option<#value_type>, anyhow::Error> {
+            pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
                 let program_id = format!("{}.aleo", #program_name);
                 let mapping_name = #mapping_name;
                 
@@ -619,15 +623,16 @@ fn generate_mapping_implementations(
                 let response = ureq::get(&url).call();
                 
                 match response {
-                    Ok(response) => {
-                        let value: Option<Value<N>> = response.into_json()?;
+                    Ok(mut response) => {
+                        let json_text = response.body_mut().read_to_string().unwrap();
+                        let value: Option<Value<N>> = serde_json::from_str(&json_text).unwrap();
                         match value {
-                            Some(val) => Ok(Some(<#value_type>::from_value(val))),
-                            None => Ok(None),
+                            Some(val) => Some(<#value_type>::from_value(val)),
+                            None => None,
                         }
                     },
-                    Err(ureq::Error::Status(404, _)) => Ok(None),
-                    Err(e) => Err(anyhow!("Failed to fetch mapping value: {}", e)),
+                    Err(ureq::Error::StatusCode(404)) => None,
+                    Err(e) => panic!("Failed to fetch mapping value: {}", e),
                 }
             }
                 
