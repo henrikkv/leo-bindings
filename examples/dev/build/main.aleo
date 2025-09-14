@@ -77,5 +77,71 @@ finalize asynchronous:
     input r1 as u64.public;
     set r0 into balances[r1];
 
+function test_field:
+    input r0 as field.private;
+    output r0 as field.private;
+
+function test_field_tuple:
+    input r0 as field.private;
+    input r1 as field.private;
+    output r0 as field.private;
+    output r1 as field.private;
+
+function test_scalar:
+    input r0 as scalar.private;
+    output r0 as scalar.private;
+
+function test_scalar_tuple:
+    input r0 as scalar.private;
+    input r1 as scalar.private;
+    output r0 as scalar.private;
+    output r1 as scalar.private;
+
+function test_group:
+    input r0 as group.private;
+    output r0 as group.private;
+
+function test_group_tuple:
+    input r0 as group.private;
+    input r1 as group.private;
+    output r0 as group.private;
+    output r1 as group.private;
+
+function test_simple_tuple:
+    input r0 as u32.private;
+    input r1 as u64.private;
+    output r0 as u32.private;
+    output r1 as u64.private;
+
+function test_mixed_tuple:
+    input r0 as field.private;
+    input r1 as boolean.private;
+    input r2 as u32.private;
+    output r0 as field.private;
+    output r1 as boolean.private;
+    output r2 as u32.private;
+
+function test_field_scalar_tuple:
+    input r0 as field.private;
+    input r1 as scalar.private;
+    output r0 as field.private;
+    output r1 as scalar.private;
+
+function test_group_field_tuple:
+    input r0 as group.private;
+    input r1 as field.private;
+    output r0 as group.private;
+    output r1 as field.private;
+
+function test_all_types:
+    input r0 as field.private;
+    input r1 as scalar.private;
+    input r2 as group.private;
+    input r3 as boolean.private;
+    output r0 as field.private;
+    output r1 as scalar.private;
+    output r2 as group.private;
+    output r3 as boolean.private;
+
 constructor:
     assert.eq edition 0u16;

@@ -69,4 +69,48 @@ program dev.aleo {
     async function finalize_asynchronous(balance: u64, id: u64) {
         Mapping::set(balances, id, balance);
     }
+
+    transition test_field(a: field) -> field {
+        return a;
+    }
+
+    transition test_field_tuple(a: field, b: field) -> (field, field) {
+        return (a, b);
+    }
+
+    transition test_scalar(a: scalar) -> scalar {
+        return a;
+    }
+
+    transition test_scalar_tuple(a: scalar, b: scalar) -> (scalar, scalar) {
+        return (a, b);
+    }
+
+    transition test_group(g: group) -> group {
+        return g;
+    }
+
+    transition test_group_tuple(a: group, b: group) -> (group, group) {
+        return (a, b);
+    }
+
+    transition test_simple_tuple(a: u32, b: u64) -> (u32, u64) {
+        return (a, b);
+    }
+
+    transition test_mixed_tuple(a: field, b: bool, c: u32) -> (field, bool, u32) {
+        return (a, b, c);
+    }
+
+    transition test_field_scalar_tuple(f: field, s: scalar) -> (field, scalar) {
+        return (f, s);
+    }
+
+    transition test_group_field_tuple(g: group, f: field) -> (group, field) {
+        return (g, f);
+    }
+
+    transition test_all_types(f: field, s: scalar, g: group, flag: bool) -> (field, scalar, group, bool) {
+        return (f, s, g, flag);
+    }
 }
