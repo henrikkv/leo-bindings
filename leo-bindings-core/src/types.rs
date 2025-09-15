@@ -21,27 +21,27 @@ pub fn get_rust_type(type_name: &str) -> TokenStream {
         "i32" => quote! { i32 },
         "i64" => quote! { i64 },
         "i128" => quote! { i128 },
-        "address" => quote! { Address<N> },
-        "Address" => quote! { Address<N> },
-        "field" => quote! { Field<N> },
-        "Field" => quote! { Field<N> },
-        "group" => quote! { Group<N> },
-        "Group" => quote! { Group<N> },
-        "scalar" => quote! { Scalar<N> },
-        "Scalar" => quote! { Scalar<N> },
-        "signature" => quote! { Signature<N> },
-        "Signature" => quote! { Signature<N> },
-        "string" => quote! { StringType<N> },
-        "String" => quote! { StringType<N> },
+        "address" => quote! { Address<Nw> },
+        "Address" => quote! { Address<Nw> },
+        "field" => quote! { Field<Nw> },
+        "Field" => quote! { Field<Nw> },
+        "group" => quote! { Group<Nw> },
+        "Group" => quote! { Group<Nw> },
+        "scalar" => quote! { Scalar<Nw> },
+        "Scalar" => quote! { Scalar<Nw> },
+        "signature" => quote! { Signature<Nw> },
+        "Signature" => quote! { Signature<Nw> },
+        "string" => quote! { StringType<Nw> },
+        "String" => quote! { StringType<Nw> },
         "bool" => quote! { bool },
         "boolean" => quote! { bool },
         "Boolean" => quote! { bool },
-        "Future" => quote! { Future<N> },
-        "Ciphertext" => quote! { Ciphertext<N> },
+        "Future" => quote! { Future<Nw> },
+        "Ciphertext" => quote! { Ciphertext<Nw> },
         other => {
             let type_ident =
                 syn::Ident::new(&other.to_case(Case::Pascal), proc_macro2::Span::call_site());
-            quote! { #type_ident<N> }
+            quote! { #type_ident }
         }
     }
 }

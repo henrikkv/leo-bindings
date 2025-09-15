@@ -7,17 +7,21 @@ use syn::{parse_macro_input, Expr, Token};
 
 // Struct to parse macro arguments
 struct MacroArgs {
+    network: syn::LitStr,
     snapshot_paths: syn::ExprArray,
     signature_paths: syn::ExprArray,
 }
 
 impl syn::parse::Parse for MacroArgs {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let network = input.parse()?;
+        input.parse::<Token![,]>()?;
         let snapshot_paths = input.parse()?;
         input.parse::<Token![,]>()?;
         let signature_paths = input.parse()?;
 
         Ok(MacroArgs {
+            network,
             snapshot_paths,
             signature_paths,
         })
@@ -43,11 +47,13 @@ fn read_json_string_from_path_expr(expr: Expr) -> String {
 /// Generates Rust bindings for Leo programs.
 ///
 /// # Parameters
+/// - `network`: Network type string ("mainnet", "testnet", or "canary")
 /// - `snapshot_paths`: Array of relative path strings to dev.initial.json files generated with `leo build --enable-initial-ast-snapshot`
 /// - `signature_paths`: Array of relative path strings to pre-processed signature JSON files
 #[proc_macro]
 pub fn generate_bindings(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as MacroArgs);
+    let network = args.network.value();
 
     let program_modules: Vec<proc_macro2::TokenStream> = args
         .snapshot_paths
@@ -64,6 +70,7 @@ pub fn generate_bindings(input: TokenStream) -> TokenStream {
         .map(|json| {
             generate_program_module(
                 &serde_json::from_str(&json).expect("Failed to parse signatures from json"),
+                &network,
             )
         })
         .collect();

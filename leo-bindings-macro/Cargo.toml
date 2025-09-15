@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 
 [features]
+default = ["mainnet", "testnet", "canary"]
+mainnet = []
+testnet = []
+canary = []
 tracked = []
 
 [lib]
