@@ -51,9 +51,8 @@ fn read_json_string_from_path_expr(expr: Expr) -> String {
 /// - `snapshot_paths`: Array of relative path strings to dev.initial.json files generated with `leo build --enable-initial-ast-snapshot`
 /// - `signature_paths`: Array of relative path strings to pre-processed signature JSON files
 #[proc_macro]
-pub fn generate_bindings(input: TokenStream) -> TokenStream {
+pub fn generate_network_bindings(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as MacroArgs);
-    let network = args.network.value();
 
     let program_modules: Vec<proc_macro2::TokenStream> = args
         .snapshot_paths
@@ -70,7 +69,7 @@ pub fn generate_bindings(input: TokenStream) -> TokenStream {
         .map(|json| {
             generate_program_module(
                 &serde_json::from_str(&json).expect("Failed to parse signatures from json"),
-                &network,
+                &args.network.value(),
             )
         })
         .collect();

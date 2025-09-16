@@ -1,6 +1,3 @@
 use leo_bindings::generate_bindings;
 
-generate_bindings!(
-    ["outputs/token.initial.json"],
-    []
-);
+generate_bindings!(["outputs/token.initial.json"], []);

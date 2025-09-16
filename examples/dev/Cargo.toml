@@ -8,10 +8,10 @@ name = "devtest"
 path = "lib.rs"
 
 [features]
-default = ["mainnet", "testnet", "canary"]
-mainnet = ["leo-bindings/mainnet"]
-testnet = ["leo-bindings/testnet"]
-canary = ["leo-bindings/canary"]
+default = ["testnet"]
+mainnet = []
+testnet = []
+canary = []
 
 [dependencies]
 leo-bindings = { path = "../../" }
