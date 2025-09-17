@@ -3,6 +3,7 @@ use crate::types::get_rust_type;
 use proc_macro2::TokenStream;
 use quote::quote;
 use convert_case::{Case, Casing};
+use crate::generate_interpreter_code_from_simplified;
 
 
 pub fn generate_program_module(
@@ -13,7 +14,8 @@ pub fn generate_program_module(
         "mainnet" => "MainnetV0",
         "testnet" => "TestnetV0", 
         "canary" => "CanaryV0",
-        _ => panic!("Unsupported network: {}. Must be 'mainnet', 'testnet', or 'canary'", network),
+        "interpreter" => "TestnetV0",
+        _ => panic!("Unsupported network: {}. Must be 'mainnet', 'testnet', 'canary', or 'interpreter'", network),
     };
 
     let module_name = syn::Ident::new(
@@ -30,11 +32,10 @@ pub fn generate_program_module(
         })
         .collect();
 
-    let program_code = generate_code_from_simplified(
-        simplified, 
-        dependency_modules, 
-        network_type
-    );
+    let program_code = match network {
+        "interpreter" => generate_interpreter_code_from_simplified(simplified, dependency_modules, network_type),
+        _             => generate_code_from_simplified(simplified, dependency_modules, network_type),
+    };
 
     quote! {
         pub mod #module_name {
@@ -254,7 +255,7 @@ pub fn generate_code_from_simplified(
     expanded
 }
 
-fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
+pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
     records.iter().map(|record| {
         let record_name = syn::Ident::new(&record.name.to_case(Case::Pascal), proc_macro2::Span::call_site());
 
@@ -404,7 +405,7 @@ fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<proc_mac
     }).collect()
 }
 
-fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
+pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<proc_macro2::TokenStream> {
     structs
         .iter()
         .map(|struct_def| {

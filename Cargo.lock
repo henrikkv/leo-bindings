@@ -1174,6 +1174,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "interpreted"
+version = "0.1.0"
+dependencies = [
+ "leo-bindings 0.1.0",
+ "snarkvm",
+]
+
+[[package]]
 name = "io-uring"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

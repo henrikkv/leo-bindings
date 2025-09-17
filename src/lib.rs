@@ -19,6 +19,9 @@ macro_rules! generate_bindings {
 
         #[cfg(feature = "canary")]
         $crate::generate_network_bindings!("canary", $snapshot_paths, $signature_paths);
+
+        #[cfg(feature = "interpreter")]
+        $crate::generate_network_bindings!("interpreter", $snapshot_paths, $signature_paths);
     };
 }
 
