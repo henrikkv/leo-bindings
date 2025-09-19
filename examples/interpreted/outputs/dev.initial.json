@@ -1,0 +1,2877 @@
+{
+  "modules": {},
+  "imports": {},
+  "stubs": {},
+  "program_scopes": {
+    "dev": {
+      "program_id": {
+        "name": {
+          "name": "dev",
+          "id": 0
+        },
+        "network": {
+          "name": "aleo",
+          "id": 1
+        }
+      },
+      "consts": [],
+      "structs": [
+        [
+          "A",
+          {
+            "identifier": {
+              "name": "A",
+              "id": 30
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "number",
+                  "id": 31
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 32
+              }
+            ],
+            "external": null,
+            "is_record": false,
+            "id": 33
+          }
+        ],
+        [
+          "B",
+          {
+            "identifier": {
+              "name": "B",
+              "id": 34
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "number",
+                  "id": 35
+                },
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 36
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "a",
+                  "id": 37
+                },
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "A",
+                        "id": 38
+                      },
+                      "absolute_path": null,
+                      "id": 39
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 40
+              }
+            ],
+            "external": null,
+            "is_record": false,
+            "id": 41
+          }
+        ],
+        [
+          "User",
+          {
+            "identifier": {
+              "name": "User",
+              "id": 159
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "owner",
+                  "id": 160
+                },
+                "type_": "Address",
+                "id": 161
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "id",
+                  "id": 162
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 163
+              },
+              {
+                "mode": "Public",
+                "identifier": {
+                  "name": "balance",
+                  "id": 164
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 165
+              }
+            ],
+            "external": "dev",
+            "is_record": true,
+            "id": 166
+          }
+        ]
+      ],
+      "mappings": [
+        [
+          "balances",
+          {
+            "identifier": {
+              "name": "balances",
+              "id": 6
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Integer": "U64"
+            },
+            "id": 7
+          }
+        ],
+        [
+          "bs",
+          {
+            "identifier": {
+              "name": "bs",
+              "id": 8
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Composite": {
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 9
+                  },
+                  "absolute_path": null,
+                  "id": 10
+                },
+                "const_arguments": [],
+                "program": null
+              }
+            },
+            "id": 11
+          }
+        ]
+      ],
+      "functions": [
+        [
+          "main",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "main",
+              "id": 12
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 13
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 14
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 15
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 16
+              }
+            ],
+            "output": [
+              {
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 17
+              }
+            ],
+            "output_type": {
+              "Integer": "U32"
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "c",
+                        "id": 18
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U32"
+                    },
+                    "value": {
+                      "Binary": {
+                        "left": {
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "a",
+                              "id": 19
+                            },
+                            "absolute_path": null,
+                            "id": 20
+                          }
+                        },
+                        "right": {
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "b",
+                              "id": 21
+                            },
+                            "absolute_path": null,
+                            "id": 22
+                          }
+                        },
+                        "op": "Add",
+                        "id": 23
+                      }
+                    },
+                    "id": 24
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "c",
+                          "id": 25
+                        },
+                        "absolute_path": null,
+                        "id": 26
+                      }
+                    },
+                    "id": 27
+                  }
+                }
+              ],
+              "id": 28
+            },
+            "id": 29
+          }
+        ],
+        [
+          "nested",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "nested",
+              "id": 42
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 43
+                },
+                "mode": "Public",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 44
+                      },
+                      "absolute_path": null,
+                      "id": 45
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 46
+              }
+            ],
+            "output": [
+              {
+                "mode": "Public",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 47
+                      },
+                      "absolute_path": null,
+                      "id": 48
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 49
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 47
+                  },
+                  "absolute_path": null,
+                  "id": 48
+                },
+                "const_arguments": [],
+                "program": null
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "resulta",
+                        "id": 50
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 51
+                          },
+                          "absolute_path": null,
+                          "id": 52
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 53
+                          },
+                          "absolute_path": null,
+                          "id": 54
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "number",
+                              "id": 55
+                            },
+                            "expression": {
+                              "Literal": {
+                                "id": 56,
+                                "variant": {
+                                  "Integer": [
+                                    "U64",
+                                    "1"
+                                  ]
+                                }
+                              }
+                            },
+                            "id": 57
+                          }
+                        ],
+                        "id": 58
+                      }
+                    },
+                    "id": 59
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "resultb",
+                        "id": 60
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 61
+                          },
+                          "absolute_path": null,
+                          "id": 62
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 63
+                          },
+                          "absolute_path": null,
+                          "id": 64
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "number",
+                              "id": 65
+                            },
+                            "expression": {
+                              "Literal": {
+                                "id": 66,
+                                "variant": {
+                                  "Integer": [
+                                    "U32",
+                                    "2"
+                                  ]
+                                }
+                              }
+                            },
+                            "id": 67
+                          },
+                          {
+                            "identifier": {
+                              "name": "a",
+                              "id": 68
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "resulta",
+                                  "id": 69
+                                },
+                                "absolute_path": null,
+                                "id": 70
+                              }
+                            },
+                            "id": 71
+                          }
+                        ],
+                        "id": 72
+                      }
+                    },
+                    "id": 73
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "resultb",
+                          "id": 74
+                        },
+                        "absolute_path": null,
+                        "id": 75
+                      }
+                    },
+                    "id": 76
+                  }
+                }
+              ],
+              "id": 77
+            },
+            "id": 78
+          }
+        ],
+        [
+          "store_nested",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "store_nested",
+              "id": 79
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 80
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 81
+                      },
+                      "absolute_path": null,
+                      "id": 82
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 83
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 84
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 85
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 86
+              }
+            ],
+            "output_type": {
+              "Future": {
+                "inputs": [],
+                "location": null,
+                "is_explicit": false
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Call": {
+                        "function": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "finalize_store_nested",
+                            "id": 87
+                          },
+                          "absolute_path": null,
+                          "id": 88
+                        },
+                        "const_arguments": [],
+                        "arguments": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 89
+                              },
+                              "absolute_path": null,
+                              "id": 90
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 91
+                              },
+                              "absolute_path": null,
+                              "id": 92
+                            }
+                          }
+                        ],
+                        "program": "dev",
+                        "id": 93
+                      }
+                    },
+                    "id": 94
+                  }
+                }
+              ],
+              "id": 95
+            },
+            "id": 96
+          }
+        ],
+        [
+          "nested_array",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "nested_array",
+              "id": 117
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 118
+                },
+                "mode": "None",
+                "type_": {
+                  "Array": {
+                    "element_type": {
+                      "Array": {
+                        "element_type": {
+                          "Integer": "U8"
+                        },
+                        "length": {
+                          "Literal": {
+                            "id": 119,
+                            "variant": {
+                              "Integer": [
+                                "U8",
+                                "5"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 120,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 121
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Array": {
+                    "element_type": {
+                      "Array": {
+                        "element_type": {
+                          "Integer": "U8"
+                        },
+                        "length": {
+                          "Literal": {
+                            "id": 122,
+                            "variant": {
+                              "Integer": [
+                                "U8",
+                                "5"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 123,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 124
+              }
+            ],
+            "output_type": {
+              "Array": {
+                "element_type": {
+                  "Array": {
+                    "element_type": {
+                      "Integer": "U8"
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 122,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "length": {
+                  "Literal": {
+                    "id": 123,
+                    "variant": {
+                      "Integer": [
+                        "U8",
+                        "5"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Array": {
+                        "elements": [
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 125,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 126,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 127,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 128,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 129,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 130
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 131,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 132,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 133,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 134,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 135,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 136
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 137,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 138,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 139,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 140,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 141,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 142
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 143,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 144,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 145,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 146,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 147,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 148
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 149,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 150,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 151,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 152,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 153,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 154
+                            }
+                          }
+                        ],
+                        "id": 155
+                      }
+                    },
+                    "id": 156
+                  }
+                }
+              ],
+              "id": 157
+            },
+            "id": 158
+          }
+        ],
+        [
+          "create_user",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "create_user",
+              "id": 167
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "owner",
+                  "id": 168
+                },
+                "mode": "None",
+                "type_": "Address",
+                "id": 169
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 170
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 171
+              },
+              {
+                "identifier": {
+                  "name": "balance",
+                  "id": 172
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 173
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 174
+                      },
+                      "absolute_path": null,
+                      "id": 175
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 176
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "User",
+                    "id": 174
+                  },
+                  "absolute_path": null,
+                  "id": 175
+                },
+                "const_arguments": [],
+                "program": null
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "user",
+                        "id": 177
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 178
+                          },
+                          "absolute_path": null,
+                          "id": 179
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 180
+                          },
+                          "absolute_path": null,
+                          "id": 181
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 182
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "owner",
+                                  "id": 183
+                                },
+                                "absolute_path": null,
+                                "id": 184
+                              }
+                            },
+                            "id": 185
+                          },
+                          {
+                            "identifier": {
+                              "name": "id",
+                              "id": 186
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 187
+                                },
+                                "absolute_path": null,
+                                "id": 188
+                              }
+                            },
+                            "id": 189
+                          },
+                          {
+                            "identifier": {
+                              "name": "balance",
+                              "id": 190
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 191
+                                },
+                                "absolute_path": null,
+                                "id": 192
+                              }
+                            },
+                            "id": 193
+                          }
+                        ],
+                        "id": 194
+                      }
+                    },
+                    "id": 195
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "user",
+                          "id": 196
+                        },
+                        "absolute_path": null,
+                        "id": 197
+                      }
+                    },
+                    "id": 198
+                  }
+                }
+              ],
+              "id": 199
+            },
+            "id": 200
+          }
+        ],
+        [
+          "consume_user",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "consume_user",
+              "id": 201
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "user",
+                  "id": 202
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 203
+                      },
+                      "absolute_path": null,
+                      "id": 204
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 205
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 206
+              }
+            ],
+            "output_type": {
+              "Integer": "U64"
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "MemberAccess": {
+                        "inner": {
+                          "Path": {
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "user",
+                              "id": 207
+                            },
+                            "absolute_path": null,
+                            "id": 208
+                          }
+                        },
+                        "name": {
+                          "name": "balance",
+                          "id": 209
+                        },
+                        "id": 210
+                      }
+                    },
+                    "id": 211
+                  }
+                }
+              ],
+              "id": 212
+            },
+            "id": 213
+          }
+        ],
+        [
+          "asynchronous",
+          {
+            "annotations": [],
+            "variant": "AsyncTransition",
+            "identifier": {
+              "name": "asynchronous",
+              "id": 214
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "balance",
+                  "id": 215
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 216
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 217
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 218
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 219
+                      },
+                      "absolute_path": null,
+                      "id": 220
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 221
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 222
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Composite": {
+                      "path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "User",
+                          "id": 219
+                        },
+                        "absolute_path": null,
+                        "id": 220
+                      },
+                      "const_arguments": [],
+                      "program": null
+                    }
+                  },
+                  {
+                    "Future": {
+                      "inputs": [],
+                      "location": null,
+                      "is_explicit": false
+                    }
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "user",
+                        "id": 223
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 224
+                          },
+                          "absolute_path": null,
+                          "id": 225
+                        },
+                        "const_arguments": [],
+                        "program": null
+                      }
+                    },
+                    "value": {
+                      "Struct": {
+                        "path": {
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 226
+                          },
+                          "absolute_path": null,
+                          "id": 227
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 228
+                            },
+                            "expression": {
+                              "MemberAccess": {
+                                "inner": {
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "self",
+                                      "id": 229
+                                    },
+                                    "absolute_path": null,
+                                    "id": 229
+                                  }
+                                },
+                                "name": {
+                                  "name": "caller",
+                                  "id": 230
+                                },
+                                "id": 231
+                              }
+                            },
+                            "id": 232
+                          },
+                          {
+                            "identifier": {
+                              "name": "id",
+                              "id": 233
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 234
+                                },
+                                "absolute_path": null,
+                                "id": 235
+                              }
+                            },
+                            "id": 236
+                          },
+                          {
+                            "identifier": {
+                              "name": "balance",
+                              "id": 237
+                            },
+                            "expression": {
+                              "Path": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 238
+                                },
+                                "absolute_path": null,
+                                "id": 239
+                              }
+                            },
+                            "id": 240
+                          }
+                        ],
+                        "id": 241
+                      }
+                    },
+                    "id": 242
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "user",
+                                "id": 243
+                              },
+                              "absolute_path": null,
+                              "id": 244
+                            }
+                          },
+                          {
+                            "Call": {
+                              "function": {
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "finalize_asynchronous",
+                                  "id": 245
+                                },
+                                "absolute_path": null,
+                                "id": 246
+                              },
+                              "const_arguments": [],
+                              "arguments": [
+                                {
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "balance",
+                                      "id": 247
+                                    },
+                                    "absolute_path": null,
+                                    "id": 248
+                                  }
+                                },
+                                {
+                                  "Path": {
+                                    "qualifier": [],
+                                    "identifier": {
+                                      "name": "id",
+                                      "id": 249
+                                    },
+                                    "absolute_path": null,
+                                    "id": 250
+                                  }
+                                }
+                              ],
+                              "program": "dev",
+                              "id": 251
+                            }
+                          }
+                        ],
+                        "id": 252
+                      }
+                    },
+                    "id": 253
+                  }
+                }
+              ],
+              "id": 254
+            },
+            "id": 255
+          }
+        ],
+        [
+          "test_field",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_field",
+              "id": 274
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 275
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 276
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 277
+              }
+            ],
+            "output_type": "Field",
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "a",
+                          "id": 278
+                        },
+                        "absolute_path": null,
+                        "id": 279
+                      }
+                    },
+                    "id": 280
+                  }
+                }
+              ],
+              "id": 281
+            },
+            "id": 282
+          }
+        ],
+        [
+          "test_field_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_field_tuple",
+              "id": 283
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 284
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 285
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 286
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 287
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 288
+              },
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 289
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Field",
+                  "Field"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "a",
+                                "id": 290
+                              },
+                              "absolute_path": null,
+                              "id": 291
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 292
+                              },
+                              "absolute_path": null,
+                              "id": 293
+                            }
+                          }
+                        ],
+                        "id": 294
+                      }
+                    },
+                    "id": 295
+                  }
+                }
+              ],
+              "id": 296
+            },
+            "id": 297
+          }
+        ],
+        [
+          "test_scalar",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_scalar",
+              "id": 298
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 299
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 300
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 301
+              }
+            ],
+            "output_type": "Scalar",
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "a",
+                          "id": 302
+                        },
+                        "absolute_path": null,
+                        "id": 303
+                      }
+                    },
+                    "id": 304
+                  }
+                }
+              ],
+              "id": 305
+            },
+            "id": 306
+          }
+        ],
+        [
+          "test_scalar_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_scalar_tuple",
+              "id": 307
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 308
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 309
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 310
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 311
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 312
+              },
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 313
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Scalar",
+                  "Scalar"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "a",
+                                "id": 314
+                              },
+                              "absolute_path": null,
+                              "id": 315
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 316
+                              },
+                              "absolute_path": null,
+                              "id": 317
+                            }
+                          }
+                        ],
+                        "id": 318
+                      }
+                    },
+                    "id": 319
+                  }
+                }
+              ],
+              "id": 320
+            },
+            "id": 321
+          }
+        ],
+        [
+          "test_group",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_group",
+              "id": 322
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "g",
+                  "id": 323
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 324
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 325
+              }
+            ],
+            "output_type": "Group",
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "g",
+                          "id": 326
+                        },
+                        "absolute_path": null,
+                        "id": 327
+                      }
+                    },
+                    "id": 328
+                  }
+                }
+              ],
+              "id": 329
+            },
+            "id": 330
+          }
+        ],
+        [
+          "test_group_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_group_tuple",
+              "id": 331
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 332
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 333
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 334
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 335
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 336
+              },
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 337
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Group",
+                  "Group"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "a",
+                                "id": 338
+                              },
+                              "absolute_path": null,
+                              "id": 339
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 340
+                              },
+                              "absolute_path": null,
+                              "id": 341
+                            }
+                          }
+                        ],
+                        "id": 342
+                      }
+                    },
+                    "id": 343
+                  }
+                }
+              ],
+              "id": 344
+            },
+            "id": 345
+          }
+        ],
+        [
+          "test_simple_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_simple_tuple",
+              "id": 346
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 347
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 348
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 349
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 350
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 351
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 352
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Integer": "U32"
+                  },
+                  {
+                    "Integer": "U64"
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "a",
+                                "id": 353
+                              },
+                              "absolute_path": null,
+                              "id": 354
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 355
+                              },
+                              "absolute_path": null,
+                              "id": 356
+                            }
+                          }
+                        ],
+                        "id": 357
+                      }
+                    },
+                    "id": 358
+                  }
+                }
+              ],
+              "id": 359
+            },
+            "id": 360
+          }
+        ],
+        [
+          "test_mixed_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_mixed_tuple",
+              "id": 361
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 362
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 363
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 364
+                },
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 365
+              },
+              {
+                "identifier": {
+                  "name": "c",
+                  "id": 366
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 367
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 368
+              },
+              {
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 369
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 370
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Field",
+                  "Boolean",
+                  {
+                    "Integer": "U32"
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "a",
+                                "id": 371
+                              },
+                              "absolute_path": null,
+                              "id": 372
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 373
+                              },
+                              "absolute_path": null,
+                              "id": 374
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "c",
+                                "id": 375
+                              },
+                              "absolute_path": null,
+                              "id": 376
+                            }
+                          }
+                        ],
+                        "id": 377
+                      }
+                    },
+                    "id": 378
+                  }
+                }
+              ],
+              "id": 379
+            },
+            "id": 380
+          }
+        ],
+        [
+          "test_field_scalar_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_field_scalar_tuple",
+              "id": 381
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "f",
+                  "id": 382
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 383
+              },
+              {
+                "identifier": {
+                  "name": "s",
+                  "id": 384
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 385
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 386
+              },
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 387
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Field",
+                  "Scalar"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "f",
+                                "id": 388
+                              },
+                              "absolute_path": null,
+                              "id": 389
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "s",
+                                "id": 390
+                              },
+                              "absolute_path": null,
+                              "id": 391
+                            }
+                          }
+                        ],
+                        "id": 392
+                      }
+                    },
+                    "id": 393
+                  }
+                }
+              ],
+              "id": 394
+            },
+            "id": 395
+          }
+        ],
+        [
+          "test_group_field_tuple",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_group_field_tuple",
+              "id": 396
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "g",
+                  "id": 397
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 398
+              },
+              {
+                "identifier": {
+                  "name": "f",
+                  "id": 399
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 400
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 401
+              },
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 402
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Group",
+                  "Field"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "g",
+                                "id": 403
+                              },
+                              "absolute_path": null,
+                              "id": 404
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "f",
+                                "id": 405
+                              },
+                              "absolute_path": null,
+                              "id": 406
+                            }
+                          }
+                        ],
+                        "id": 407
+                      }
+                    },
+                    "id": 408
+                  }
+                }
+              ],
+              "id": 409
+            },
+            "id": 410
+          }
+        ],
+        [
+          "test_all_types",
+          {
+            "annotations": [],
+            "variant": "Transition",
+            "identifier": {
+              "name": "test_all_types",
+              "id": 411
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "f",
+                  "id": 412
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 413
+              },
+              {
+                "identifier": {
+                  "name": "s",
+                  "id": 414
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 415
+              },
+              {
+                "identifier": {
+                  "name": "g",
+                  "id": 416
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 417
+              },
+              {
+                "identifier": {
+                  "name": "flag",
+                  "id": 418
+                },
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 419
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 420
+              },
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 421
+              },
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 422
+              },
+              {
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 423
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Field",
+                  "Scalar",
+                  "Group",
+                  "Boolean"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "f",
+                                "id": 424
+                              },
+                              "absolute_path": null,
+                              "id": 425
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "s",
+                                "id": 426
+                              },
+                              "absolute_path": null,
+                              "id": 427
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "g",
+                                "id": 428
+                              },
+                              "absolute_path": null,
+                              "id": 429
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "flag",
+                                "id": 430
+                              },
+                              "absolute_path": null,
+                              "id": 431
+                            }
+                          }
+                        ],
+                        "id": 432
+                      }
+                    },
+                    "id": 433
+                  }
+                }
+              ],
+              "id": 434
+            },
+            "id": 435
+          }
+        ],
+        [
+          "finalize_store_nested",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_store_nested",
+              "id": 97
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 98
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 99
+                      },
+                      "absolute_path": null,
+                      "id": 100
+                    },
+                    "const_arguments": [],
+                    "program": null
+                  }
+                },
+                "id": 101
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 102
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 103
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 104
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 105
+                        },
+                        "arguments": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "bs",
+                                "id": 107
+                              },
+                              "absolute_path": null,
+                              "id": 108
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 109
+                              },
+                              "absolute_path": null,
+                              "id": 110
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "b",
+                                "id": 111
+                              },
+                              "absolute_path": null,
+                              "id": 112
+                            }
+                          }
+                        ],
+                        "id": 113
+                      }
+                    },
+                    "id": 114
+                  }
+                }
+              ],
+              "id": 115
+            },
+            "id": 116
+          }
+        ],
+        [
+          "finalize_asynchronous",
+          {
+            "annotations": [],
+            "variant": "AsyncFunction",
+            "identifier": {
+              "name": "finalize_asynchronous",
+              "id": 256
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "balance",
+                  "id": 257
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 258
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 259
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 260
+              }
+            ],
+            "output": [],
+            "output_type": "Unit",
+            "block": {
+              "statements": [
+                {
+                  "Expression": {
+                    "expression": {
+                      "AssociatedFunction": {
+                        "variant": {
+                          "name": "Mapping",
+                          "id": 261
+                        },
+                        "name": {
+                          "name": "set",
+                          "id": 262
+                        },
+                        "arguments": [
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "balances",
+                                "id": 264
+                              },
+                              "absolute_path": null,
+                              "id": 265
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "id",
+                                "id": 266
+                              },
+                              "absolute_path": null,
+                              "id": 267
+                            }
+                          },
+                          {
+                            "Path": {
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "balance",
+                                "id": 268
+                              },
+                              "absolute_path": null,
+                              "id": 269
+                            }
+                          }
+                        ],
+                        "id": 270
+                      }
+                    },
+                    "id": 271
+                  }
+                }
+              ],
+              "id": 272
+            },
+            "id": 273
+          }
+        ]
+      ],
+      "constructor": {
+        "annotations": [
+          {
+            "identifier": {
+              "name": "noupgrade",
+              "id": 2
+            },
+            "map": {},
+            "id": 3
+          }
+        ],
+        "block": {
+          "statements": [],
+          "id": 4
+        },
+        "id": 5
+      }
+    }
+  }
+}

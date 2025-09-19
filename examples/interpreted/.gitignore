@@ -1,0 +1,7 @@
+.env
+*.avm
+*.prover
+*.verifier
+outputs/*
+!outputs/
+!outputs/dev.initial.json
