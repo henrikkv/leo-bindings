@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external"]
+members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external", "examples/interpreted"]
 
 [workspace.package]
 version = "0.1.0"
@@ -20,14 +20,18 @@ http = "1.0"
 ureq = { version = "3", features = ["json"] }
 rand = "0.8"
 clap = { version = "4.4", features = ["derive"] }
-leo-span = "3.2.0"
-leo-package = "3.2.0"
-leo-ast = "3.2.0"
+leo-span = { git = "https://github.com/henrikkv/leo", package = "leo-span" }
+leo-package = { git = "https://github.com/henrikkv/leo", package = "leo-package" }
+leo-ast = { git = "https://github.com/henrikkv/leo", package = "leo-ast" }
+leo-interpreter = { git = "https://github.com/henrikkv/leo", package = "leo-interpreter" }
+leo-parser = { git = "https://github.com/henrikkv/leo", package = "leo-parser" }
+leo-errors = { git = "https://github.com/henrikkv/leo", package = "leo-errors" }
 
 [package]
 name = "leo-bindings"
 version.workspace = true
 edition.workspace = true
+
 
 [[bin]]
 name = "get-signatures"
@@ -43,8 +47,12 @@ indexmap = { workspace = true }
 leo-span = { workspace = true }
 leo-package = { workspace = true }
 leo-ast = { workspace = true }
+leo-interpreter = { workspace = true }
+leo-parser = { workspace = true }
+leo-errors = { workspace = true }
 aleo-std = { workspace = true }
 http = { workspace = true }
 rand = { workspace = true }
 leo-bindings-macro = { path = "leo-bindings-macro" }
 leo-bindings-core = { path = "leo-bindings-core" }
+walkdir = "2.5.0"

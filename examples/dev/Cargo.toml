@@ -7,6 +7,13 @@ edition.workspace = true
 name = "devtest"
 path = "lib.rs"
 
+[features]
+default = ["testnet"]
+mainnet = []
+testnet = []
+canary = []
+interpreter = []
+
 [dependencies]
 leo-bindings = { path = "../../" }
 

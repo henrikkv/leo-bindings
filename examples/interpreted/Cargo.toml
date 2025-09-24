@@ -1,14 +1,14 @@
 [package]
-name = "token"
+name = "interpreted"
 version.workspace = true
 edition.workspace = true
 
 [lib]
-name = "tokenexample"
+name = "interpreted_bindings"
 path = "lib.rs"
 
 [features]
-default = ["testnet"]
+default = ["interpreter"]
 mainnet = []
 testnet = []
 canary = []
@@ -16,8 +16,6 @@ interpreter = []
 
 [dependencies]
 leo-bindings = { path = "../../" }
-leo-bindings-credits = { path = "../../leo-bindings-credits/" }
 
 [dev-dependencies]
 snarkvm = { workspace = true }
-rand = { workspace = true }

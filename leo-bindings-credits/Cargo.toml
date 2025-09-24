@@ -7,5 +7,12 @@ edition.workspace = true
 name = "leo_bindings_credits"
 path = "lib.rs"
 
+[features]
+default = ["testnet"]
+mainnet = []
+testnet = []
+canary = []
+interpreter = []
+
 [dependencies]
 leo-bindings = { path = "../" }

@@ -3,7 +3,7 @@ fn external() {
     use leo_bindings::utils::Account;
     use snarkvm::console::network::TestnetV0;
     use std::str::FromStr;
-    use war_bindings::war_game_aleo::war_game;
+    use war_bindings::war_game_testnet::war_game;
 
     const ENDPOINT: &str = "http://localhost:3030";
     let alice: Account<TestnetV0> =
