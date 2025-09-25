@@ -30,6 +30,13 @@ Add this to `Cargo.toml`:
 name = "projectname_bindings"
 path = "lib.rs"
 
+[features]
+default = ["testnet"]
+mainnet = []
+testnet = []
+canary = []
+interpreter = []
+
 [dependencies]
 leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 leo-bindings-credits = { git = "https://github.com/henrikkv/leo-bindings" }
@@ -51,7 +58,7 @@ generate_bindings!(
     []
 );
 ```
-The generated bindings are available at `projectname_bindings::projectname_aleo::*` in rust.
+The generated bindings are available at `projectname_bindings::projectname_testnet::*` in rust.
 See how to create accounts and use credits.aleo in `examples/token/tests/simple_test.rs`.
 
 Add this to `.gitignore` if you want to publish the bindings:
