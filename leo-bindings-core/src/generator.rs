@@ -33,7 +33,7 @@ pub fn generate_program_module(
         .collect();
 
     let program_code = match network {
-        "interpreter" => generate_interpreter_code_from_simplified(simplified, dependency_modules, network_type),
+        "interpreter" => generate_interpreter_code_from_simplified(simplified, dependency_modules),
         _             => generate_code_from_simplified(simplified, dependency_modules, network_type),
     };
 

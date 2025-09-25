@@ -7,7 +7,6 @@ use quote::quote;
 pub fn generate_interpreter_code_from_simplified(
     simplified: &SimplifiedBindings,
     dependency_modules: Vec<(String, String)>,
-    network_type: &str,
 ) -> TokenStream {
     let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
 
@@ -36,37 +35,22 @@ pub fn generate_interpreter_code_from_simplified(
     );
 
     let mapping_implementations: Vec<proc_macro2::TokenStream> = vec![];
-    let network_ident = syn::Ident::new(network_type, proc_macro2::Span::call_site());
 
     let expanded = quote! {
-        use leo_bindings::{anyhow, snarkvm, indexmap, serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, leo_interpreter, leo_parser, leo_errors};
+        use leo_bindings::{anyhow, snarkvm, indexmap, leo_package, leo_ast, leo_span, leo_interpreter, leo_errors};
 
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
-        use snarkvm::prelude::#network_ident as Nw;
+        use snarkvm::prelude::TestnetV0 as Nw;
         use indexmap::IndexMap;
-        use snarkvm::ledger::query::*;
-        use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
-        use snarkvm::ledger::store::ConsensusStore;
-        use snarkvm::ledger::block::{Execution, Output, Transaction, Transition};
-        use snarkvm::console::program::{Record, Plaintext, Ciphertext};
-        use snarkvm::synthesizer::VM;
-        use snarkvm::synthesizer::process::execution_cost_v2;
-        use snarkvm::prelude::ConsensusVersion;
-        use snarkvm::ledger::query::{QueryTrait, Query};
-        use snarkvm::circuit;
         use leo_package::Package;
         use leo_ast::NetworkName;
-        use leo_span::{SESSION_GLOBALS, SessionGlobals, Symbol, source_map::FileName, with_session_globals};
+        use leo_span::{SESSION_GLOBALS, SessionGlobals, Symbol};
         use leo_interpreter::{Frame, Element, StepResult};
         use leo_errors::Handler;
-        use aleo_std::StorageMode;
         use std::str::FromStr;
-        use std::fmt;
-        use std::thread::sleep;
-        use std::time::Duration;
         use leo_bindings::{ToValue, FromValue};
-        use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability, collect_leo_paths, collect_aleo_paths};
+        use leo_bindings::utils::{Account, collect_leo_paths, collect_aleo_paths};
 
         #(#records)*
 
@@ -120,14 +104,12 @@ pub fn generate_interpreter_code_from_simplified(
                 let interpreter = SESSION_GLOBALS.set(&session, || {
                     #(#deployment_calls)*
 
-                    let program_id = format!("{}.aleo", stringify!(#program_name));
-
                     let package = Package::from_directory(
                         crate_dir,
                         crate_dir,
                         false,
                         false,
-                        Some(NetworkName::from_str(Nw::SHORT_NAME).unwrap()),
+                        Some(NetworkName::from_str("testnet").unwrap()),
                         Some(endpoint),
                     ).map_err(|e| anyhow!("Failed to load package: {}", e))?;
 
@@ -140,7 +122,7 @@ pub fn generate_interpreter_code_from_simplified(
 
                     let signer: Value = deployer.address().into();
                     let block_height = 0u32;
-                    let network = NetworkName::from_str(Nw::SHORT_NAME)
+                    let network = NetworkName::from_str("testnet")
                         .map_err(|e| anyhow!("Invalid network name: {}", e))?;
 
                     let mut interpreter = Interpreter::new(
@@ -226,27 +208,25 @@ fn generate_interpreter_function_implementations(
             }
         };
 
-        let input_value_conversions: Vec<_> = function.inputs.iter().map(|input| {
+        let input_conversions: Vec<_> = function.inputs.iter().map(|input| {
             let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
             quote! { snarkvm_value_to_leo_value(&<_ as ToValue<Nw>>::to_value(&#param_name))? }
         }).collect();
+
+        let param_count = function.inputs.len();
 
         quote! {
             pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
                 let leo_result_value = SESSION_GLOBALS.set(&self.session, || {
                     let mut interpreter = self.interpreter.borrow_mut();
 
-                    let param_values: Vec<leo_ast::interpreter_value::Value> = vec![#(#input_value_conversions),*];
+                    let function_args: Vec<leo_ast::interpreter_value::Value> = vec![#(#input_conversions),*];
 
                     let program_symbol = interpreter.cursor.current_program()
                         .ok_or_else(|| anyhow!("No current program set in interpreter"))?;
                     let function_name_symbol = leo_span::Symbol::intern(stringify!(#function_name));
 
-                    let param_count = param_values.len();
-
-                    for param_value in param_values {
-                        interpreter.cursor.values.push(param_value);
-                    }
+                    interpreter.cursor.values.extend(function_args);
 
                     let function_identifier = leo_ast::Identifier::new(function_name_symbol, interpreter.node_builder.next_id());
                     let function_path = leo_ast::Path::new(
@@ -262,7 +242,7 @@ fn generate_interpreter_function_implementations(
                         arguments: vec![leo_ast::Expression::Unit(leo_ast::UnitExpression {
                             span: leo_span::Span::default(),
                             id: interpreter.node_builder.next_id()
-                        }); param_count],
+                        }); #param_count],
                         const_arguments: vec![],
                         program: Some(program_symbol),
                         span: leo_span::Span::default(),
@@ -278,26 +258,14 @@ fn generate_interpreter_function_implementations(
                         user_initiated: true,
                     });
 
-                    let mut result = None;
-                    loop {
-                        let step_result = interpreter.cursor.whole_step()
-                            .map_err(|e| anyhow!("Failed to execute function '{}': {}", stringify!(#function_name), e))?;
+                    let interpreter_result = interpreter.cursor.over()
+                        .map_err(|e| anyhow!("Failed to execute function '{}': {}", stringify!(#function_name), e))?;
 
-                        if step_result.finished {
-                            result = step_result.value;
-                            break;
-                        }
-
-                        if interpreter.cursor.frames.is_empty() {
-                            break;
-                        }
-                    }
-
-                    let function_outputs: Vec<snarkvm::prelude::Value<Nw>> = match result {
+                    let function_outputs: Vec<snarkvm::prelude::Value<Nw>> = match interpreter_result.value {
                         Some(leo_value) => {
                             match leo_value_to_snarkvm_value(leo_value) {
                                 Ok(svm_value) => vec![svm_value],
-                                Err(e) => return Err(anyhow!("Failed to convert Leo return value to SnarkVM: {}", e)),
+                                Err(e) => return Err(anyhow!("Failed to convert Leo return value to SnarkVM type: {}", e)),
                             }
                         },
                         None => vec![],
