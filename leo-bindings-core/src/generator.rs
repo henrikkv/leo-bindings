@@ -76,10 +76,10 @@ pub fn generate_code_from_simplified(
         .map(|import_name| {
             let dep_program_id = format!("{}.aleo", import_name);
             quote! {
-                let dep_program_id = ProgramID::<N>::from_str(#dep_program_id)?;
-                wait_for_program_availability(&dep_program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let dep_program: Program<N> = {
-                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dep_program_id)).call().unwrap();
+                let dep_program_id = ProgramID::<Nw>::from_str(#dep_program_id)?;
+                wait_for_program_availability(&dep_program_id.to_string(), endpoint, Nw::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let dep_program: Program<Nw> = {
+                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, Nw::SHORT_NAME, dep_program_id)).call().unwrap();
                     let json_text = response.body_mut().read_to_string().unwrap();
                     let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
                     json_response.as_str().unwrap().to_string().parse().unwrap()
