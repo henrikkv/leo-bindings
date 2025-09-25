@@ -51,7 +51,7 @@ leo build --enable-initial-ast-snapshot
 
 Create `lib.rs`:
 ```rust
-use leo_bindings_macro::generate_bindings;
+use leo_bindings::generate_bindings;
 
 generate_bindings!(
     ["outputs/projectname.initial.json"],
