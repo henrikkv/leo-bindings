@@ -1,4 +1,3 @@
-use crate::generate_records;
 use crate::generate_structs;
 use crate::signature::SimplifiedBindings;
 use proc_macro2::TokenStream;
@@ -10,7 +9,7 @@ pub fn generate_interpreter_code_from_simplified(
 ) -> TokenStream {
     let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
 
-    let records = generate_records(&simplified.records);
+    let records = generate_structs(&simplified.records);
     let structs = generate_structs(&simplified.structs);
     let imports = &simplified.imports;
 
@@ -62,24 +61,45 @@ pub fn generate_interpreter_code_from_simplified(
         }
 
 
-        fn leo_value_to_snarkvm_value(leo_value: leo_ast::interpreter_value::Value) -> Result<Value<Nw>, anyhow::Error> {
+        fn leo_value_to_snarkvm_values(leo_value: leo_ast::interpreter_value::Value) -> Result<Vec<Value<Nw>>, anyhow::Error> {
             use leo_ast::interpreter_value::{SvmValue, ValueVariants};
 
             match leo_value.contents {
                 ValueVariants::Svm(svm_value) => {
-                    Ok(svm_value)
+                    Ok(vec![svm_value])
+                },
+                ValueVariants::Tuple(tuple_values) => {
+                    let mut svm_values = Vec::new();
+                    for tuple_element in tuple_values {
+                        let element_values = leo_value_to_snarkvm_values(tuple_element)?;
+                        svm_values.extend(element_values);
+                    }
+                    Ok(svm_values)
                 },
                 ValueVariants::Unit => {
-                    Err(anyhow!("Cannot convert unit value to SnarkVM value"))
-                },
-                ValueVariants::Tuple(_) => {
-                    Err(anyhow!("Cannot convert Tuples"))
+                    Ok(vec![])
                 },
                 ValueVariants::Unsuffixed(_) => {
                     Err(anyhow!("Cannot convert Unsuffixed literals"))
                 },
-                ValueVariants::Future(_) => {
-                    Err(anyhow!("Cannot convert Futures"))
+                ValueVariants::Future(futures) => {
+                    match &futures[0] {
+                        leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
+                            let future_value = leo_ast::interpreter_value::Value::make_future(
+                                function.program,
+                                function.path.last().copied().unwrap_or(leo_span::Symbol::intern("unknown")),
+                                arguments.clone().into_iter()
+                            ).ok_or_else(|| anyhow!("Failed to create future value"))?;
+
+                            match future_value.contents {
+                                ValueVariants::Svm(svm_value) => Ok(vec![svm_value]),
+                                _ => Err(anyhow!("Future did not create SVM value"))
+                            }
+                        },
+                        leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {
+                            Err(anyhow!("AsyncBlock futures not supported"))
+                        }
+                    }
                 }
             }
         }
@@ -263,8 +283,8 @@ fn generate_interpreter_function_implementations(
 
                     let function_outputs: Vec<snarkvm::prelude::Value<Nw>> = match interpreter_result.value {
                         Some(leo_value) => {
-                            match leo_value_to_snarkvm_value(leo_value) {
-                                Ok(svm_value) => vec![svm_value],
+                            match leo_value_to_snarkvm_values(leo_value) {
+                                Ok(svm_values) => svm_values,
                                 Err(e) => return Err(anyhow!("Failed to convert Leo return value to SnarkVM type: {}", e)),
                             }
                         },
