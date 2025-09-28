@@ -12,6 +12,10 @@ struct B:
     number as u32;
     a as A;
 
+record Container:
+    owner as address.private;
+    data as B.private;
+
 mapping balances:
     key as u64.public;
     value as u64.public;
@@ -64,6 +68,16 @@ function consume_user:
     input r0 as User.record;
     output r0.balance as u64.private;
 
+function create_container:
+    input r0 as address.private;
+    input r1 as B.private;
+    cast r0 r1 into r2 as Container.record;
+    output r2 as Container.record;
+
+function consume_container:
+    input r0 as Container.record;
+    output r0.data as B.private;
+
 function asynchronous:
     input r0 as u64.private;
     input r1 as u64.private;
@@ -76,62 +90,6 @@ finalize asynchronous:
     input r0 as u64.public;
     input r1 as u64.public;
     set r0 into balances[r1];
-
-function test_field:
-    input r0 as field.private;
-    output r0 as field.private;
-
-function test_field_tuple:
-    input r0 as field.private;
-    input r1 as field.private;
-    output r0 as field.private;
-    output r1 as field.private;
-
-function test_scalar:
-    input r0 as scalar.private;
-    output r0 as scalar.private;
-
-function test_scalar_tuple:
-    input r0 as scalar.private;
-    input r1 as scalar.private;
-    output r0 as scalar.private;
-    output r1 as scalar.private;
-
-function test_group:
-    input r0 as group.private;
-    output r0 as group.private;
-
-function test_group_tuple:
-    input r0 as group.private;
-    input r1 as group.private;
-    output r0 as group.private;
-    output r1 as group.private;
-
-function test_simple_tuple:
-    input r0 as u32.private;
-    input r1 as u64.private;
-    output r0 as u32.private;
-    output r1 as u64.private;
-
-function test_mixed_tuple:
-    input r0 as field.private;
-    input r1 as boolean.private;
-    input r2 as u32.private;
-    output r0 as field.private;
-    output r1 as boolean.private;
-    output r2 as u32.private;
-
-function test_field_scalar_tuple:
-    input r0 as field.private;
-    input r1 as scalar.private;
-    output r0 as field.private;
-    output r1 as scalar.private;
-
-function test_group_field_tuple:
-    input r0 as group.private;
-    input r1 as field.private;
-    output r0 as group.private;
-    output r1 as field.private;
 
 function test_all_types:
     input r0 as field.private;

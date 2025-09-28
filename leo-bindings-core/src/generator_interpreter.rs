@@ -33,7 +33,10 @@ pub fn generate_interpreter_code_from_simplified(
         &simplified.program_name,
     );
 
-    let mapping_implementations: Vec<proc_macro2::TokenStream> = vec![];
+    let mapping_implementations = generate_interpreter_mapping_implementations(
+        &simplified.mappings,
+        &simplified.program_name,
+    );
 
     let expanded = quote! {
         use leo_bindings::{anyhow, snarkvm, indexmap, leo_package, leo_ast, leo_span, leo_interpreter, leo_errors};
@@ -174,6 +177,41 @@ pub fn generate_interpreter_code_from_simplified(
     expanded
 }
 
+fn generate_interpreter_mapping_implementations(
+    mappings: &[crate::signature::MappingBinding],
+    program_name: &str,
+) -> Vec<proc_macro2::TokenStream> {
+    mappings.iter().map(|mapping| {
+        let getter_name = syn::Ident::new(&format!("get_{}", mapping.name), proc_macro2::Span::call_site());
+        let key_type = crate::types::get_rust_type(&mapping.key_type);
+        let value_type = crate::types::get_rust_type(&mapping.value_type);
+        let mapping_name_str = &mapping.name;
+
+        quote! {
+            pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
+                SESSION_GLOBALS.set(&self.session, || {
+                    let interpreter = self.interpreter.borrow();
+                    let program_symbol = interpreter.cursor.current_program()
+                        .expect("No current program set in interpreter");
+                    let mapping_name_symbol = leo_span::Symbol::intern(#mapping_name_str);
+
+                    let key_leo_value = snarkvm_value_to_leo_value(&key.to_value()).ok()?;
+
+                    if let Some(mapping) = interpreter.cursor.lookup_mapping(Some(program_symbol), mapping_name_symbol) {
+                        if let Some(value_leo) = mapping.get(&key_leo_value) {
+                            let snarkvm_values = leo_value_to_snarkvm_values(value_leo.clone()).ok()?;
+                            if let Some(snarkvm_value) = snarkvm_values.get(0) {
+                                return Some(<#value_type>::from_value(snarkvm_value.clone()));
+                            }
+                        }
+                    }
+                    None
+                })
+            }
+        }
+    }).collect()
+}
+
 fn generate_interpreter_function_implementations(
     functions: &[crate::signature::FunctionBinding],
     program_name: &str,
@@ -290,6 +328,24 @@ fn generate_interpreter_function_implementations(
                         },
                         None => vec![],
                     };
+
+                    while !interpreter.cursor.futures.is_empty() {
+                        let future_index = 0;
+                        let future = interpreter.cursor.futures.remove(future_index);
+                        match future {
+                            leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
+                                interpreter.cursor.values.extend(arguments);
+                                interpreter.cursor.frames.push(leo_interpreter::Frame {
+                                    step: 0,
+                                    element: leo_interpreter::Element::DelayedCall(function),
+                                    user_initiated: true,
+                                });
+                                interpreter.cursor.over()
+                                    .map_err(|e| anyhow!("Failed to execute finalize function: {}", e))?;
+                            }
+                            leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {}
+                        }
+                    }
 
                     Ok(function_outputs)
                 })?;

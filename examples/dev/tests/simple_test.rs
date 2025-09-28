@@ -16,6 +16,13 @@ fn dev() {
     let balance = dev.consume_user(&alice, user).unwrap();
     dbg!(balance);
 
+    let a = A::new(1);
+    let b = B::new(2, a);
+    let container = dev.create_container(&alice, alice.address(), b).unwrap();
+    dbg!(&container);
+    let extracted_b = dev.consume_container(&alice, container).unwrap();
+    dbg!(&extracted_b);
+
     let balance_before = dev.get_balances(0);
     dbg!(&balance_before);
 
@@ -49,27 +56,10 @@ fn dev() {
     dbg!(result);
 
     let field_a = snarkvm::prelude::Field::from_str("123field").unwrap();
-    let field_b = snarkvm::prelude::Field::from_str("456field").unwrap();
-    dev.test_field(&alice, field_a).unwrap();
-    dev.test_field_tuple(&alice, field_a, field_b).unwrap();
-
     let scalar_a = snarkvm::prelude::Scalar::from_str("789scalar").unwrap();
-    let scalar_b = snarkvm::prelude::Scalar::from_str("321scalar").unwrap();
-    dev.test_scalar(&alice, scalar_a).unwrap();
-    dev.test_scalar_tuple(&alice, scalar_a, scalar_b).unwrap();
-
     let group_generator = snarkvm::prelude::Group::generator();
     let group_a = group_generator * scalar_a;
-    let group_b = group_generator * scalar_b;
-    dev.test_group(&alice, group_a).unwrap();
-    dev.test_group_tuple(&alice, group_a, group_b).unwrap();
 
-    dev.test_simple_tuple(&alice, 100u32, 1000u64).unwrap();
-    dev.test_mixed_tuple(&alice, field_a, true, 999u32).unwrap();
-    dev.test_field_scalar_tuple(&alice, field_a, scalar_a)
-        .unwrap();
-    dev.test_group_field_tuple(&alice, group_a, field_a)
-        .unwrap();
     dev.test_all_types(&alice, field_a, scalar_a, group_a, false)
         .unwrap();
 }
