@@ -15,3 +15,5 @@ snarkvm = { workspace = true }
 anyhow = { workspace = true }
 convert_case = { workspace = true }
 http = { workspace = true }
+colored = { workspace = true }
+num-format = { workspace = true }

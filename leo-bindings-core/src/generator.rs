@@ -102,8 +102,8 @@ pub fn generate_code_from_simplified(
     let network_ident = syn::Ident::new(network_type, proc_macro2::Span::call_site());
 
     let expanded = quote! {
-        use leo_bindings::{anyhow, snarkvm, indexmap, serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand};
-        
+        use leo_bindings::{anyhow, snarkvm, indexmap, serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_deployment_stats};
+
         use anyhow::{anyhow, bail, ensure};
         use snarkvm::prelude::*;
         use snarkvm::prelude::#network_ident as Nw;
@@ -227,6 +227,13 @@ pub fn generate_code_from_simplified(
                         Some(&query),
                         rng,
                     ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
+
+                    match &transaction {
+                        Transaction::Deploy(_, _, _, deployment, fee) => {
+                            print_deployment_stats(&vm, &program_id.to_string(), deployment, None, ConsensusVersion::V10)?;
+                        },
+                        _ => panic!("Expected a deployment transaction."),
+                    };
 
                     println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
 
