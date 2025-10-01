@@ -17,3 +17,9 @@ convert_case = { workspace = true }
 http = { workspace = true }
 colored = { workspace = true }
 num-format = { workspace = true }
+leo-span = { workspace = true }
+leo-package = { workspace = true }
+leo-ast = { workspace = true }
+leo-interpreter = { workspace = true }
+leo-parser = { workspace = true }
+leo-errors = { workspace = true }

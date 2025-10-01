@@ -28,6 +28,7 @@ macro_rules! generate_bindings {
 pub use aleo_std;
 pub use anyhow;
 pub use http;
+pub use walkdir;
 pub use indexmap;
 pub use leo_ast;
 pub use leo_errors;

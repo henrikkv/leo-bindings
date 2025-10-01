@@ -21,10 +21,10 @@ pub fn generate_interpreter_code_from_simplified(
             dependency_modules
                 .iter().find(|(name, _)| name == import_name)
                 .map_or_else(
-                    || quote! { #dep_struct_name::new(deployer, endpoint)?; },
+                    || quote! { #dep_struct_name::new(deployer, endpoint).unwrap(); },
                     |(_, module_name)| {
                         let dep_module_name = syn::Ident::new(module_name, proc_macro2::Span::call_site());
-                        quote! { super::#dep_module_name::#dep_struct_name::new(deployer, endpoint)?; }
+                        quote! { super::#dep_module_name::#dep_struct_name::new(deployer, endpoint).unwrap(); }
                     }
                 )
         }).collect();
@@ -47,12 +47,14 @@ pub fn generate_interpreter_code_from_simplified(
         use indexmap::IndexMap;
         use leo_package::Package;
         use leo_ast::NetworkName;
-        use leo_span::{SESSION_GLOBALS, SessionGlobals, Symbol};
+        use leo_span::{create_session_if_not_set_then, SESSION_GLOBALS, SessionGlobals, Symbol};
         use leo_interpreter::{Frame, Element, StepResult};
         use leo_errors::Handler;
         use std::str::FromStr;
+        use std::path::{Path, PathBuf};
         use leo_bindings::{ToValue, FromValue};
-        use leo_bindings::utils::{Account, collect_leo_paths, collect_aleo_paths};
+        use leo_bindings::utils::{Account};
+        use leo_bindings::{initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, walkdir};
 
         #(#records)*
 
@@ -88,15 +90,35 @@ pub fn generate_interpreter_code_from_simplified(
                 ValueVariants::Future(futures) => {
                     match &futures[0] {
                         leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
-                            let future_value = leo_ast::interpreter_value::Value::make_future(
-                                function.program,
-                                function.path.last().copied().unwrap_or(leo_span::Symbol::intern("unknown")),
-                                arguments.clone().into_iter()
-                            ).ok_or_else(|| anyhow!("Failed to create future value"))?;
+                            let svm_arguments: Result<Vec<_>, _> = arguments.iter()
+                                .map(|arg| leo_value_to_snarkvm_values(arg.clone()))
+                                .collect::<Result<Vec<_>, _>>()
+                                .map(|arg_vecs| arg_vecs.into_iter().flatten().collect());
 
-                            match future_value.contents {
-                                ValueVariants::Svm(svm_value) => Ok(vec![svm_value]),
-                                _ => Err(anyhow!("Future did not create SVM value"))
+                            match svm_arguments {
+                                Ok(svm_args) => {
+                                    let future_arguments: Result<Vec<_>, _> = svm_args.iter()
+                                        .map(|svm_val| match svm_val {
+                                            Value::Plaintext(pt) => Ok(Argument::Plaintext(pt.clone())),
+                                            Value::Future(f) => Ok(Argument::Future(f.clone())),
+                                            _ => Err(anyhow!("Unsupported argument type for future"))
+                                        })
+                                        .collect();
+
+                                    match future_arguments {
+                                        Ok(args) => {
+                                            let program_id = ProgramID::try_from(format!("{}.aleo", function.program))
+                                                .map_err(|e| anyhow!("Invalid program ID: {}", e))?;
+                                            let function_name = Identifier::try_from(function.path.last().copied().unwrap_or(Symbol::intern("unknown")).to_string())
+                                                .map_err(|e| anyhow!("Invalid function name: {}", e))?;
+
+                                            let future = Future::new(program_id, function_name, args);
+                                            Ok(vec![Value::Future(future)])
+                                        },
+                                        Err(e) => Err(anyhow!("Failed to convert arguments to future arguments: {}", e))
+                                    }
+                                },
+                                Err(e) => Err(anyhow!("Failed to convert arguments to SVM values: {}", e))
                             }
                         },
                         leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {
@@ -110,8 +132,6 @@ pub fn generate_interpreter_code_from_simplified(
 
         pub struct #program_name {
             pub endpoint: String,
-            pub interpreter: std::cell::RefCell<leo_interpreter::Interpreter>,
-            session: SessionGlobals,
         }
 
         impl #program_name {
@@ -121,50 +141,86 @@ pub fn generate_interpreter_code_from_simplified(
                 use leo_interpreter::Interpreter;
                 use leo_ast::interpreter_value::Value;
 
-                let session = SessionGlobals::default();
+                let program_name = stringify!(#program_name);
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
-                let interpreter = SESSION_GLOBALS.set(&session, || {
-                    #(#deployment_calls)*
+                create_session_if_not_set_then(|_| {
+                    let interpreter_exists = with_shared_interpreter(|_| true).is_some();
+                    if !interpreter_exists {
+                        let signer: Value = deployer.address().into();
+                        let block_height = 0u32;
+                        let network = NetworkName::from_str("testnet").unwrap();
 
-                    let package = Package::from_directory(
-                        crate_dir,
-                        crate_dir,
-                        false,
-                        false,
-                        Some(NetworkName::from_str("testnet").unwrap()),
-                        Some(endpoint),
-                    ).map_err(|e| anyhow!("Failed to load package: {}", e))?;
+                        let interpreter = Interpreter::new(
+                            &[] as &[(PathBuf, Vec<PathBuf>)],
+                            &[] as &[PathBuf],
+                            signer,
+                            block_height,
+                            network,
+                        ).unwrap();
 
-                    let leo_files = collect_leo_paths(&package);
-                    let aleo_files = collect_aleo_paths(&package);
-
-                    if leo_files.is_empty() {
-                        return Err(anyhow!("No Leo source files found in package"));
+                        let session = SessionGlobals::default();
+                        initialize_shared_interpreter(interpreter, session);
                     }
 
-                    let signer: Value = deployer.address().into();
-                    let block_height = 0u32;
-                    let network = NetworkName::from_str("testnet")
-                        .map_err(|e| anyhow!("Invalid network name: {}", e))?;
+                    #(#deployment_calls)*
 
-                    let mut interpreter = Interpreter::new(
-                        &leo_files,
-                        &aleo_files,
-                        signer,
-                        block_height,
-                        network,
-                    ).map_err(|e| anyhow!("Failed to create interpreter: {}", e))?;
+                });
 
-                    interpreter.cursor.set_program(stringify!(#program_name));
+                let program_exists = with_shared_interpreter(|state| {
+                    state.interpreter.borrow().is_program_loaded(program_name)
+                }).unwrap_or(false);
 
-                    Ok(interpreter)
-                })?;
+                if !program_exists {
+                    with_shared_interpreter(|state| {
+                        let src_dir = crate_dir.join("src");
+                        let leo_files = if src_dir.exists() {
+                            let mut all_files: Vec<PathBuf> = walkdir::WalkDir::new(&src_dir)
+                                .into_iter()
+                                .filter_map(Result::ok)
+                                .filter(|entry| {
+                                    entry.path().extension().and_then(|s| s.to_str()) == Some("leo")
+                                })
+                                .map(|entry| entry.into_path())
+                                .collect();
+                            if let Some(index) = all_files
+                                .iter()
+                                .position(|p| p.file_name().and_then(|s| s.to_str()) == Some("main.leo"))
+                            {
+                                let main = all_files.remove(index);
+                                vec![(main, all_files)]
+                            } else {
+                                vec![]
+                            }
+                        } else {
+                            vec![]
+                        };
+
+                        let aleo_name = format!("{}.aleo", program_name);
+                        let aleo_path = crate_dir.join(&aleo_name);
+                        let aleo_files = if aleo_path.exists() {
+                            vec![aleo_path]
+                        } else {
+                            vec![]
+                        };
+
+                        let mut interpreter = state.interpreter.borrow_mut();
+                        if !leo_files.is_empty() {
+                            interpreter.load_leo_programs(&leo_files).unwrap();
+                        }
+                        if !aleo_files.is_empty() {
+                            interpreter.load_aleo_programs(aleo_files.iter()).unwrap();
+                        }
+                    }).unwrap();
+                }
+
+                with_shared_interpreter(|state| {
+                    let mut interpreter = state.interpreter.borrow_mut();
+                    interpreter.cursor.set_program(program_name);
+                });
 
                 Ok(Self {
                     endpoint: endpoint.to_string(),
-                    interpreter: std::cell::RefCell::new(interpreter),
-                    session,
                 })
             }
 
@@ -189,11 +245,11 @@ fn generate_interpreter_mapping_implementations(
 
         quote! {
             pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-                SESSION_GLOBALS.set(&self.session, || {
-                    let interpreter = self.interpreter.borrow();
+                with_shared_interpreter(|state| {
+                    let interpreter = state.interpreter.borrow();
                     let program_symbol = interpreter.cursor.current_program()
                         .expect("No current program set in interpreter");
-                    let mapping_name_symbol = leo_span::Symbol::intern(#mapping_name_str);
+                    let mapping_name_symbol = Symbol::intern(#mapping_name_str);
 
                     let key_leo_value = snarkvm_value_to_leo_value(&key.to_value()).ok()?;
 
@@ -206,7 +262,7 @@ fn generate_interpreter_mapping_implementations(
                         }
                     }
                     None
-                })
+                }).flatten()
             }
         }
     }).collect()
@@ -275,14 +331,16 @@ fn generate_interpreter_function_implementations(
 
         quote! {
             pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
-                let leo_result_value = SESSION_GLOBALS.set(&self.session, || {
-                    let mut interpreter = self.interpreter.borrow_mut();
+                let leo_result_value = with_shared_interpreter(|state| {
+                    let mut interpreter = state.interpreter.borrow_mut();
 
                     let function_args: Vec<leo_ast::interpreter_value::Value> = vec![#(#input_conversions),*];
 
+                    interpreter.cursor.set_program(#program_name);
+
                     let program_symbol = interpreter.cursor.current_program()
                         .ok_or_else(|| anyhow!("No current program set in interpreter"))?;
-                    let function_name_symbol = leo_span::Symbol::intern(stringify!(#function_name));
+                    let function_name_symbol = Symbol::intern(stringify!(#function_name));
 
                     interpreter.cursor.values.extend(function_args);
 
@@ -347,8 +405,8 @@ fn generate_interpreter_function_implementations(
                         }
                     }
 
-                    Ok(function_outputs)
-                })?;
+                        Ok(function_outputs)
+                }).ok_or_else(|| anyhow!("Shared interpreter not available"))??;
 
                 #function_return_conversions
             }
