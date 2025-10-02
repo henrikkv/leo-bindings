@@ -1,4 +1,5 @@
 use crate::generate_structs;
+use crate::interpreter_cheats::generate_interpreter_cheats_from_simplified;
 use crate::signature::SimplifiedBindings;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -37,6 +38,24 @@ pub fn generate_interpreter_code_from_simplified(
         &simplified.mappings,
         &simplified.program_name,
     );
+
+    let cheats_module = generate_interpreter_cheats_from_simplified(simplified);
+
+    let dev_account_funding = if simplified.program_name == "credits" {
+        let cheats_module = syn::Ident::new(
+            &format!("{}_interpreter_cheats", simplified.program_name),
+            proc_macro2::Span::call_site(),
+        );
+        quote! {
+            const balance: u64 = 1_500_000_000_000_000 / 8;
+            #cheats_module::set_account(Address::from_str("aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px")?, balance)?;
+            #cheats_module::set_account(Address::from_str("aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t")?, balance)?;
+            #cheats_module::set_account(Address::from_str("aleo1ashyu96tjwe63u0gtnnv8z5lhapdu4l5pjsl2kha7fv7hvz2eqxs5dz0rg")?, balance)?;
+            #cheats_module::set_account(Address::from_str("aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2")?, balance)?;
+        }
+    } else {
+        quote! {}
+    };
 
     let expanded = quote! {
         use leo_bindings::{anyhow, snarkvm, indexmap, leo_package, leo_ast, leo_span, leo_interpreter, leo_errors};
@@ -90,36 +109,21 @@ pub fn generate_interpreter_code_from_simplified(
                 ValueVariants::Future(futures) => {
                     match &futures[0] {
                         leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
-                            let svm_arguments: Result<Vec<_>, _> = arguments.iter()
-                                .map(|arg| leo_value_to_snarkvm_values(arg.clone()))
-                                .collect::<Result<Vec<_>, _>>()
-                                .map(|arg_vecs| arg_vecs.into_iter().flatten().collect());
+                            let svm_args: Vec<Argument<Nw>> = arguments.iter()
+                                .flat_map(|arg| leo_value_to_snarkvm_values(arg.clone()).unwrap())
+                                .filter_map(|svm_val| match svm_val {
+                                    Value::Plaintext(pt) => Some(Argument::Plaintext(pt)),
+                                    Value::Future(f) => Some(Argument::Future(f)),
+                                    _ => None
+                                })
+                                .collect();
 
-                            match svm_arguments {
-                                Ok(svm_args) => {
-                                    let future_arguments: Result<Vec<_>, _> = svm_args.iter()
-                                        .map(|svm_val| match svm_val {
-                                            Value::Plaintext(pt) => Ok(Argument::Plaintext(pt.clone())),
-                                            Value::Future(f) => Ok(Argument::Future(f.clone())),
-                                            _ => Err(anyhow!("Unsupported argument type for future"))
-                                        })
-                                        .collect();
+                            let program_id = ProgramID::try_from(format!("{}.aleo", function.program))?;
+                            let function_name = Identifier::try_from(
+                                function.path.last().copied().unwrap_or(Symbol::intern("unknown")).to_string()
+                            )?;
 
-                                    match future_arguments {
-                                        Ok(args) => {
-                                            let program_id = ProgramID::try_from(format!("{}.aleo", function.program))
-                                                .map_err(|e| anyhow!("Invalid program ID: {}", e))?;
-                                            let function_name = Identifier::try_from(function.path.last().copied().unwrap_or(Symbol::intern("unknown")).to_string())
-                                                .map_err(|e| anyhow!("Invalid function name: {}", e))?;
-
-                                            let future = Future::new(program_id, function_name, args);
-                                            Ok(vec![Value::Future(future)])
-                                        },
-                                        Err(e) => Err(anyhow!("Failed to convert arguments to future arguments: {}", e))
-                                    }
-                                },
-                                Err(e) => Err(anyhow!("Failed to convert arguments to SVM values: {}", e))
-                            }
+                            Ok(vec![Value::Future(Future::new(program_id, function_name, svm_args))])
                         },
                         leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {
                             Err(anyhow!("AsyncBlock futures not supported"))
@@ -140,6 +144,7 @@ pub fn generate_interpreter_code_from_simplified(
                 use std::path::Path;
                 use leo_interpreter::Interpreter;
                 use leo_ast::interpreter_value::Value;
+                use leo_span;
 
                 let program_name = stringify!(#program_name);
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -173,26 +178,68 @@ pub fn generate_interpreter_code_from_simplified(
 
                 if !program_exists {
                     with_shared_interpreter(|state| {
-                        let src_dir = crate_dir.join("src");
-                        let leo_files = if src_dir.exists() {
-                            let mut all_files: Vec<PathBuf> = walkdir::WalkDir::new(&src_dir)
-                                .into_iter()
-                                .filter_map(Result::ok)
-                                .filter(|entry| {
-                                    entry.path().extension().and_then(|s| s.to_str()) == Some("leo")
-                                })
-                                .map(|entry| entry.into_path())
-                                .collect();
-                            if let Some(index) = all_files
-                                .iter()
-                                .position(|p| p.file_name().and_then(|s| s.to_str()) == Some("main.leo"))
-                            {
-                                let main = all_files.remove(index);
-                                vec![(main, all_files)]
-                            } else {
-                                vec![]
+                        let package = match Package::from_directory(
+                            crate_dir,
+                            crate_dir,
+                            false,
+                            false,
+                            Some(NetworkName::from_str("testnet").unwrap()),
+                            Some(endpoint),
+                        ) {
+                            Ok(pkg) => pkg,
+                            Err(_) => {
+                                let manifest = Manifest {
+                                    program: format!("{}.aleo", program_name),
+                                    version: "0.1.0".to_string(),
+                                    description: "External binding".to_string(),
+                                    license: "MIT".to_string(),
+                                    leo: Default::default(),
+                                    dependencies: None,
+                                    dev_dependencies: None,
+                                };
+                                Package {
+                                    base_directory: crate_dir.canonicalize().unwrap_or_else(|_| crate_dir.to_path_buf()),
+                                    programs: Vec::new(),
+                                    manifest,
+                                }
                             }
+                        };
+
+                        let target_program_name_symbol = leo_span::Symbol::intern(program_name);
+                        let target_program = match package.programs.iter()
+                            .find(|p| p.name == target_program_name_symbol) {
+                            Some(p) => p,
+                            None => {
+                                println!("❌ Program '{}' not found in package", program_name);
+                                return;
+                            }
+                        };
+
+                        let aleo_name = format!("{}.aleo", target_program.name);
+                        let (main_leo_path, modules_dir) = if package.manifest.program == aleo_name {
+                            let src_dir = crate_dir.join("src");
+                            (src_dir.join("main.leo"), src_dir)
                         } else {
+                            let dep_dir = crate_dir.join("imports").join(target_program.name.to_string()).join("src");
+                            (dep_dir.join("main.leo"), dep_dir.clone())
+                        };
+
+                        let leo_files = if main_leo_path.exists() {
+                            let module_files: Vec<PathBuf> = std::fs::read_dir(&modules_dir)
+                                .map(|entries| {
+                                    entries
+                                        .filter_map(Result::ok)
+                                        .map(|entry| entry.path())
+                                        .filter(|path| {
+                                            path.extension().and_then(|s| s.to_str()) == Some("leo") &&
+                                            path.file_name().and_then(|s| s.to_str()) != Some("main.leo")
+                                        })
+                                        .collect()
+                                })
+                                .unwrap_or_default();
+                            vec![(main_leo_path, module_files)]
+                        } else {
+                            println!("❌ Leo file not found: {:?}", main_leo_path);
                             vec![]
                         };
 
@@ -219,6 +266,8 @@ pub fn generate_interpreter_code_from_simplified(
                     interpreter.cursor.set_program(program_name);
                 });
 
+                #dev_account_funding
+
                 Ok(Self {
                     endpoint: endpoint.to_string(),
                 })
@@ -228,6 +277,7 @@ pub fn generate_interpreter_code_from_simplified(
 
             #(#mapping_implementations)*
         }
+        #cheats_module
     };
 
     expanded
@@ -235,7 +285,7 @@ pub fn generate_interpreter_code_from_simplified(
 
 fn generate_interpreter_mapping_implementations(
     mappings: &[crate::signature::MappingBinding],
-    program_name: &str,
+    _program_name: &str,
 ) -> Vec<proc_macro2::TokenStream> {
     mappings.iter().map(|mapping| {
         let getter_name = syn::Ident::new(&format!("get_{}", mapping.name), proc_macro2::Span::call_site());
@@ -387,22 +437,14 @@ fn generate_interpreter_function_implementations(
                         None => vec![],
                     };
 
-                    while !interpreter.cursor.futures.is_empty() {
-                        let future_index = 0;
-                        let future = interpreter.cursor.futures.remove(future_index);
-                        match future {
-                            leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
-                                interpreter.cursor.values.extend(arguments);
-                                interpreter.cursor.frames.push(leo_interpreter::Frame {
-                                    step: 0,
-                                    element: leo_interpreter::Element::DelayedCall(function),
-                                    user_initiated: true,
-                                });
-                                interpreter.cursor.over()
-                                    .map_err(|e| anyhow!("Failed to execute finalize function: {}", e))?;
-                            }
-                            leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {}
-                        }
+                    if let Some(leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments }) = interpreter.cursor.futures.pop() {
+                        interpreter.cursor.values.extend(arguments);
+                        interpreter.cursor.frames.push(leo_interpreter::Frame {
+                            step: 0,
+                            element: leo_interpreter::Element::DelayedCall(function),
+                            user_initiated: true,
+                        });
+                        interpreter.cursor.over()?;
                     }
 
                         Ok(function_outputs)

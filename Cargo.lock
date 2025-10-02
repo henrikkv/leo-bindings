@@ -1484,7 +1484,7 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 [[package]]
 name = "leo-ast"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -1527,7 +1527,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#861098da2a41384bd3486048c9789462b54d1068"
+source = "git+https://github.com/henrikkv/leo-bindings#1b4bddda4766888c078a887eb768f71694ffaeed"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1579,7 +1579,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-core"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#861098da2a41384bd3486048c9789462b54d1068"
+source = "git+https://github.com/henrikkv/leo-bindings#1b4bddda4766888c078a887eb768f71694ffaeed"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1587,6 +1587,12 @@ dependencies = [
  "convert_case",
  "http",
  "indexmap",
+ "leo-ast",
+ "leo-errors",
+ "leo-interpreter",
+ "leo-package",
+ "leo-parser",
+ "leo-span",
  "num-format",
  "proc-macro2",
  "quote 1.0.41",
@@ -1606,7 +1612,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-credits"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#861098da2a41384bd3486048c9789462b54d1068"
+source = "git+https://github.com/henrikkv/leo-bindings#1b4bddda4766888c078a887eb768f71694ffaeed"
 dependencies = [
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
 ]
@@ -1625,7 +1631,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-macro"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#861098da2a41384bd3486048c9789462b54d1068"
+source = "git+https://github.com/henrikkv/leo-bindings#1b4bddda4766888c078a887eb768f71694ffaeed"
 dependencies = [
  "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "proc-macro2",
@@ -1637,7 +1643,7 @@ dependencies = [
 [[package]]
 name = "leo-errors"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "anyhow",
  "backtrace",
@@ -1653,7 +1659,7 @@ dependencies = [
 [[package]]
 name = "leo-interpreter"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "colored 2.2.0",
  "crossterm",
@@ -1673,7 +1679,7 @@ dependencies = [
 [[package]]
 name = "leo-package"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "indexmap",
  "leo-ast",
@@ -1689,7 +1695,7 @@ dependencies = [
 [[package]]
 name = "leo-parser"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "indexmap",
  "itertools 0.13.0",
@@ -1703,7 +1709,7 @@ dependencies = [
 [[package]]
 name = "leo-parser-lossless"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "itertools 0.13.0",
  "lalrpop",
@@ -1717,7 +1723,7 @@ dependencies = [
 [[package]]
 name = "leo-span"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#13245ccdbfa12d3ea2af62c2e9559479dc8a44c9"
+source = "git+https://github.com/henrikkv/leo#1c781f58039cbd7a0f74d45e16dde7ad6f412dbf"
 dependencies = [
  "fxhash",
  "indexmap",
