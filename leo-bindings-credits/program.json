@@ -1,8 +1,9 @@
 {
   "program": "credits.aleo",
   "version": "0.1.0",
-  "description": "",
+  "description": "Aleo credits program",
   "license": "MIT",
-  "dependencies": null
+  "dependencies": [],
+  "dev_dependencies": null
 }
 

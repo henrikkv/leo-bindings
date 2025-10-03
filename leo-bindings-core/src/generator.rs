@@ -147,32 +147,14 @@ pub fn generate_code_from_simplified(
                 let result = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
                 
-                let package = match Package::from_directory(
+                let package = Package::from_directory(
                     crate_dir,
                     crate_dir,
                     false,
                     false,
                     Some(NetworkName::from_str(Nw::SHORT_NAME).unwrap()),
                     Some(endpoint),
-                ) {
-                    Ok(pkg) => pkg,
-                    Err(_) => {
-                        let manifest = Manifest {
-                            program: format!("{}.aleo", stringify!(#program_name)),
-                            version: "0.1.0".to_string(),
-                            description: "External binding".to_string(),
-                            license: "MIT".to_string(),
-                            leo: Default::default(),
-                            dependencies: None,
-                            dev_dependencies: None,
-                        };
-                        Package {
-                            base_directory: crate_dir.canonicalize()?,
-                            programs: Vec::new(),
-                            manifest,
-                        }
-                    }
-                };
+                )?;
 
                 #(#deployment_calls)*
 
@@ -198,15 +180,16 @@ pub fn generate_code_from_simplified(
                         .find(|p| p.name == target_program_name_symbol)
                         .ok_or_else(|| anyhow!("Program '{}' not found in package", stringify!(#program_name)))?;
 
-                    let aleo_name = format!("{}.aleo", target_program.name);
-                    let aleo_path = if package.manifest.program == aleo_name {
-                        package.build_directory().join("main.aleo")
-                    } else {
-                        package.imports_directory().join(aleo_name)
+                    let bytecode = match &target_program.data {
+                        leo_package::ProgramData::Bytecode(bytecode) => {
+                            bytecode.clone()
+                        },
+                        leo_package::ProgramData::SourcePath { directory, source: _ } => {
+                            let aleo_path = directory.join("build").join("main.aleo");
+                            std::fs::read_to_string(&aleo_path)
+                                .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?
+                        }
                     };
-
-                    let bytecode = std::fs::read_to_string(aleo_path.clone())
-                        .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?;
 
                     let program: Program<Nw> = bytecode.parse()
                         .map_err(|e| anyhow!("Failed to parse program: {}", e))?;

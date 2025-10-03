@@ -23,10 +23,10 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
                     let key_value = snarkvm_value_to_leo_value(&key.to_value())?;
                     let value_value = snarkvm_value_to_leo_value(&value.to_value())?;
                     let mut interpreter = state.interpreter.borrow_mut();
-                    let mapping_id = GlobalId {
-                        program: Symbol::intern(#program_name),
-                        path: vec![Symbol::intern(#mapping_name)],
-                    };
+                    let mapping_id = leo_ast::Location::new(
+                        Symbol::intern(#program_name),
+                        vec![Symbol::intern(#mapping_name)],
+                    );
                     interpreter.cursor.mappings.get_mut(&mapping_id)
                         .ok_or_else(|| anyhow!("Mapping '{}' not found", #mapping_name))?
                         .insert(key_value, value_value);
@@ -42,7 +42,7 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
             use super::*;
             use leo_bindings::{anyhow, snarkvm, leo_ast, leo_span, shared_interpreter::with_shared_interpreter, ToValue};
             use anyhow::{anyhow, Result};
-            use leo_ast::interpreter_value::{GlobalId, Value};
+            use leo_ast::interpreter_value::Value;
             use leo_span::Symbol;
             use snarkvm::prelude::{TestnetV0 as Nw, Address};
 

@@ -178,85 +178,29 @@ pub fn generate_interpreter_code_from_simplified(
 
                 if !program_exists {
                     with_shared_interpreter(|state| {
-                        let package = match Package::from_directory(
+                        let package = Package::from_directory(
                             crate_dir,
                             crate_dir,
                             false,
                             false,
                             Some(NetworkName::from_str("testnet").unwrap()),
                             Some(endpoint),
-                        ) {
-                            Ok(pkg) => pkg,
-                            Err(_) => {
-                                let manifest = Manifest {
-                                    program: format!("{}.aleo", program_name),
-                                    version: "0.1.0".to_string(),
-                                    description: "External binding".to_string(),
-                                    license: "MIT".to_string(),
-                                    leo: Default::default(),
-                                    dependencies: None,
-                                    dev_dependencies: None,
-                                };
-                                Package {
-                                    base_directory: crate_dir.canonicalize().unwrap_or_else(|_| crate_dir.to_path_buf()),
-                                    programs: Vec::new(),
-                                    manifest,
-                                }
-                            }
-                        };
+                        ).unwrap();
 
                         let target_program_name_symbol = leo_span::Symbol::intern(program_name);
-                        let target_program = match package.programs.iter()
-                            .find(|p| p.name == target_program_name_symbol) {
-                            Some(p) => p,
-                            None => {
-                                println!("❌ Program '{}' not found in package", program_name);
-                                return;
-                            }
-                        };
-
-                        let aleo_name = format!("{}.aleo", target_program.name);
-                        let (main_leo_path, modules_dir) = if package.manifest.program == aleo_name {
-                            let src_dir = crate_dir.join("src");
-                            (src_dir.join("main.leo"), src_dir)
-                        } else {
-                            let dep_dir = crate_dir.join("imports").join(target_program.name.to_string()).join("src");
-                            (dep_dir.join("main.leo"), dep_dir.clone())
-                        };
-
-                        let leo_files = if main_leo_path.exists() {
-                            let module_files: Vec<PathBuf> = std::fs::read_dir(&modules_dir)
-                                .map(|entries| {
-                                    entries
-                                        .filter_map(Result::ok)
-                                        .map(|entry| entry.path())
-                                        .filter(|path| {
-                                            path.extension().and_then(|s| s.to_str()) == Some("leo") &&
-                                            path.file_name().and_then(|s| s.to_str()) != Some("main.leo")
-                                        })
-                                        .collect()
-                                })
-                                .unwrap_or_default();
-                            vec![(main_leo_path, module_files)]
-                        } else {
-                            println!("❌ Leo file not found: {:?}", main_leo_path);
-                            vec![]
-                        };
-
-                        let aleo_name = format!("{}.aleo", program_name);
-                        let aleo_path = crate_dir.join(&aleo_name);
-                        let aleo_files = if aleo_path.exists() {
-                            vec![aleo_path]
-                        } else {
-                            vec![]
-                        };
+                        let target_program = package.programs.iter()
+                            .find(|p| p.name == target_program_name_symbol)
+                            .unwrap();
 
                         let mut interpreter = state.interpreter.borrow_mut();
-                        if !leo_files.is_empty() {
-                            interpreter.load_leo_programs(&leo_files).unwrap();
-                        }
-                        if !aleo_files.is_empty() {
-                            interpreter.load_aleo_programs(aleo_files.iter()).unwrap();
+
+                        match &target_program.data {
+                            leo_package::ProgramData::Bytecode(bytecode) => {
+                                interpreter.load_aleo_program_from_string(bytecode).unwrap();
+                            },
+                            leo_package::ProgramData::SourcePath { directory: _, source } => {
+                                interpreter.load_leo_program(source).unwrap();
+                            }
                         }
                     }).unwrap();
                 }
