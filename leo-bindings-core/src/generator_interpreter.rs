@@ -328,6 +328,8 @@ fn generate_interpreter_function_implementations(
                 let leo_result_value = with_shared_interpreter(|state| {
                     let mut interpreter = state.interpreter.borrow_mut();
 
+                    interpreter.set_signer(account.address());
+
                     let function_args: Vec<leo_ast::interpreter_value::Value> = vec![#(#input_conversions),*];
 
                     interpreter.cursor.set_program(#program_name);

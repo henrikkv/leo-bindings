@@ -1,6 +1,7 @@
+use crate::types::ToValue;
+use anyhow::{anyhow, Result};
 use leo_ast::Location;
 use leo_ast::NetworkName;
-use leo_errors::{CompilerError, Result};
 use leo_interpreter::{Element, Frame, FunctionVariant, Interpreter};
 use leo_parser;
 use leo_span::source_map::FileName;
@@ -52,11 +53,14 @@ pub trait InterpreterExtensions {
     fn is_program_loaded(&self, program_name: &str) -> bool;
 
     fn get_loaded_programs(&self) -> Vec<String>;
+
+    fn set_signer(&mut self, signer: snarkvm::prelude::Address<TestnetV0>);
 }
 
 impl InterpreterExtensions for Interpreter {
     fn load_leo_program(&mut self, path: &Path) -> Result<()> {
-        let text = fs::read_to_string(path).map_err(|e| CompilerError::file_read_error(path, e))?;
+        let text = fs::read_to_string(path)
+            .map_err(|e| anyhow!("Failed to read file {:?}: {}", path, e))?;
         let source_file = with_session_globals(|s| {
             s.source_map
                 .new_source(&text, FileName::Real(path.to_path_buf()))
@@ -223,5 +227,9 @@ impl InterpreterExtensions for Interpreter {
             programs.insert(program.to_string());
         }
         programs.into_iter().collect()
+    }
+
+    fn set_signer(&mut self, signer: snarkvm::prelude::Address<TestnetV0>) {
+        self.cursor.signer = signer.to_value().into();
     }
 }
