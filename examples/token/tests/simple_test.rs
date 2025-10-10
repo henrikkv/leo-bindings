@@ -1,10 +1,10 @@
 #[test]
 fn token() {
     use leo_bindings::utils::*;
-    use leo_bindings_credits::credits_testnet::*;
+    use leo_bindings_credits::credits::testnet::*;
     use snarkvm::console::network::TestnetV0;
     use std::str::FromStr;
-    use tokenexample::token_testnet::token;
+    use tokenexample::token::testnet::*;
 
     const ENDPOINT: &str = "http://localhost:3030";
     let rng = &mut rand::thread_rng();
@@ -12,7 +12,7 @@ fn token() {
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
     let bob = Account::new(rng).unwrap();
 
-    let credits = credits::new(&alice, ENDPOINT).unwrap();
+    let credits = CreditsTestnet::new(&alice, ENDPOINT).unwrap();
     let balance_before = credits.get_account(alice.address()).unwrap();
     dbg!(balance_before);
     credits
@@ -21,7 +21,7 @@ fn token() {
     let balance_after = credits.get_account(alice.address()).unwrap();
     dbg!(balance_after);
 
-    let token = token::new(&alice, ENDPOINT).unwrap();
+    let token = TokenTestnet::new(&alice, ENDPOINT).unwrap();
 
     let rec = token.mint_private(&alice, bob.address(), 100).unwrap();
     dbg!(&rec);

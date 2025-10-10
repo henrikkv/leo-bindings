@@ -1,152 +1,93 @@
-use crate::generate_structs;
 use crate::interpreter_cheats::generate_interpreter_cheats_from_simplified;
 use crate::signature::SimplifiedBindings;
-use proc_macro2::TokenStream;
+use crate::{FunctionTypes, MappingTypes};
+use convert_case::{Case::Pascal, Casing};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 
-pub fn generate_interpreter_code_from_simplified(
+pub fn generate_interpreter_impl(
     simplified: &SimplifiedBindings,
-    dependency_modules: Vec<(String, String)>,
+    function_types: &[FunctionTypes],
+    mapping_types: &[MappingTypes],
+    program_trait: &Ident,
 ) -> TokenStream {
-    let program_name = syn::Ident::new(&simplified.program_name, proc_macro2::Span::call_site());
+    let program_name = &simplified.program_name;
+    let program_name_pascal = simplified.program_name.to_case(Pascal);
+    let program_struct = Ident::new(
+        &format!("{}Interpreter", program_name_pascal),
+        Span::call_site(),
+    );
 
-    let records = generate_structs(&simplified.records);
-    let structs = generate_structs(&simplified.structs);
-    let imports = &simplified.imports;
-
-    // Recursive deployment of dependencies
-    let deployment_calls: Vec<proc_macro2::TokenStream> = imports
+    let (deployment_calls, trait_imports): (Vec<TokenStream>, Vec<TokenStream>) = simplified
+        .imports
         .iter()
         .map(|import_name| {
-            let dep_struct_name = syn::Ident::new(import_name, proc_macro2::Span::call_site());
-            dependency_modules
-                .iter().find(|(name, _)| name == import_name)
-                .map_or_else(
-                    || quote! { #dep_struct_name::new(deployer, endpoint).unwrap(); },
-                    |(_, module_name)| {
-                        let dep_module_name = syn::Ident::new(module_name, proc_macro2::Span::call_site());
-                        quote! { super::#dep_module_name::#dep_struct_name::new(deployer, endpoint).unwrap(); }
-                    }
-                )
-        }).collect();
-    let function_implementations = generate_interpreter_function_implementations(
-        &simplified.functions,
-        &simplified.program_name,
-    );
+            let import_pascal = import_name.to_case(Pascal);
+            let import_module = Ident::new(import_name, Span::call_site());
+            let import_struct = Ident::new(&format!("{}Interpreter", import_pascal), Span::call_site());
+            let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
 
-    let mapping_implementations = generate_interpreter_mapping_implementations(
-        &simplified.mappings,
-        &simplified.program_name,
-    );
+            let deployment = quote! { crate::#import_module::interpreter::#import_struct::new(deployer, endpoint).unwrap(); };
+            let trait_import = quote! { use crate::#import_module::#import_trait; };
+
+            (deployment, trait_import)
+        })
+        .unzip();
+
+    let function_implementations: Vec<TokenStream> = function_types
+        .iter()
+        .map(|types| generate_interpreter_function(types, program_name))
+        .collect();
+
+    let mapping_implementations: Vec<TokenStream> = mapping_types
+        .iter()
+        .map(generate_interpreter_mapping)
+        .collect();
 
     let cheats_module = generate_interpreter_cheats_from_simplified(simplified);
 
     let dev_account_funding = if simplified.program_name == "credits" {
-        let cheats_module = syn::Ident::new(
-            &format!("{}_interpreter_cheats", simplified.program_name),
-            proc_macro2::Span::call_site(),
+        let cheats_module = Ident::new(
+            &format!("{}_interpreter_cheats", program_name),
+            Span::call_site(),
         );
         quote! {
             const balance: u64 = 1_500_000_000_000_000 / 8;
-            #cheats_module::set_account(Address::from_str("aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px")?, balance)?;
-            #cheats_module::set_account(Address::from_str("aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t")?, balance)?;
-            #cheats_module::set_account(Address::from_str("aleo1ashyu96tjwe63u0gtnnv8z5lhapdu4l5pjsl2kha7fv7hvz2eqxs5dz0rg")?, balance)?;
-            #cheats_module::set_account(Address::from_str("aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2")?, balance)?;
+            #cheats_module::set_account(Address::from_str("aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px").unwrap(), balance).unwrap();
+            #cheats_module::set_account(Address::from_str("aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t").unwrap(), balance).unwrap();
+            #cheats_module::set_account(Address::from_str("aleo1ashyu96tjwe63u0gtnnv8z5lhapdu4l5pjsl2kha7fv7hvz2eqxs5dz0rg").unwrap(), balance).unwrap();
+            #cheats_module::set_account(Address::from_str("aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2").unwrap(), balance).unwrap();
         }
     } else {
         quote! {}
     };
 
     let expanded = quote! {
-        use leo_bindings::{anyhow, snarkvm, indexmap, leo_package, leo_ast, leo_span, leo_interpreter, leo_errors};
+        pub mod interpreter {
+            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter};
+            use anyhow::anyhow;
+            use snarkvm::prelude::TestnetV0 as Nw;
+            use leo_package::Package;
+            use leo_ast::NetworkName;
+            use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
+            use std::str::FromStr;
+            use std::path::PathBuf;
+            use leo_bindings::{initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
 
-        use anyhow::{anyhow, bail, ensure};
-        use snarkvm::prelude::*;
-        use snarkvm::prelude::TestnetV0 as Nw;
-        use indexmap::IndexMap;
-        use leo_package::Package;
-        use leo_ast::NetworkName;
-        use leo_span::{create_session_if_not_set_then, SESSION_GLOBALS, SessionGlobals, Symbol};
-        use leo_interpreter::{Frame, Element, StepResult};
-        use leo_errors::Handler;
-        use std::str::FromStr;
-        use std::path::{Path, PathBuf};
-        use leo_bindings::{ToValue, FromValue};
-        use leo_bindings::utils::{Account};
-        use leo_bindings::{initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, walkdir};
+            pub use super::*;
 
-        #(#records)*
-
-        #(#structs)*
-
-        fn snarkvm_value_to_leo_value(value: &Value<Nw>) -> Result<leo_ast::interpreter_value::Value, anyhow::Error> {
-            let leo_svm_value: leo_ast::interpreter_value::SvmValue = value.clone();
-            Ok(leo_svm_value.into())
-        }
-
-
-        fn leo_value_to_snarkvm_values(leo_value: leo_ast::interpreter_value::Value) -> Result<Vec<Value<Nw>>, anyhow::Error> {
-            use leo_ast::interpreter_value::{SvmValue, ValueVariants};
-
-            match leo_value.contents {
-                ValueVariants::Svm(svm_value) => {
-                    Ok(vec![svm_value])
-                },
-                ValueVariants::Tuple(tuple_values) => {
-                    let mut svm_values = Vec::new();
-                    for tuple_element in tuple_values {
-                        let element_values = leo_value_to_snarkvm_values(tuple_element)?;
-                        svm_values.extend(element_values);
-                    }
-                    Ok(svm_values)
-                },
-                ValueVariants::Unit => {
-                    Ok(vec![])
-                },
-                ValueVariants::Unsuffixed(_) => {
-                    Err(anyhow!("Cannot convert Unsuffixed literals"))
-                },
-                ValueVariants::Future(futures) => {
-                    match &futures[0] {
-                        leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments } => {
-                            let svm_args: Vec<Argument<Nw>> = arguments.iter()
-                                .flat_map(|arg| leo_value_to_snarkvm_values(arg.clone()).unwrap())
-                                .filter_map(|svm_val| match svm_val {
-                                    Value::Plaintext(pt) => Some(Argument::Plaintext(pt)),
-                                    Value::Future(f) => Some(Argument::Future(f)),
-                                    _ => None
-                                })
-                                .collect();
-
-                            let program_id = ProgramID::try_from(format!("{}.aleo", function.program))?;
-                            let function_name = Identifier::try_from(
-                                function.path.last().copied().unwrap_or(Symbol::intern("unknown")).to_string()
-                            )?;
-
-                            Ok(vec![Value::Future(Future::new(program_id, function_name, svm_args))])
-                        },
-                        leo_ast::interpreter_value::AsyncExecution::AsyncBlock { .. } => {
-                            Err(anyhow!("AsyncBlock futures not supported"))
-                        }
-                    }
-                }
+            pub struct #program_struct {
+                pub endpoint: String,
             }
-        }
 
-
-        pub struct #program_name {
-            pub endpoint: String,
-        }
-
-        impl #program_name {
-            pub fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
-                use leo_package::{Package, Manifest};
+            impl #program_trait<Nw> for #program_struct {
+            fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
                 use std::path::Path;
-                use leo_interpreter::Interpreter;
                 use leo_ast::interpreter_value::Value;
-                use leo_span;
+                use leo_interpreter::Interpreter;
+                #(#trait_imports)*
 
-                let program_name = stringify!(#program_name);
+                let program_name = #program_name;
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
                 create_session_if_not_set_then(|_| {
@@ -170,47 +111,46 @@ pub fn generate_interpreter_code_from_simplified(
 
                     #(#deployment_calls)*
 
-                });
+                    let program_exists = with_shared_interpreter(|state| {
+                        state.interpreter.borrow().is_program_loaded(program_name)
+                    }).unwrap_or(false);
 
-                let program_exists = with_shared_interpreter(|state| {
-                    state.interpreter.borrow().is_program_loaded(program_name)
-                }).unwrap_or(false);
+                    if !program_exists {
+                        with_shared_interpreter(|state| {
+                            let package = Package::from_directory(
+                                crate_dir,
+                                crate_dir,
+                                false,
+                                false,
+                                Some(NetworkName::from_str("testnet").unwrap()),
+                                Some(endpoint),
+                            ).unwrap();
 
-                if !program_exists {
-                    with_shared_interpreter(|state| {
-                        let package = Package::from_directory(
-                            crate_dir,
-                            crate_dir,
-                            false,
-                            false,
-                            Some(NetworkName::from_str("testnet").unwrap()),
-                            Some(endpoint),
-                        ).unwrap();
+                            let target_program_name_symbol = leo_span::Symbol::intern(program_name);
+                            let target_program = package.programs.iter()
+                                .find(|p| p.name == target_program_name_symbol)
+                                .unwrap();
 
-                        let target_program_name_symbol = leo_span::Symbol::intern(program_name);
-                        let target_program = package.programs.iter()
-                            .find(|p| p.name == target_program_name_symbol)
-                            .unwrap();
+                            let mut interpreter = state.interpreter.borrow_mut();
 
-                        let mut interpreter = state.interpreter.borrow_mut();
-
-                        match &target_program.data {
-                            leo_package::ProgramData::Bytecode(bytecode) => {
-                                interpreter.load_aleo_program_from_string(bytecode).unwrap();
-                            },
-                            leo_package::ProgramData::SourcePath { directory: _, source } => {
-                                interpreter.load_leo_program(source).unwrap();
+                            match &target_program.data {
+                                leo_package::ProgramData::Bytecode(bytecode) => {
+                                    interpreter.load_aleo_program_from_string(bytecode).unwrap();
+                                },
+                                leo_package::ProgramData::SourcePath { directory: _, source } => {
+                                    interpreter.load_leo_program(source).unwrap();
+                                }
                             }
-                        }
-                    }).unwrap();
-                }
+                        }).unwrap();
+                    }
 
-                with_shared_interpreter(|state| {
-                    let mut interpreter = state.interpreter.borrow_mut();
-                    interpreter.cursor.set_program(program_name);
+                    with_shared_interpreter(|state| {
+                        let mut interpreter = state.interpreter.borrow_mut();
+                        interpreter.cursor.set_program(program_name);
+                    });
+
+                    #dev_account_funding
                 });
-
-                #dev_account_funding
 
                 Ok(Self {
                     endpoint: endpoint.to_string(),
@@ -222,182 +162,162 @@ pub fn generate_interpreter_code_from_simplified(
             #(#mapping_implementations)*
         }
         #cheats_module
+        }
     };
 
     expanded
 }
 
-fn generate_interpreter_mapping_implementations(
-    mappings: &[crate::signature::MappingBinding],
-    _program_name: &str,
-) -> Vec<proc_macro2::TokenStream> {
-    mappings.iter().map(|mapping| {
-        let getter_name = syn::Ident::new(&format!("get_{}", mapping.name), proc_macro2::Span::call_site());
-        let key_type = crate::types::get_rust_type(&mapping.key_type);
-        let value_type = crate::types::get_rust_type(&mapping.value_type);
-        let mapping_name_str = &mapping.name;
+fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
+    let MappingTypes {
+        getter_name,
+        mapping_name_literal,
+        key_type,
+        value_type,
+    } = types;
 
-        quote! {
-            pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-                with_shared_interpreter(|state| {
-                    let interpreter = state.interpreter.borrow();
-                    let program_symbol = interpreter.cursor.current_program()
-                        .expect("No current program set in interpreter");
-                    let mapping_name_symbol = Symbol::intern(#mapping_name_str);
+    quote! {
+        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
+            with_shared_interpreter(|state| {
+                let interpreter = state.interpreter.borrow();
+                let program_symbol = interpreter.cursor.current_program()
+                    .expect("No current program set in interpreter");
+                let mapping_name_symbol = Symbol::intern(#mapping_name_literal);
 
-                    let key_leo_value = snarkvm_value_to_leo_value(&key.to_value()).ok()?;
+                let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from((key).to_value());
 
-                    if let Some(mapping) = interpreter.cursor.lookup_mapping(Some(program_symbol), mapping_name_symbol) {
-                        if let Some(value_leo) = mapping.get(&key_leo_value) {
-                            let snarkvm_values = leo_value_to_snarkvm_values(value_leo.clone()).ok()?;
-                            if let Some(snarkvm_value) = snarkvm_values.get(0) {
-                                return Some(<#value_type>::from_value(snarkvm_value.clone()));
-                            }
-                        }
+                if let Some(mapping) = interpreter.cursor.lookup_mapping(Some(program_symbol), mapping_name_symbol) {
+                    if let Some(value_leo) = mapping.get(&key_leo_value) {
+                        let snarkvm_value = value_leo.to_value();
+                        return Some(<#value_type>::from_value(snarkvm_value));
                     }
-                    None
-                }).flatten()
-            }
+                }
+                None
+            }).flatten()
         }
-    }).collect()
+    }
 }
 
-fn generate_interpreter_function_implementations(
-    functions: &[crate::signature::FunctionBinding],
-    program_name: &str,
-) -> Vec<proc_macro2::TokenStream> {
-    functions.iter().map(|function| {
-        let function_name = syn::Ident::new(&function.name, proc_macro2::Span::call_site());
+fn generate_interpreter_function(types: &FunctionTypes, program_name_lower: &str) -> TokenStream {
+    let FunctionTypes {
+        name: function_name,
+        input_params,
+        input_conversions: _,
+        return_type: function_return_type,
+        return_conversions: function_return_conversions,
+    } = types;
 
-        let input_params: Vec<TokenStream> = function.inputs.iter().map(|input| {
-            let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
-            let param_type = crate::types::get_rust_type(&input.type_name);
-            quote! { #param_name: #param_type }
-        }).collect();
+    let input_params_string = input_params.to_string();
+    let input_params_vec: Vec<_> = input_params_string
+        .split(',')
+        .filter(|s| !s.trim().is_empty())
+        .collect();
+    let param_count = input_params_vec.len();
 
-        let (function_return_type, function_return_conversions) = match function.outputs.len() {
-            0 => (
-                quote! { Result<(), anyhow::Error> },
-                quote! { Ok(()) }
-            ),
-            1 => {
-                let output_type = crate::types::get_rust_type(&function.outputs[0].type_name);
-                let conversion = quote! {
-                    match leo_result_value.get(0) {
-                        Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                        None => return Err(anyhow!("Missing output at index 0")),
-                    }
-                };
-                (
-                    quote! { Result<#output_type, anyhow::Error> },
-                    quote! { Ok(#conversion) }
-                )
-            },
-            _ => {
-                let output_types: Vec<_> = function.outputs.iter()
-                    .map(|output| crate::types::get_rust_type(&output.type_name))
-                    .collect();
-                let output_conversions: Vec<_> = function.outputs.iter()
-                    .enumerate()
-                    .map(|(i, output)| {
-                        let output_type = crate::types::get_rust_type(&output.type_name);
-                        quote! {
-                            match leo_result_value.get(#i) {
-                                Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                                None => return Err(anyhow!("Missing output at index {}", #i)),
-                            }
-                        }
-                    })
-                    .collect();
-                (
-                    quote! { Result<(#(#output_types),*), anyhow::Error> },
-                    quote! { Ok((#(#output_conversions),*)) }
-                )
+    let interpreter_input_conversions: Vec<TokenStream> = input_params_vec
+        .iter()
+        .map(|param| {
+            let param_name = param.trim().split(':').next().unwrap().trim();
+            let param_ident = Ident::new(param_name, Span::call_site());
+            quote! {
+                leo_ast::interpreter_value::Value::from(ToValue::<snarkvm::prelude::TestnetV0>::to_value(&#param_ident))
             }
-        };
+        })
+        .collect();
 
-        let input_conversions: Vec<_> = function.inputs.iter().map(|input| {
-            let param_name = syn::Ident::new(&input.name, proc_macro2::Span::call_site());
-            quote! { snarkvm_value_to_leo_value(&<_ as ToValue<Nw>>::to_value(&#param_name))? }
-        }).collect();
+    quote! {
+        fn #function_name(&self, account: &Account<TestnetV0>, #input_params) -> #function_return_type {
+            let function_outputs = with_shared_interpreter(|state| -> Result<Vec<snarkvm::prelude::Value<TestnetV0>>, anyhow::Error> {
+                let mut interpreter = state.interpreter.borrow_mut();
 
-        let param_count = function.inputs.len();
+                interpreter.set_signer(account.address());
 
-        quote! {
-            pub fn #function_name(&self, account: &Account<Nw>, #(#input_params),*) -> #function_return_type {
-                let leo_result_value = with_shared_interpreter(|state| {
-                    let mut interpreter = state.interpreter.borrow_mut();
+                let mut function_args: Vec<leo_ast::interpreter_value::Value> = Vec::new();
+                #(function_args.push(#interpreter_input_conversions);)*
 
-                    interpreter.set_signer(account.address());
+                interpreter.cursor.set_program(#program_name_lower);
 
-                    let function_args: Vec<leo_ast::interpreter_value::Value> = vec![#(#input_conversions),*];
+                let program_symbol = interpreter.cursor.current_program()
+                    .ok_or_else(|| anyhow!("No current program set in interpreter"))?;
+                let function_name_symbol = Symbol::intern(stringify!(#function_name));
 
-                    interpreter.cursor.set_program(#program_name);
+                interpreter.cursor.values.extend(function_args);
 
-                    let program_symbol = interpreter.cursor.current_program()
-                        .ok_or_else(|| anyhow!("No current program set in interpreter"))?;
-                    let function_name_symbol = Symbol::intern(stringify!(#function_name));
+                let default_span = leo_span::Span::default();
+                let function_identifier = leo_ast::Identifier::new(function_name_symbol, interpreter.node_builder.next_id());
+                let function_path = leo_ast::Path::new(
+                    Vec::<leo_ast::Identifier>::new(),
+                    function_identifier,
+                    None,
+                    default_span,
+                    interpreter.node_builder.next_id(),
+                );
 
-                    interpreter.cursor.values.extend(function_args);
+                let call_expression = leo_ast::CallExpression {
+                    function: function_path,
+                    arguments: vec![leo_ast::Expression::Unit(leo_ast::UnitExpression {
+                        span: default_span,
+                        id: interpreter.node_builder.next_id()
+                    }); #param_count],
+                    const_arguments: Vec::<leo_ast::Expression>::new(),
+                    program: Some(program_symbol),
+                    span: default_span,
+                    id: interpreter.node_builder.next_id(),
+                };
 
-                    let function_identifier = leo_ast::Identifier::new(function_name_symbol, interpreter.node_builder.next_id());
-                    let function_path = leo_ast::Path::new(
-                        vec![],
-                        function_identifier,
-                        None,
-                        leo_span::Span::default(),
-                        interpreter.node_builder.next_id(),
+                interpreter.cursor.frames.push(leo_interpreter::Frame {
+                    step: 1,
+                    element: leo_interpreter::Element::Expression(
+                        leo_ast::Expression::Call(Box::new(call_expression)),
+                        None
+                    ),
+                    user_initiated: true,
+                });
+
+                let interpreter_result = interpreter.cursor.over()
+                    .map_err(|e| anyhow!("Failed to execute function '{}': {}", stringify!(#function_name), e))?;
+
+                let mut function_outputs: Vec<snarkvm::prelude::Value<TestnetV0>> = if let Some(leo_value) = interpreter_result.value {
+                    use leo_ast::interpreter_value::ValueVariants;
+                    match &leo_value.contents {
+                        ValueVariants::Tuple(elements) => {
+                            elements.iter()
+                                .filter_map(|elem| match &elem.contents {
+                                    ValueVariants::Svm(svm_value) => Some(svm_value.clone()),
+                                    _ => None
+                                })
+                                .collect()
+                        }
+                        ValueVariants::Svm(svm_value) => vec![svm_value.clone()],
+                        _ => Vec::new()
+                    }
+                } else {
+                    Vec::new()
+                };
+
+                if let Some(leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments }) = interpreter.cursor.futures.pop() {
+                    use snarkvm::prelude::{ProgramID, Identifier, Future};
+
+                    let fake_future = Future::new(
+                        ProgramID::from_str("future.aleo").unwrap(),
+                        Identifier::from_str("noop").unwrap(),
+                        Vec::new()
                     );
+                    function_outputs.push(snarkvm::prelude::Value::Future(fake_future));
 
-                    let call_expression = leo_ast::CallExpression {
-                        function: function_path,
-                        arguments: vec![leo_ast::Expression::Unit(leo_ast::UnitExpression {
-                            span: leo_span::Span::default(),
-                            id: interpreter.node_builder.next_id()
-                        }); #param_count],
-                        const_arguments: vec![],
-                        program: Some(program_symbol),
-                        span: leo_span::Span::default(),
-                        id: interpreter.node_builder.next_id(),
-                    };
-
+                    interpreter.cursor.values.extend(arguments);
                     interpreter.cursor.frames.push(leo_interpreter::Frame {
-                        step: 1,
-                        element: leo_interpreter::Element::Expression(
-                            leo_ast::Expression::Call(Box::new(call_expression)),
-                            None
-                        ),
+                        step: 0,
+                        element: leo_interpreter::Element::DelayedCall(function),
                         user_initiated: true,
                     });
+                    interpreter.cursor.over()?;
+                }
 
-                    let interpreter_result = interpreter.cursor.over()
-                        .map_err(|e| anyhow!("Failed to execute function '{}': {}", stringify!(#function_name), e))?;
+                Ok(function_outputs)
+            }).ok_or_else(|| anyhow!("Shared interpreter not available"))??;
 
-                    let function_outputs: Vec<snarkvm::prelude::Value<Nw>> = match interpreter_result.value {
-                        Some(leo_value) => {
-                            match leo_value_to_snarkvm_values(leo_value) {
-                                Ok(svm_values) => svm_values,
-                                Err(e) => return Err(anyhow!("Failed to convert Leo return value to SnarkVM type: {}", e)),
-                            }
-                        },
-                        None => vec![],
-                    };
-
-                    if let Some(leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments }) = interpreter.cursor.futures.pop() {
-                        interpreter.cursor.values.extend(arguments);
-                        interpreter.cursor.frames.push(leo_interpreter::Frame {
-                            step: 0,
-                            element: leo_interpreter::Element::DelayedCall(function),
-                            user_initiated: true,
-                        });
-                        interpreter.cursor.over()?;
-                    }
-
-                        Ok(function_outputs)
-                }).ok_or_else(|| anyhow!("Shared interpreter not available"))??;
-
-                #function_return_conversions
-            }
+            #function_return_conversions
         }
-    }).collect()
+    }
 }

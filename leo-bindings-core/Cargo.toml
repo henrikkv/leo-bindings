@@ -23,3 +23,4 @@ leo-ast = { workspace = true }
 leo-interpreter = { workspace = true }
 leo-parser = { workspace = true }
 leo-errors = { workspace = true }
+itertools = { workspace = true }

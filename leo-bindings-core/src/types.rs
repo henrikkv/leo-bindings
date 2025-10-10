@@ -1,11 +1,17 @@
 use convert_case::{Case, Casing};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use snarkvm::prelude::*;
 
 pub fn get_rust_type(type_name: &str) -> TokenStream {
+    get_rust_type_with_network(type_name, "N")
+}
+
+pub fn get_rust_type_with_network(type_name: &str, network_param: &str) -> TokenStream {
+    let network = syn::Ident::new(network_param, Span::call_site());
+
     if let Some(array_info) = parse_array_type(type_name) {
-        let inner_type = get_rust_type(&array_info.element_type);
+        let inner_type = get_rust_type_with_network(&array_info.element_type, network_param);
         let size = array_info.size;
         return quote! { [#inner_type; #size] };
     }
@@ -21,27 +27,26 @@ pub fn get_rust_type(type_name: &str) -> TokenStream {
         "i32" => quote! { i32 },
         "i64" => quote! { i64 },
         "i128" => quote! { i128 },
-        "address" => quote! { Address<Nw> },
-        "Address" => quote! { Address<Nw> },
-        "field" => quote! { Field<Nw> },
-        "Field" => quote! { Field<Nw> },
-        "group" => quote! { Group<Nw> },
-        "Group" => quote! { Group<Nw> },
-        "scalar" => quote! { Scalar<Nw> },
-        "Scalar" => quote! { Scalar<Nw> },
-        "signature" => quote! { Signature<Nw> },
-        "Signature" => quote! { Signature<Nw> },
-        "string" => quote! { StringType<Nw> },
-        "String" => quote! { StringType<Nw> },
+        "address" => quote! { Address<#network> },
+        "Address" => quote! { Address<#network> },
+        "field" => quote! { Field<#network> },
+        "Field" => quote! { Field<#network> },
+        "group" => quote! { Group<#network> },
+        "Group" => quote! { Group<#network> },
+        "scalar" => quote! { Scalar<#network> },
+        "Scalar" => quote! { Scalar<#network> },
+        "signature" => quote! { Signature<#network> },
+        "Signature" => quote! { Signature<#network> },
+        "string" => quote! { StringType<#network> },
+        "String" => quote! { StringType<#network> },
         "bool" => quote! { bool },
         "boolean" => quote! { bool },
         "Boolean" => quote! { bool },
-        "Future" => quote! { Future<Nw> },
-        "Ciphertext" => quote! { Ciphertext<Nw> },
+        "Future" => quote! { Future<#network> },
+        "Ciphertext" => quote! { Ciphertext<#network> },
         other => {
-            let type_ident =
-                syn::Ident::new(&other.to_case(Case::Pascal), proc_macro2::Span::call_site());
-            quote! { #type_ident }
+            let type_ident = syn::Ident::new(&other.to_case(Case::Pascal), Span::call_site());
+            quote! { #type_ident<#network> }
         }
     }
 }
@@ -527,5 +532,22 @@ impl<N: Network, T: FromValue<N>, const SIZE: usize> FromValue<N> for [T; SIZE] 
             }
             _ => panic!("Expected array type"),
         }
+    }
+}
+
+impl ToValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
+    fn to_value(&self) -> Value<snarkvm::prelude::TestnetV0> {
+        use leo_ast::interpreter_value::ValueVariants;
+
+        match &self.contents {
+            ValueVariants::Svm(svm_value) => svm_value.clone(),
+            _ => panic!("Only SVM values can be converted via ToValue."),
+        }
+    }
+}
+
+impl FromValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
+    fn from_value(value: Value<snarkvm::prelude::TestnetV0>) -> Self {
+        value.into()
     }
 }

@@ -1,6 +1,6 @@
 #[test]
 fn dev() {
-    use interpreted_bindings::dev_interpreter::*;
+    use interpreted_bindings::dev::interpreter::*;
     use leo_bindings::utils::*;
     use snarkvm::prelude::TestnetV0;
     use std::str::FromStr;
@@ -9,7 +9,7 @@ fn dev() {
     let alice: Account<TestnetV0> =
         Account::from_str("APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH").unwrap();
 
-    let dev = dev::new(&alice, ENDPOINT).unwrap();
+    let dev = DevInterpreter::new(&alice, ENDPOINT).unwrap();
 
     let user = dev.create_user(&alice, alice.address(), 0, 0).unwrap();
     dbg!(&user);
