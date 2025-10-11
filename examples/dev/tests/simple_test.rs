@@ -7,14 +7,12 @@ const ENDPOINT: &str = "http://localhost:3030";
 const PRIVATE_KEY: &str = "APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH";
 
 #[test]
-#[cfg(feature = "testnet")]
 fn dev_testnet() {
     let alice = Account::from_str(PRIVATE_KEY).unwrap();
     run_dev_tests(&DevTestnet::new(&alice, ENDPOINT).unwrap(), &alice);
 }
 
 #[test]
-#[cfg(feature = "interpreter")]
 fn dev_interpreter() {
     let alice = Account::from_str(PRIVATE_KEY).unwrap();
     run_dev_tests(&DevInterpreter::new(&alice, ENDPOINT).unwrap(), &alice);

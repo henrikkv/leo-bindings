@@ -30,13 +30,6 @@ Add this to `Cargo.toml`:
 name = "projectname_bindings"
 path = "lib.rs"
 
-[features]
-default = ["interpreter"]
-mainnet = []
-testnet = []
-canary = []
-interpreter = []
-
 [dependencies]
 leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 leo-bindings-credits = { git = "https://github.com/henrikkv/leo-bindings" }

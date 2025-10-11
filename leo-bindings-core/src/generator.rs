@@ -55,13 +55,11 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
 
             #trait_definition
 
-            #[cfg(any(feature = "testnet", feature = "mainnet", feature = "canary"))]
             pub mod network {
                 use super::*;
                 #network_impl
             }
 
-            #[cfg(feature = "interpreter")]
             #interpreter_impl
         }
     }
@@ -786,16 +784,12 @@ fn generate_network_aliases(program_name_pascal: &str, program_struct: &Ident) -
     );
 
     quote! {
-        #[cfg(feature = "testnet")]
         pub type #testnet_struct = network::#program_struct<snarkvm::prelude::TestnetV0>;
 
-        #[cfg(feature = "mainnet")]
         pub type #mainnet_struct = network::#program_struct<snarkvm::prelude::MainnetV0>;
 
-        #[cfg(feature = "canary")]
         pub type #canary_struct = network::#program_struct<snarkvm::prelude::CanaryV0>;
 
-        #[cfg(feature = "interpreter")]
         pub type #interpreter_struct = interpreter::#interpreter_struct<snarkvm::prelude::TestnetV0>;
     }
 }

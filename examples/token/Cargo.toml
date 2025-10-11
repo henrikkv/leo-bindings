@@ -7,13 +7,6 @@ edition.workspace = true
 name = "token_bindings"
 path = "lib.rs"
 
-[features]
-default = ["testnet"]
-mainnet = []
-testnet = []
-canary = []
-interpreter = []
-
 [dependencies]
 leo-bindings = { path = "../../" }
 leo-bindings-credits = { path = "../../leo-bindings-credits/" }

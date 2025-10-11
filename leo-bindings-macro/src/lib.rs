@@ -26,8 +26,6 @@ fn simplified_from_json_string(json: String) -> SimplifiedBindings {
 ///   - `*.initial.json` files (AST snapshots from `leo build --enable-initial-ast-snapshot`)
 ///   - `*.json` files (pre-processed signature JSON files)
 ///
-/// Networks are selected via cargo features: `testnet`, `mainnet`, `canary`, `interpreter`
-///
 /// # Example
 /// ```
 /// generate_bindings!(["outputs/dev.initial.json", "outputs/token.signatures.json"]);
