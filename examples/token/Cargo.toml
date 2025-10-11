@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [lib]
-name = "tokenexample"
+name = "token_bindings"
 path = "lib.rs"
 
 [features]

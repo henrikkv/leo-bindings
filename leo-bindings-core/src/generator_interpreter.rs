@@ -66,7 +66,8 @@ pub fn generate_interpreter_impl(
         pub mod interpreter {
             use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter};
             use anyhow::anyhow;
-            use snarkvm::prelude::TestnetV0 as Nw;
+            use snarkvm::prelude::TestnetV0;
+            use snarkvm::prelude::TestnetV0 as N;
             use leo_package::Package;
             use leo_ast::NetworkName;
             use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
@@ -76,12 +77,14 @@ pub fn generate_interpreter_impl(
 
             pub use super::*;
 
-            pub struct #program_struct {
+            pub struct #program_struct<N: Network> {
                 pub endpoint: String,
+                _network: std::marker::PhantomData<N>,
             }
 
-            impl #program_trait<Nw> for #program_struct {
-            fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
+            impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
+
+            fn new(deployer: &Account<TestnetV0>, endpoint: &str) -> Result<Self, anyhow::Error> {
                 use std::path::Path;
                 use leo_ast::interpreter_value::Value;
                 use leo_interpreter::Interpreter;
@@ -154,6 +157,7 @@ pub fn generate_interpreter_impl(
 
                 Ok(Self {
                     endpoint: endpoint.to_string(),
+                    _network: std::marker::PhantomData,
                 })
             }
 
@@ -220,7 +224,7 @@ fn generate_interpreter_function(types: &FunctionTypes, program_name_lower: &str
             let param_name = param.trim().split(':').next().unwrap().trim();
             let param_ident = Ident::new(param_name, Span::call_site());
             quote! {
-                leo_ast::interpreter_value::Value::from(ToValue::<snarkvm::prelude::TestnetV0>::to_value(&#param_ident))
+                leo_ast::interpreter_value::Value::from(ToValue::<TestnetV0>::to_value(&#param_ident))
             }
         })
         .collect();

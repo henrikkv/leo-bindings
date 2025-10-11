@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external", "examples/interpreted"]
+members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external"]
 
 [workspace.package]
 version = "0.1.0"

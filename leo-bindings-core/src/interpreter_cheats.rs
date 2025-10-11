@@ -1,3 +1,4 @@
+use crate::get_rust_type;
 use crate::signature::SimplifiedBindings;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -11,8 +12,8 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
     let mapping_setters = simplified.mappings.iter().map(|mapping| {
         let mapping_name = &mapping.name;
         let setter_name = syn::Ident::new(&format!("set_{}", mapping_name), Span::call_site());
-        let key_type = crate::types::get_rust_type_with_network(&mapping.key_type, "Nw");
-        let value_type = crate::types::get_rust_type_with_network(&mapping.value_type, "Nw");
+        let key_type = get_rust_type(&mapping.key_type);
+        let value_type = get_rust_type(&mapping.value_type);
 
         quote! {
             pub fn #setter_name(key: #key_type, value: #value_type) -> Result<()> {
@@ -37,11 +38,9 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
     quote! {
         pub mod #cheats_module_name {
             use super::*;
-            use leo_bindings::{anyhow, snarkvm, leo_ast, leo_span, shared_interpreter::with_shared_interpreter, ToValue, FromValue};
+            use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_shared_interpreter};
             use anyhow::{anyhow, Result};
-            use leo_ast::interpreter_value::Value;
             use leo_span::Symbol;
-            use snarkvm::prelude::{TestnetV0 as Nw, Address};
 
             #(#mapping_setters)*
         }

@@ -6,14 +6,17 @@ use itertools::Itertools;
 use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::quote;
 
-pub fn generate_program_module(
-    simplified: &SimplifiedBindings,
-    networks: &[String],
-) -> TokenStream {
+pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
     let program_name_pascal = simplified.program_name.to_case(Pascal);
 
     let program_module = Ident::new(&simplified.program_name, Span::call_site());
     let program_trait = Ident::new(&format!("{}Aleo", program_name_pascal), Span::call_site());
+    let program_struct = Ident::new(
+        &format!("{}Network", program_name_pascal),
+        Span::call_site(),
+    );
+
+    let network_aliases = generate_network_aliases(&program_name_pascal, &program_struct);
 
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
@@ -23,27 +26,17 @@ pub fn generate_program_module(
 
     let trait_definition = generate_trait(&function_types, &mapping_types, &program_trait);
 
-    let network_modules: Vec<TokenStream> = networks
-        .iter()
-        .map(|network| {
-            if network == "interpreter" {
-                generate_interpreter_impl(
-                    simplified,
-                    &function_types,
-                    &mapping_types,
-                    &program_trait,
-                )
-            } else {
-                generate_network_impl(
-                    simplified,
-                    &function_types,
-                    &mapping_types,
-                    &program_trait,
-                    network,
-                )
-            }
-        })
-        .collect();
+    let network_impl = generate_network_impl(
+        simplified,
+        &function_types,
+        &mapping_types,
+        &program_trait,
+        &program_struct,
+    );
+
+    let interpreter_impl =
+        generate_interpreter_impl(simplified, &function_types, &mapping_types, &program_trait);
+
     quote! {
         pub mod #program_module {
             use leo_bindings::{anyhow, snarkvm, indexmap};
@@ -54,13 +47,22 @@ pub fn generate_program_module(
             use leo_bindings::{ToValue, FromValue};
             use leo_bindings::utils::Account;
 
+            #network_aliases
+
             #(#structs)*
 
             #(#records)*
 
             #trait_definition
 
-            #(#network_modules)*
+            #[cfg(any(feature = "testnet", feature = "mainnet", feature = "canary"))]
+            pub mod network {
+                use super::*;
+                #network_impl
+            }
+
+            #[cfg(feature = "interpreter")]
+            #interpreter_impl
         }
     }
 }
@@ -76,7 +78,7 @@ fn generate_trait(
             let name = &types.name;
             let input_params = &types.input_params;
             let return_type = &types.return_type;
-            quote! { fn #name (&self, account: &Account<Nw>, #input_params) -> #return_type; }
+            quote! { fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
         })
         .collect();
 
@@ -91,32 +93,21 @@ fn generate_trait(
         .collect();
 
     quote! {
-        pub trait #program_trait<Nw: snarkvm::prelude::Network> {
-            fn new(deployer: &leo_bindings::utils::Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
+        pub trait #program_trait<N: snarkvm::prelude::Network> {
+            fn new(deployer: &leo_bindings::utils::Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
     }
 }
 
-pub fn generate_network_impl(
+fn generate_network_impl(
     simplified: &SimplifiedBindings,
     function_types: &[FunctionTypes],
     mapping_types: &[MappingTypes],
     program_trait: &Ident,
-    network: &str,
+    program_struct: &Ident,
 ) -> TokenStream {
-    let network_pascal = network.to_case(Pascal);
-    let network_module = Ident::new(network, Span::call_site());
-    let nw_alias = Ident::new(&format!("{}V0", network_pascal), Span::call_site());
-    let program_struct = Ident::new(
-        &format!(
-            "{}{}",
-            simplified.program_name.to_case(Pascal),
-            network_pascal
-        ),
-        Span::call_site(),
-    );
     let program_id = Literal::string(&format!("{}.aleo", &simplified.program_name));
 
     let (deployment_calls, trait_imports, dependency_additions): (Vec<_>, Vec<_>, Vec<_>) = simplified
@@ -125,17 +116,17 @@ pub fn generate_network_impl(
         .map(|import| {
             let import_pascal = import.to_case(Pascal);
             let import_module = Ident::new(import, Span::call_site());
-            let import_struct = Ident::new(&format!("{}{}", import_pascal, network_pascal), Span::call_site());
+            let import_struct = Ident::new(&format!("{}Network", import_pascal), Span::call_site());
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
             let dependency_id = format!("{}.aleo", import);
 
-            let deployment = quote! { crate::#import_module::#network_module::#import_struct::new(deployer, endpoint)?; };
+            let deployment = quote! { crate::#import_module::network::#import_struct::<N>::new(deployer, endpoint)?; };
             let trait_import = quote! { use crate::#import_module::#import_trait; };
             let dependency_addition = quote! {
-                let dependency_id = ProgramID::<Nw>::from_str(#dependency_id)?;
-                wait_for_program_availability(&dependency_id.to_string(), endpoint, Nw::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let dependency_program: Program<Nw> = {
-                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, Nw::SHORT_NAME, dependency_id)).call().unwrap();
+                let dependency_id = ProgramID::<N>::from_str(#dependency_id)?;
+                wait_for_program_availability(&dependency_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let dependency_program: Program<N> = {
+                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dependency_id)).call().unwrap();
                     let json_text = response.body_mut().read_to_string().unwrap();
                     let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
                     json_response.as_str().unwrap().to_string().parse().unwrap()
@@ -164,53 +155,39 @@ pub fn generate_network_impl(
         &simplified.program_name,
     );
 
-    let trait_impl = quote! {
-        impl #program_trait<Nw> for #program_struct {
+    quote! {
+        use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_deployment_stats};
+        use anyhow::ensure;
+        use snarkvm::ledger::query::*;
+        use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
+        use snarkvm::ledger::store::ConsensusStore;
+        use snarkvm::ledger::block::Transaction;
+        use snarkvm::console::program::{Record, Plaintext};
+        use snarkvm::synthesizer::VM;
+        use snarkvm::synthesizer::process::execution_cost_v2;
+        use snarkvm::prelude::ConsensusVersion;
+        use snarkvm::ledger::query::{QueryTrait, Query};
+        use leo_package::Package;
+        use leo_ast::NetworkName;
+        use leo_span::create_session_if_not_set_then;
+        use aleo_std::StorageMode;
+        use std::str::FromStr;
+        use leo_bindings::utils::{get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
+
+        pub struct #program_struct<N: Network> {
+            pub package: Package,
+            pub endpoint: String,
+            _network: std::marker::PhantomData<N>,
+        }
+
+        impl<N: Network> #program_trait<N> for #program_struct<N> {
             #new_implementation
 
             #(#function_implementations)*
 
             #(#mapping_implementations)*
         }
-    };
-
-    let expanded = quote! {
-        pub mod #network_module {
-            use leo_bindings::{anyhow, snarkvm, indexmap, serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_deployment_stats};
-
-            use anyhow::{anyhow, ensure};
-            use snarkvm::prelude::*;
-            use snarkvm::prelude::#nw_alias as Nw;
-            use indexmap::IndexMap;
-            use snarkvm::ledger::query::*;
-            use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
-            use snarkvm::ledger::store::ConsensusStore;
-            use snarkvm::ledger::block::Transaction;
-            use snarkvm::console::program::{Record, Plaintext};
-            use snarkvm::synthesizer::VM;
-            use snarkvm::synthesizer::process::execution_cost_v2;
-            use snarkvm::prelude::ConsensusVersion;
-            use snarkvm::ledger::query::{QueryTrait, Query};
-            use leo_package::Package;
-            use leo_ast::NetworkName;
-            use leo_span::create_session_if_not_set_then;
-            use aleo_std::StorageMode;
-            use std::str::FromStr;
-            use leo_bindings::{ToValue, FromValue};
-            use leo_bindings::utils::{Account, get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
-
-            pub use super::*;
-
-            pub struct #program_struct {
-                pub package: Package,
-                pub endpoint: String,
-            }
-
-            #trait_impl
-        }
-    };
-
-    expanded
+    }
 }
 
 pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<TokenStream> {
@@ -506,7 +483,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
 
         let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().map(|input| {
             let param_name = Ident::new(&input.name, Span::call_site());
-            let param_type = crate::types::get_rust_type_with_network(&input.type_name, "Nw");
+            let param_type = get_rust_type(&input.type_name);
             let param = quote! { #param_name: #param_type };
             let conversion = quote! { (#param_name).to_value() };
             (param, conversion)
@@ -520,7 +497,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 quote! { Ok(()) }
             ),
             1 => {
-                let output_type = crate::types::get_rust_type_with_network(&function.outputs[0].type_name, "Nw");
+                let output_type = get_rust_type(&function.outputs[0].type_name);
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -536,7 +513,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 let (output_types, output_conversions): (Vec<_>, Vec<_>) = function.outputs.iter()
                     .enumerate()
                     .map(|(i, output)| {
-                        let output_type = crate::types::get_rust_type_with_network(&output.type_name, "Nw");
+                        let output_type = get_rust_type(&output.type_name);
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -568,8 +545,8 @@ fn generate_mapping_types(mappings: &[crate::signature::MappingBinding]) -> Vec<
         .map(|mapping| {
             let getter_name = Ident::new(&format!("get_{}", mapping.name), Span::call_site());
             let mapping_name_literal = mapping.name.clone();
-            let key_type = crate::types::get_rust_type_with_network(&mapping.key_type, "Nw");
-            let value_type = crate::types::get_rust_type_with_network(&mapping.value_type, "Nw");
+            let key_type = get_rust_type(&mapping.key_type);
+            let value_type = get_rust_type(&mapping.value_type);
 
             MappingTypes {
                 getter_name,
@@ -588,7 +565,7 @@ fn generate_new(
     program_name: &str,
 ) -> TokenStream {
     quote! {
-        fn new(deployer: &Account<Nw>, endpoint: &str) -> Result<Self, anyhow::Error> {
+        fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> {
             use leo_package::Package;
             use leo_span::create_session_if_not_set_then;
             use std::path::Path;
@@ -602,16 +579,16 @@ fn generate_new(
                     crate_dir,
                     false,
                     false,
-                    Some(NetworkName::from_str(Nw::SHORT_NAME).unwrap()),
+                    Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
                     Some(endpoint),
                 )?;
 
-                let program_id = ProgramID::<Nw>::from_str(concat!(#program_name, ".aleo"))?;
+                let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
 
                 #(#deployment_calls)*
 
                 let program_exists = {
-                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, Nw::SHORT_NAME, program_id))
+                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, program_id))
                         .call();
                     match check_response {
                         Ok(_) => {
@@ -642,13 +619,13 @@ fn generate_new(
                         }
                     };
 
-                    let program: Program<Nw> = bytecode.parse()
+                    let program: Program<N> = bytecode.parse()
                         .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
 
                     println!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
-                    let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-                    let query = Query::<Nw, BlockMemory<Nw>>::from(endpoint.parse::<http::uri::Uri>()?);
+                    let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
+                    let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
 
                      #dependency_additions
 
@@ -670,16 +647,17 @@ fn generate_new(
 
                     println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
 
-                    ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, Nw::SHORT_NAME))
+                    ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, N::SHORT_NAME))
                         .send_json(&transaction)?;
 
-                    wait_for_transaction_confirmation::<Nw>(&transaction.id(), endpoint, Nw::SHORT_NAME, 60)?;
-                    wait_for_program_availability(&program_id.to_string(), endpoint, Nw::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                    wait_for_transaction_confirmation::<N>(&transaction.id(), endpoint, N::SHORT_NAME, 60)?;
+                    wait_for_program_availability(&program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
                 }
 
                 Ok(Self {
                     package,
                     endpoint: endpoint.to_string(),
+                    _network: std::marker::PhantomData,
                 })
             });
             result
@@ -701,22 +679,22 @@ fn generate_function(
     } = types;
 
     quote! {
-        fn #name(&self, account: &Account<Nw>, #input_params) -> #return_type {
+        fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
             let endpoint = &self.endpoint;
             let program_id = ProgramID::try_from(#program_id).unwrap();
             let function_id = Identifier::try_from(stringify!(#name)).unwrap();
-            let function_args: Vec<Value<Nw>> = vec![#input_conversions];
+            let function_args: Vec<Value<N>> = vec![#input_conversions];
 
             let rng = &mut rand::thread_rng();
-            let locator = Locator::<Nw>::new(program_id, function_id);
+            let locator = Locator::<N>::new(program_id, function_id);
 
             println!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
-            let vm = VM::from(ConsensusStore::<Nw, ConsensusMemory<Nw>>::open(StorageMode::Production)?)?;
-            let query = Query::<Nw, BlockMemory<Nw>>::from(self.endpoint.parse::<http::uri::Uri>()?);
+            let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
+            let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
 
-            wait_for_program_availability(&program_id.to_string(), &self.endpoint, Nw::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-            let program: Program<Nw> = {
-                let mut response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, Nw::SHORT_NAME, program_id))
+            wait_for_program_availability(&program_id.to_string(), &self.endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+            let program: Program<N> = {
+                let mut response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, N::SHORT_NAME, program_id))
                     .call().unwrap();
                 let json_text = response.body_mut().read_to_string().unwrap();
                 let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
@@ -734,11 +712,11 @@ fn generate_function(
                 function_args.iter(),
                 None,
                 0,
-                Some(&query as &dyn QueryTrait<Nw>),
+                Some(&query as &dyn QueryTrait<N>),
                 rng,
             ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
 
-            let public_balance = get_public_balance(&account.address(), &self.endpoint, Nw::SHORT_NAME);
+            let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
             let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
             let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
 
@@ -746,10 +724,10 @@ fn generate_function(
                 "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
 
             println!("📡 Broadcasting tx: {}",transaction.id());
-            broadcast_transaction(transaction.clone(), &self.endpoint, Nw::SHORT_NAME)?;
-            wait_for_transaction_confirmation::<Nw>(&transaction.id(), &self.endpoint, Nw::SHORT_NAME, 30)?;
+            broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
+            wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
 
-            let function_outputs: Vec<Value<Nw>> = response.outputs().to_vec();
+            let function_outputs: Vec<Value<N>> = response.outputs().to_vec();
 
             #return_conversions
         }
@@ -769,9 +747,9 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
             let program_id = #program_id;
             let mapping_name = #mapping_name_literal;
 
-            let key_value: Value<Nw> = key.to_value();
+            let key_value: Value<N> = key.to_value();
             let url = format!("{}/{}/program/{}/mapping/{}/{}",
-                self.endpoint, Nw::SHORT_NAME, program_id, mapping_name,
+                self.endpoint, N::SHORT_NAME, program_id, mapping_name,
                 key_value.to_string().replace("\"", ""));
 
             let response = ureq::get(&url).call();
@@ -779,7 +757,7 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
             match response {
                 Ok(mut response) => {
                     let json_text = response.body_mut().read_to_string().unwrap();
-                    let value: Option<Value<Nw>> = serde_json::from_str(&json_text).unwrap();
+                    let value: Option<Value<N>> = serde_json::from_str(&json_text).unwrap();
                     match value {
                         Some(val) => Some(<#value_type>::from_value(val)),
                         None => None,
@@ -789,5 +767,35 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
                 Err(e) => panic!("Failed to fetch mapping value: {}", e),
             }
         }
+    }
+}
+
+fn generate_network_aliases(program_name_pascal: &str, program_struct: &Ident) -> TokenStream {
+    let testnet_struct = Ident::new(
+        &format!("{}Testnet", program_name_pascal),
+        Span::call_site(),
+    );
+    let mainnet_struct = Ident::new(
+        &format!("{}Mainnet", program_name_pascal),
+        Span::call_site(),
+    );
+    let canary_struct = Ident::new(&format!("{}Canary", program_name_pascal), Span::call_site());
+    let interpreter_struct = Ident::new(
+        &format!("{}Interpreter", program_name_pascal),
+        Span::call_site(),
+    );
+
+    quote! {
+        #[cfg(feature = "testnet")]
+        pub type #testnet_struct = network::#program_struct<snarkvm::prelude::TestnetV0>;
+
+        #[cfg(feature = "mainnet")]
+        pub type #mainnet_struct = network::#program_struct<snarkvm::prelude::MainnetV0>;
+
+        #[cfg(feature = "canary")]
+        pub type #canary_struct = network::#program_struct<snarkvm::prelude::CanaryV0>;
+
+        #[cfg(feature = "interpreter")]
+        pub type #interpreter_struct = interpreter::#interpreter_struct<snarkvm::prelude::TestnetV0>;
     }
 }

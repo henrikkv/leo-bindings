@@ -4,11 +4,11 @@ version.workspace = true
 edition.workspace = true
 
 [lib]
-name = "devtest"
+name = "dev_bindings"
 path = "lib.rs"
 
 [features]
-default = ["testnet"]
+default = ["interpreter"]
 mainnet = []
 testnet = []
 canary = []

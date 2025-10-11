@@ -31,7 +31,7 @@ name = "projectname_bindings"
 path = "lib.rs"
 
 [features]
-default = ["testnet"]
+default = ["interpreter"]
 mainnet = []
 testnet = []
 canary = []
@@ -52,14 +52,14 @@ leo build --enable-initial-ast-snapshot
 Create `lib.rs`:
 ```rust
 use leo_bindings::generate_bindings;
-
-generate_bindings!(
-    ["outputs/projectname.initial.json"],
-    []
-);
+generate_bindings!(["outputs/projectname.initial.json"]);
 ```
-The generated bindings are available at `projectname_bindings::projectname_testnet::*` in rust.
+The generated bindings are available at `projectname_bindings::projectname::*` in rust.
 See how to create accounts and use credits.aleo in `examples/token/tests/simple_test.rs`.
+
+The trait `ProjectnameAleo<N>` is implemented by `network::ProjectnameNetwork<N>` and `interpreter::ProjectnameInterpreter`.
+Type aliases `ProjectnameTestnet`, `ProjectnameMainnet`, `ProjectnameCanary`, and `ProjectnameInterpreter` are available.
+See how to use the trait in `examples/dev/tests/simple_test.rs`.
 
 Add this to `.gitignore` if you want to publish the bindings:
 ```gitignore

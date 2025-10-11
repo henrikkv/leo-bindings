@@ -1,3 +1,3 @@
-use leo_bindings::generate_network_bindings;
+use leo_bindings::generate_bindings;
 
-generate_network_bindings!(["testnet"], ["outputs/dev.initial.json"], []);
+generate_bindings!(["outputs/dev.initial.json"]);

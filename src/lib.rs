@@ -1,7 +1,7 @@
 pub mod utils;
 
 pub use leo_bindings_core::*;
-pub use leo_bindings_macro::generate_network_bindings;
+pub use leo_bindings_macro::generate_bindings;
 
 pub use aleo_std;
 pub use anyhow;

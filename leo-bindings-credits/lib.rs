@@ -1,3 +1,3 @@
-use leo_bindings::generate_network_bindings;
+use leo_bindings::generate_bindings;
 
-generate_network_bindings!(["testnet", "interpreter"], [], ["simplified.json"]);
+generate_bindings!(["simplified.json"]);
