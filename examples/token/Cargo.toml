@@ -8,8 +8,8 @@ name = "token_bindings"
 path = "lib.rs"
 
 [dependencies]
-leo-bindings = { path = "../../" }
-leo-bindings-credits = { path = "../../leo-bindings-credits/" }
+leo-bindings.workspace = true
+credits_bindings.workspace = true
 
 [dev-dependencies]
 snarkvm = { workspace = true }

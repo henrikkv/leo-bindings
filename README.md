@@ -15,7 +15,7 @@ Run tests with:
 RUSTFLAGS="-Zmacro-backtrace" RUST_BACKTRACE=full cargo test --release -- --nocapture
 ```
 The `--release` flag slows down compile times and speeds up proving times.
-
+It is not needed for the interpreter.
 
 ## Generating bindings
 
@@ -63,3 +63,5 @@ outputs/*
 !outputs/
 !outputs/*.initial.json
 ```
+
+**Template:** https://github.com/henrikkv/leo-bindings-template

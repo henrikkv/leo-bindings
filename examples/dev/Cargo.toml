@@ -8,7 +8,7 @@ name = "dev_bindings"
 path = "lib.rs"
 
 [dependencies]
-leo-bindings = { path = "../../" }
+leo-bindings.workspace = true
 
 [dev-dependencies]
-snarkvm = { workspace = true }
+snarkvm.workspace = true

@@ -1,8 +1,8 @@
 #[test]
 fn external() {
-    use external_bindings::war_game::*;
     use leo_bindings::utils::Account;
     use std::str::FromStr;
+    use war_game_bindings::war_game::*;
 
     const ENDPOINT: &str = "http://localhost:3030";
     let alice =

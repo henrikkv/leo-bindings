@@ -4,8 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [lib]
-name = "leo_bindings_credits"
+name = "credits_bindings"
 path = "lib.rs"
 
 [dependencies]
-leo-bindings = { path = "../" }
+leo-bindings.workspace = true

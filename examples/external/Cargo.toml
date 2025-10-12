@@ -3,12 +3,8 @@ name = "external"
 version.workspace = true
 edition.workspace = true
 
-[lib]
-name = "external_bindings"
-path = "lib.rs"
-
 [dependencies]
-leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
+leo-bindings.workspace = true
 
 [dev-dependencies]
 war = { git = "https://github.com/henrikkv/berlin" }

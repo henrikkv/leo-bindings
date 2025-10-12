@@ -1,7 +1,7 @@
 #[test]
 fn token() {
+    use credits_bindings::credits::*;
     use leo_bindings::utils::*;
-    use leo_bindings_credits::credits::*;
     use std::str::FromStr;
     use token_bindings::token::*;
 

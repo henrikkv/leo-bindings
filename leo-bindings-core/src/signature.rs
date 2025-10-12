@@ -183,13 +183,7 @@ pub fn get_signatures(input: String) -> String {
     let imports: Vec<String> = initial_json
         .imports
         .as_ref()
-        .map(|imports_map| {
-            imports_map
-                .keys()
-                .filter(|import_name| *import_name != "credits")
-                .cloned()
-                .collect()
-        })
+        .map(|imports_map| imports_map.keys().cloned().collect())
         .unwrap_or_default();
 
     let (program_name, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();

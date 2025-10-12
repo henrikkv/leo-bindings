@@ -1,11 +1,15 @@
 [workspace]
-members = [".", "leo-bindings-core", "leo-bindings-macro", "leo-bindings-credits", "examples/dev", "examples/token", "examples/external"]
+members = [".", "leo-bindings-*", "examples/*"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
+leo-bindings = { path = "." }
+leo-bindings-core = { path = "leo-bindings-core" }
+leo-bindings-macro = { path = "leo-bindings-macro" }
+credits_bindings = { package = "leo-bindings-credits", path = "leo-bindings-credits" }
 snarkvm = { version = "4.2.0" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -23,6 +27,7 @@ clap = { version = "4.4", features = ["derive"] }
 colored = "3.0.0"
 num-format = "0.4.4"
 itertools = "0.14.0"
+walkdir = "2.5.0"
 leo-span = { git = "https://github.com/henrikkv/leo", package = "leo-span" }
 leo-package = { git = "https://github.com/henrikkv/leo", package = "leo-package" }
 leo-ast = { git = "https://github.com/henrikkv/leo", package = "leo-ast" }
@@ -41,24 +46,24 @@ name = "get-signatures"
 path = "src/bin/get-signatures.rs"
 
 [dependencies]
-serde_json = { workspace = true }
-clap = { workspace = true }
-snarkvm = { workspace = true }
-anyhow = { workspace = true }
-ureq = { workspace = true }
-indexmap = { workspace = true }
-leo-span = { workspace = true }
-leo-package = { workspace = true }
-leo-ast = { workspace = true }
-leo-interpreter = { workspace = true }
-leo-parser = { workspace = true }
-leo-errors = { workspace = true }
-aleo-std = { workspace = true }
-http = { workspace = true }
-rand = { workspace = true }
-itertools = { workspace = true }
-leo-bindings-macro = { path = "leo-bindings-macro" }
-leo-bindings-core = { path = "leo-bindings-core" }
-walkdir = "2.5.0"
-colored = "3.0.0"
-num-format = "0.4.4"
+leo-bindings-core.workspace = true
+leo-bindings-macro.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+snarkvm.workspace = true
+anyhow.workspace = true
+ureq.workspace = true
+indexmap.workspace = true
+leo-span.workspace = true
+leo-package.workspace = true
+leo-ast.workspace = true
+leo-interpreter.workspace = true
+leo-parser.workspace = true
+leo-errors.workspace = true
+aleo-std.workspace = true
+http.workspace = true
+rand.workspace = true
+itertools.workspace = true
+walkdir.workspace = true
+colored.workspace = true
+num-format.workspace = true
