@@ -21,14 +21,15 @@ pub fn generate_interpreter_impl(
     let (deployment_calls, trait_imports): (Vec<TokenStream>, Vec<TokenStream>) = simplified
         .imports
         .iter()
-        .map(|import_name| {
-            let import_pascal = import_name.to_case(Pascal);
-            let import_module = Ident::new(import_name, Span::call_site());
+        .map(|import| {
+            let import_pascal = import.to_case(Pascal);
+            let import_module = Ident::new(import, Span::call_site());
             let import_struct = Ident::new(&format!("{}Interpreter", import_pascal), Span::call_site());
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
+            let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
-            let deployment = quote! { crate::#import_module::interpreter::#import_struct::new(deployer, endpoint).unwrap(); };
-            let trait_import = quote! { use crate::#import_module::#import_trait; };
+            let deployment = quote! { #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, endpoint).unwrap(); };
+            let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
             (deployment, trait_import)
         })

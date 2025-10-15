@@ -19,7 +19,17 @@ It is not needed for the interpreter.
 
 ## Generating bindings
 
-In your leo project, run 
+### Quick setup with CLI
+
+This command sets up a workspace in a leo project.
+
+```bash
+leo-bindings update
+```
+
+### Manual setup
+
+In your leo project, run
 ```bash
 cargo init
 ```
@@ -32,12 +42,12 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
-leo-bindings-credits = { git = "https://github.com/henrikkv/leo-bindings" }
+credits_bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 rand = "0.8"
 snarkvm = "4.2.1"
 ```
 
-Generate the ast snapshot with 
+Generate the ast snapshot with
 ```bash
 leo build --enable-initial-ast-snapshot
 ```
@@ -45,7 +55,7 @@ leo build --enable-initial-ast-snapshot
 Create `lib.rs`:
 ```rust
 use leo_bindings::generate_bindings;
-generate_bindings!(["outputs/projectname.initial.json"]);
+generate_bindings!("outputs/projectname.initial.json");
 ```
 The generated bindings are available at `projectname_bindings::projectname::*` in rust.
 See how to create accounts and use credits.aleo in the [token example](examples/token/tests/simple_test.rs).

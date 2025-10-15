@@ -117,9 +117,10 @@ fn generate_network_impl(
             let import_struct = Ident::new(&format!("{}Network", import_pascal), Span::call_site());
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
             let dependency_id = format!("{}.aleo", import);
+            let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
-            let deployment = quote! { crate::#import_module::network::#import_struct::<N>::new(deployer, endpoint)?; };
-            let trait_import = quote! { use crate::#import_module::#import_trait; };
+            let deployment = quote! { #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, endpoint)?; };
+            let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
             let dependency_addition = quote! {
                 let dependency_id = ProgramID::<N>::from_str(#dependency_id)?;
                 wait_for_program_availability(&dependency_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
