@@ -73,6 +73,7 @@ fn update_bindings(project_path: &Path, auto_yes: bool) -> Result<()> {
     let mut file_paths = vec![project_path.join("Cargo.toml")];
     for program_dir in programs.keys() {
         file_paths.push(program_dir.join("lib.rs"));
+        file_paths.push(program_dir.join(".gitignore"));
         if program_dir != &project_path {
             file_paths.push(program_dir.join("Cargo.toml"));
         }
@@ -218,6 +219,23 @@ generate_bindings!("outputs/{}.initial.json");
             program_name
         );
         fs::write(program_dir.join("lib.rs"), lib_rs_content)?;
+
+        let gitignore_content = format!(
+            r#"target/
+registry/
+Cargo.lock
+
+build/*
+!build/
+!build/main.aleo
+
+outputs/*
+!outputs/
+!outputs/{}.initial.json
+"#,
+            program_name
+        );
+        fs::write(program_dir.join(".gitignore"), gitignore_content)?;
 
         if program_dir != &project_path {
             let lib_name = format!("{}_bindings", program_name);
