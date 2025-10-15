@@ -50,12 +50,15 @@ fn update_bindings(project_path: &Path, auto_yes: bool) -> Result<()> {
         .strip_suffix(".aleo")
         .unwrap_or(&manifest.program);
 
-    let mut programs: HashMap<PathBuf, (String, Vec<Dependency>)> = HashMap::new();
+    let is_aleo_program = project_path.join("src/main.aleo").exists();
+
+    let mut programs: HashMap<PathBuf, (String, Vec<Dependency>, bool)> = HashMap::new();
     programs.insert(
         project_path.clone(),
         (
             main_program_name.to_string(),
             manifest.dependencies.clone().unwrap_or_default(),
+            is_aleo_program,
         ),
     );
 
@@ -207,17 +210,24 @@ snarkvm.workspace = true
 
     fs::write(&cargo_toml_path, cargo_toml).context("Failed to write Cargo.toml")?;
 
-    for (program_dir, (program_name, deps)) in &programs {
+    for (program_dir, (program_name, deps, is_aleo)) in &programs {
         if !program_dir.exists() {
             fs::create_dir_all(program_dir)?;
         }
 
-        let lib_rs_content = format!(
+        let lib_rs_content = if *is_aleo {
             r#"use leo_bindings::generate_bindings;
+generate_bindings!("simplified.json");
+"#
+            .to_string()
+        } else {
+            format!(
+                r#"use leo_bindings::generate_bindings;
 generate_bindings!("outputs/{}.initial.json");
 "#,
-            program_name
-        );
+                program_name
+            )
+        };
         fs::write(program_dir.join("lib.rs"), lib_rs_content)?;
 
         let gitignore_content = format!(
@@ -296,7 +306,7 @@ leo-bindings.workspace = true
 }
 
 fn collect_local_programs(
-    programs: &mut HashMap<PathBuf, (String, Vec<Dependency>)>,
+    programs: &mut HashMap<PathBuf, (String, Vec<Dependency>, bool)>,
     leo_dep_path: &Path,
     bindings_dep_path: &Path,
 ) -> Result<()> {
@@ -316,11 +326,14 @@ fn collect_local_programs(
         .unwrap_or(&dep_manifest.program)
         .to_string();
 
+    let is_aleo_program = leo_dep_path.join("src/main.aleo").exists();
+
     programs.insert(
         bindings_dep_path.to_path_buf(),
         (
             dep_program_name,
             dep_manifest.dependencies.clone().unwrap_or_default(),
+            is_aleo_program,
         ),
     );
 
@@ -341,7 +354,7 @@ fn collect_local_programs(
         let sub_dep_name = abs_sub_dep.file_name().unwrap();
         let nested_bindings_path = bindings_dep_path.join("imports").join(sub_dep_name);
 
-        let already_processed = programs.values().any(|(name, _)| {
+        let already_processed = programs.values().any(|(name, _, _)| {
             let check_name = abs_sub_dep
                 .file_name()
                 .and_then(|n| n.to_str())
