@@ -1,7 +1,7 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use leo_package::{Dependency, Location, Manifest, MANIFEST_FILENAME};
+use leo_package::{Dependency, Location, MANIFEST_FILENAME, Manifest};
 use leo_span::create_session_if_not_set_then;
 use regex::Regex;
 use std::collections::HashMap;
@@ -50,15 +50,12 @@ fn update_bindings(project_path: &Path, auto_yes: bool) -> Result<()> {
         .strip_suffix(".aleo")
         .unwrap_or(&manifest.program);
 
-    let is_aleo_program = project_path.join("src/main.aleo").exists();
-
-    let mut programs: HashMap<PathBuf, (String, Vec<Dependency>, bool)> = HashMap::new();
+    let mut programs: HashMap<PathBuf, (String, Vec<Dependency>)> = HashMap::new();
     programs.insert(
         project_path.clone(),
         (
             main_program_name.to_string(),
             manifest.dependencies.clone().unwrap_or_default(),
-            is_aleo_program,
         ),
     );
 
@@ -76,7 +73,9 @@ fn update_bindings(project_path: &Path, auto_yes: bool) -> Result<()> {
     let mut file_paths = vec![project_path.join("Cargo.toml")];
     for program_dir in programs.keys() {
         file_paths.push(program_dir.join("lib.rs"));
+        file_paths.push(program_dir.join("build.rs"));
         file_paths.push(program_dir.join(".gitignore"));
+        file_paths.push(program_dir.join(".cargo/config.toml"));
         if program_dir != &project_path {
             file_paths.push(program_dir.join("Cargo.toml"));
         }
@@ -168,7 +167,7 @@ snarkvm = "4.2.1"
 [package]
 name = "{}"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "{}"
@@ -208,30 +207,27 @@ snarkvm.workspace = true
         }
     }
 
+    cargo_toml.push_str(
+        r#"
+[build-dependencies]
+leo-bindings-core = { git = "https://github.com/henrikkv/leo-bindings" }
+serde_json = "1"
+"#,
+    );
+
     fs::write(&cargo_toml_path, cargo_toml).context("Failed to write Cargo.toml")?;
 
-    for (program_dir, (program_name, deps, is_aleo)) in &programs {
+    for (program_dir, (program_name, deps)) in &programs {
         if !program_dir.exists() {
             fs::create_dir_all(program_dir)?;
         }
 
-        let lib_rs_content = if *is_aleo {
-            r#"use leo_bindings::generate_bindings;
-generate_bindings!("simplified.json");
-"#
-            .to_string()
-        } else {
-            format!(
-                r#"use leo_bindings::generate_bindings;
-generate_bindings!("outputs/{}.initial.json");
-"#,
-                program_name
-            )
-        };
+        let lib_rs_content = r#"use leo_bindings::generate_bindings;
+generate_bindings!("signatures.json");
+"#;
         fs::write(program_dir.join("lib.rs"), lib_rs_content)?;
 
-        let gitignore_content = format!(
-            r#"target/
+        let gitignore_content = r#"target/
 registry/
 Cargo.lock
 
@@ -239,13 +235,78 @@ build/*
 !build/
 !build/main.aleo
 
-outputs/*
-!outputs/
-!outputs/{}.initial.json
-"#,
-            program_name
-        );
+outputs/
+"#;
         fs::write(program_dir.join(".gitignore"), gitignore_content)?;
+
+        let mut build_rs = format!(
+            r#"fn main() {{
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let manifest_path = std::path::Path::new(&manifest_dir);
+    let src_main_leo = manifest_path.join("src/main.leo");
+    let build_main_aleo = manifest_path.join("build/main.aleo");
+    let initial_json = manifest_path.join("outputs/{}.initial.json");
+    let signatures_json = manifest_path.join("signatures.json");
+
+    println!("cargo:rerun-if-changed=signatures.json");
+
+    if src_main_leo.exists() {{
+        println!("cargo:rerun-if-changed=src/main.leo");
+    }}
+
+    if build_main_aleo.exists() {{
+        println!("cargo:rerun-if-changed=build/main.aleo");
+    }}
+
+    if initial_json.exists() {{
+        println!("cargo:rerun-if-changed=outputs/{}.initial.json");
+    }}
+"#,
+            program_name, program_name
+        );
+
+        for dep in deps {
+            if dep.location == Location::Local && dep.path.is_some() {
+                let dep_path = dep.path.as_ref().unwrap();
+                let relative_path = dep_path.strip_prefix(program_dir).unwrap_or(dep_path);
+                build_rs.push_str(&format!(
+                    r#"
+    println!("cargo:rerun-if-changed={}/signatures.json");
+"#,
+                    relative_path.to_string_lossy()
+                ));
+            }
+        }
+
+        build_rs.push_str(r#"
+    if src_main_leo.exists() {
+        let needs_leo_build = !build_main_aleo.exists() || (src_main_leo.metadata().unwrap().modified().unwrap() > build_main_aleo.metadata().unwrap().modified().unwrap());
+        if needs_leo_build {
+            let status = std::process::Command::new("leo").arg("build").arg("--enable-initial-ast-snapshot").status().expect("Failed to run leo build");
+            if !status.success() {
+                panic!("leo build failed");
+            }
+        }
+    }
+
+    if initial_json.exists() {
+        let needs_update = !signatures_json.exists() || (initial_json.metadata().unwrap().modified().unwrap() > signatures_json.metadata().unwrap().modified().unwrap());
+        if needs_update {
+            let json = std::fs::read_to_string(&initial_json).expect("Failed to read initial.json");
+            let signatures = leo_bindings_core::signature::get_signatures(json);
+            std::fs::write(&signatures_json, signatures).expect("Failed to write signatures.json");
+        }
+    }
+}
+"#
+        );
+        fs::write(program_dir.join("build.rs"), build_rs)?;
+
+        let cargo_dir = program_dir.join(".cargo");
+        if !cargo_dir.exists() {
+            fs::create_dir_all(&cargo_dir)?;
+        }
+        fs::write(cargo_dir.join("config.toml"), "[workspace]\n")?;
 
         if program_dir != &project_path {
             let lib_name = format!("{}_bindings", program_name);
@@ -255,7 +316,7 @@ outputs/*
                 r#"[package]
 name = "{}"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 name = "{}"
@@ -263,6 +324,10 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings.workspace = true
+
+[build-dependencies]
+leo-bindings-core = {{ git = "https://github.com/henrikkv/leo-bindings" }}
+serde_json = "1"
 "#,
                 lib_name, lib_name
             );
@@ -306,7 +371,7 @@ leo-bindings.workspace = true
 }
 
 fn collect_local_programs(
-    programs: &mut HashMap<PathBuf, (String, Vec<Dependency>, bool)>,
+    programs: &mut HashMap<PathBuf, (String, Vec<Dependency>)>,
     leo_dep_path: &Path,
     bindings_dep_path: &Path,
 ) -> Result<()> {
@@ -326,14 +391,11 @@ fn collect_local_programs(
         .unwrap_or(&dep_manifest.program)
         .to_string();
 
-    let is_aleo_program = leo_dep_path.join("src/main.aleo").exists();
-
     programs.insert(
         bindings_dep_path.to_path_buf(),
         (
             dep_program_name,
             dep_manifest.dependencies.clone().unwrap_or_default(),
-            is_aleo_program,
         ),
     );
 
@@ -354,7 +416,7 @@ fn collect_local_programs(
         let sub_dep_name = abs_sub_dep.file_name().unwrap();
         let nested_bindings_path = bindings_dep_path.join("imports").join(sub_dep_name);
 
-        let already_processed = programs.values().any(|(name, _, _)| {
+        let already_processed = programs.values().any(|(name, _)| {
             let check_name = abs_sub_dep
                 .file_name()
                 .and_then(|n| n.to_str())

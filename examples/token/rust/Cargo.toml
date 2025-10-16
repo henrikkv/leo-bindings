@@ -1,0 +1,15 @@
+[workspace]
+
+[package]
+name = "token-example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+token_bindings = { path = "../leo" }
+credits_bindings = { git = "https://github.com/henrikkv/leo-bindings" }
+leo-bindings = { path = "../../.." }
+
+[dev-dependencies]
+snarkvm = "4.2.0"
+rand = "0.8"

@@ -1,0 +1,317 @@
+{
+  "program_name": "dev",
+  "imports": [],
+  "records": [
+    {
+      "name": "User",
+      "members": [
+        {
+          "name": "owner",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "type": "u64",
+          "mode": "None"
+        },
+        {
+          "name": "balance",
+          "type": "u64",
+          "mode": "Public"
+        }
+      ],
+      "is_record": true
+    },
+    {
+      "name": "Container",
+      "members": [
+        {
+          "name": "owner",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "data",
+          "type": "B",
+          "mode": "None"
+        }
+      ],
+      "is_record": true
+    }
+  ],
+  "structs": [
+    {
+      "name": "A",
+      "members": [
+        {
+          "name": "number",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "is_record": false
+    },
+    {
+      "name": "B",
+      "members": [
+        {
+          "name": "number",
+          "type": "u32",
+          "mode": "None"
+        },
+        {
+          "name": "a",
+          "type": "A",
+          "mode": "None"
+        }
+      ],
+      "is_record": false
+    }
+  ],
+  "mappings": [
+    {
+      "name": "balances",
+      "key_type": "u64",
+      "value_type": "u64"
+    },
+    {
+      "name": "bs",
+      "key_type": "u64",
+      "value_type": "B"
+    }
+  ],
+  "functions": [
+    {
+      "name": "main",
+      "inputs": [
+        {
+          "name": "a",
+          "type": "u32",
+          "mode": "Public"
+        },
+        {
+          "name": "b",
+          "type": "u32",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32",
+          "mode": "Public"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "nested",
+      "inputs": [
+        {
+          "name": "b",
+          "type": "B",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "B",
+          "mode": "Public"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "store_nested",
+      "inputs": [
+        {
+          "name": "b",
+          "type": "B",
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "nested_array",
+      "inputs": [
+        {
+          "name": "a",
+          "type": "[[u8; 5]; 5]",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "[[u8; 5]; 5]",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "create_user",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "type": "u64",
+          "mode": "None"
+        },
+        {
+          "name": "balance",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "User",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "consume_user",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "User",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "create_container",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "data",
+          "type": "B",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Container",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "consume_container",
+      "inputs": [
+        {
+          "name": "container",
+          "type": "Container",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "B",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "asynchronous",
+      "inputs": [
+        {
+          "name": "balance",
+          "type": "u64",
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "User",
+          "mode": "None"
+        },
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "test_all_types",
+      "inputs": [
+        {
+          "name": "f",
+          "type": "Field",
+          "mode": "None"
+        },
+        {
+          "name": "s",
+          "type": "Scalar",
+          "mode": "None"
+        },
+        {
+          "name": "g",
+          "type": "Group",
+          "mode": "None"
+        },
+        {
+          "name": "flag",
+          "type": "Boolean",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Field",
+          "mode": "None"
+        },
+        {
+          "type": "Scalar",
+          "mode": "None"
+        },
+        {
+          "type": "Group",
+          "mode": "None"
+        },
+        {
+          "type": "Boolean",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    }
+  ]
+}

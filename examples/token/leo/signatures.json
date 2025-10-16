@@ -1,0 +1,186 @@
+{
+  "program_name": "token",
+  "imports": [],
+  "records": [
+    {
+      "name": "Token",
+      "members": [
+        {
+          "name": "owner",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "is_record": true
+    }
+  ],
+  "structs": [],
+  "mappings": [
+    {
+      "name": "account",
+      "key_type": "Address",
+      "value_type": "u64"
+    }
+  ],
+  "functions": [
+    {
+      "name": "mint_public",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "Public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "mint_private",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Token",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "transfer_public",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "Public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "transfer_private",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "Token",
+          "mode": "None"
+        },
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "None"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Token",
+          "mode": "None"
+        },
+        {
+          "type": "Token",
+          "mode": "None"
+        }
+      ],
+      "is_async": false
+    },
+    {
+      "name": "transfer_private_to_public",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "Token",
+          "mode": "None"
+        },
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "Public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Token",
+          "mode": "None"
+        },
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    },
+    {
+      "name": "transfer_public_to_private",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "Address",
+          "mode": "Public"
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Token",
+          "mode": "None"
+        },
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
+    }
+  ]
+}

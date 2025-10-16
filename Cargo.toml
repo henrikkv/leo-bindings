@@ -1,9 +1,10 @@
 [workspace]
-members = [".", "leo-bindings-*", "examples/*"]
+members = [".", "leo-bindings-core", "leo-bindings-macro", "examples/external"]
+exclude = ["examples/*/leo", "leo-bindings-credits", "examples/dev", "examples/token"]
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [workspace.dependencies]
 leo-bindings = { path = "." }
