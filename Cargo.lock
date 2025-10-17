@@ -536,7 +536,7 @@ dependencies = [
 [[package]]
 name = "credits_bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#8b221233d65b8507615cab108b44810a746449b5"
+source = "git+https://github.com/henrikkv/leo-bindings#a9b2259e4ac3086f75b8b1a1756d068d2a4e7f9b"
 dependencies = [
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
@@ -1480,7 +1480,7 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 [[package]]
 name = "leo-ast"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -1525,7 +1525,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#8b221233d65b8507615cab108b44810a746449b5"
+source = "git+https://github.com/henrikkv/leo-bindings#a9b2259e4ac3086f75b8b1a1756d068d2a4e7f9b"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1580,7 +1580,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-core"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#8b221233d65b8507615cab108b44810a746449b5"
+source = "git+https://github.com/henrikkv/leo-bindings#a9b2259e4ac3086f75b8b1a1756d068d2a4e7f9b"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -1618,7 +1618,7 @@ dependencies = [
 [[package]]
 name = "leo-bindings-macro"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/leo-bindings#8b221233d65b8507615cab108b44810a746449b5"
+source = "git+https://github.com/henrikkv/leo-bindings#a9b2259e4ac3086f75b8b1a1756d068d2a4e7f9b"
 dependencies = [
  "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "proc-macro2",
@@ -1630,7 +1630,7 @@ dependencies = [
 [[package]]
 name = "leo-errors"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "anyhow",
  "backtrace",
@@ -1646,7 +1646,7 @@ dependencies = [
 [[package]]
 name = "leo-interpreter"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "colored 2.2.0",
  "crossterm",
@@ -1666,7 +1666,7 @@ dependencies = [
 [[package]]
 name = "leo-package"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "indexmap",
  "leo-ast",
@@ -1682,7 +1682,7 @@ dependencies = [
 [[package]]
 name = "leo-parser"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "indexmap",
  "itertools 0.13.0",
@@ -1696,7 +1696,7 @@ dependencies = [
 [[package]]
 name = "leo-parser-lossless"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "itertools 0.13.0",
  "lalrpop",
@@ -1710,7 +1710,7 @@ dependencies = [
 [[package]]
 name = "leo-span"
 version = "3.2.0"
-source = "git+https://github.com/henrikkv/leo#ddaaa6b5d342dfa99076e37737471403e5260477"
+source = "git+https://github.com/henrikkv/leo#e49ff0edf3e011542fc83b402aba8a9725bfb3b3"
 dependencies = [
  "fxhash",
  "indexmap",
@@ -2521,9 +2521,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.32"
+version = "0.23.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd3c25631629d034ce7cd9940adc9d45762d46de2b0f57193c4443b92c6d4d40"
+checksum = "751e04a496ca00bb97a5e043158d23d66b5aabf2e1d5aa2a0aaebb1aafe6f82c"
 dependencies = [
  "log",
  "once_cell",
@@ -4291,7 +4291,7 @@ dependencies = [
 [[package]]
 name = "war"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/berlin#6185449dbc7b4ab4544a09598092ccfc22863bc6"
+source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
  "credits_bindings",
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
@@ -4303,11 +4303,13 @@ dependencies = [
 [[package]]
 name = "war_game_bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/berlin#6185449dbc7b4ab4544a09598092ccfc22863bc6"
+source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
  "credits_bindings",
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "rand 0.8.5",
+ "serde_json",
  "snarkvm",
  "zk_deck_shuffle_bindings",
  "zk_sra_encryption_bindings",
@@ -4799,15 +4801,19 @@ dependencies = [
 [[package]]
 name = "zk_deck_shuffle_bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/berlin#6185449dbc7b4ab4544a09598092ccfc22863bc6"
+source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "serde_json",
 ]
 
 [[package]]
 name = "zk_sra_encryption_bindings"
 version = "0.1.0"
-source = "git+https://github.com/henrikkv/berlin#6185449dbc7b4ab4544a09598092ccfc22863bc6"
+source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
+ "serde_json",
 ]

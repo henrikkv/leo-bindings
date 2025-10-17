@@ -7,7 +7,7 @@ edition = "2024"
 
 [dependencies]
 token_bindings = { path = "../leo" }
-credits_bindings = { git = "https://github.com/henrikkv/leo-bindings" }
+credits_bindings = { path = "../../../leo-bindings-credits" }
 leo-bindings = { path = "../../.." }
 
 [dev-dependencies]

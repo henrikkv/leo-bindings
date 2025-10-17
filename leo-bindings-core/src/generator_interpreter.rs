@@ -253,6 +253,7 @@ fn generate_interpreter_function(types: &FunctionTypes, program_name_lower: &str
                 let function_path = leo_ast::Path::new(
                     Vec::<leo_ast::Identifier>::new(),
                     function_identifier,
+                    false,
                     None,
                     default_span,
                     interpreter.node_builder.next_id(),
