@@ -21,21 +21,58 @@ fn main() {
     }
 
     if src_main_leo.exists() {
-        let needs_leo_build = !build_main_aleo.exists() || (src_main_leo.metadata().unwrap().modified().unwrap() > build_main_aleo.metadata().unwrap().modified().unwrap());
+        let needs_leo_build = !build_main_aleo.exists()
+            || !initial_json.exists()
+            || (src_main_leo.metadata().unwrap().modified().unwrap() > build_main_aleo.metadata().unwrap().modified().unwrap());
         if needs_leo_build {
-            let status = std::process::Command::new("leo").arg("build").arg("--enable-initial-ast-snapshot").status().expect("Failed to run leo build");
+            println!("cargo:warning=Running leo build to create initial ast snapshot");
+            let status = std::process::Command::new("leo")
+                .arg("build")
+                .arg("--enable-initial-ast-snapshot")
+                .current_dir(manifest_path)
+                .status()
+                .expect("Failed to run leo build");
             if !status.success() {
                 panic!("leo build failed");
             }
+        } else {
+            println!("cargo:warning=Leo build up to date, skipping");
         }
     }
 
     if initial_json.exists() {
-        let needs_update = !signatures_json.exists() || (initial_json.metadata().unwrap().modified().unwrap() > signatures_json.metadata().unwrap().modified().unwrap());
-        if needs_update {
+        let should_check = !signatures_json.exists() || (initial_json.metadata().unwrap().modified().unwrap() > signatures_json.metadata().unwrap().modified().unwrap());
+
+        if should_check {
             let json = std::fs::read_to_string(&initial_json).expect("Failed to read initial.json");
-            let signatures = leo_bindings_core::signature::get_signatures(json);
-            std::fs::write(&signatures_json, signatures).expect("Failed to write signatures.json");
+            let new_signatures = leo_bindings_core::signature::get_signatures(json);
+
+            let should_write = if signatures_json.exists() {
+                let existing_signatures = std::fs::read_to_string(&signatures_json).expect("Failed to read existing signatures.json");
+                new_signatures != existing_signatures
+            } else {
+                true
+            };
+
+            if should_write {
+                println!("cargo:warning=Signatures changed, updating signatures.json (will trigger macro recompilation)");
+                std::fs::write(&signatures_json, new_signatures)
+                    .expect("Failed to write signatures.json");
+            } else {
+                println!("cargo:warning=Signatures unchanged, skipping update (macro recompilation avoided)");
+            }
+        } else {
+            println!("cargo:warning=Signatures up-to-date, skipping check");
+        }
+    }
+
+    if !signatures_json.exists() {
+        if src_main_leo.exists() {
+            panic!("Failed to generate signatures.json.");
+        } else if build_main_aleo.exists() {
+            panic!("signatures.json not found. TODO: Make a parser for .aleo files.");
+        } else {
+            panic!("No Leo source files or build artifacts found.");
         }
     }
 }

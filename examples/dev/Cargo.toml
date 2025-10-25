@@ -1,11 +1,9 @@
 [package]
-name = "external"
+name = "dev-example"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+dev_bindings = { path = "leo" }
 leo-bindings.workspace = true
-
-[dev-dependencies]
-war = { git = "https://github.com/henrikkv/berlin" }
 snarkvm.workspace = true

@@ -155,7 +155,7 @@ fn generate_network_impl(
     );
 
     quote! {
-        use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_deployment_stats};
+        use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_execution_stats, print_deployment_stats};
         use anyhow::ensure;
         use snarkvm::ledger::query::*;
         use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
@@ -718,6 +718,13 @@ fn generate_function(
             let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
             let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
             let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
+
+            match &transaction {
+                Transaction::Execute(_, _, execution, fee) => {
+                    print_execution_stats(&vm, &program_id.to_string(), execution, None, ConsensusVersion::V10)?;
+                },
+                _ => panic!("Expected an execution transaction."),
+            };
 
             ensure!(public_balance >= total_cost,
                 "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);

@@ -1,19 +1,7 @@
-[workspace]
-members = ["."]
-
-[workspace.dependencies]
-leo-bindings = {path = "../../../"}
-rand = "0.8"
-snarkvm = "4.2.1"
-
-# BEGIN IMPORTS
-
-# END IMPORTS
-
 [package]
 name = "dev_bindings"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 name = "dev_bindings"
@@ -25,5 +13,5 @@ rand.workspace = true
 snarkvm.workspace = true
 
 [build-dependencies]
-leo-bindings-core = {path = "../../../leo-bindings-core"}
-serde_json = "1"
+leo-bindings-core.workspace = true
+serde_json.workspace = true

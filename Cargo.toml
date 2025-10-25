@@ -1,6 +1,15 @@
 [workspace]
-members = [".", "leo-bindings-core", "leo-bindings-macro", "examples/external"]
-exclude = ["examples/*/leo", "leo-bindings-credits", "examples/dev", "examples/token"]
+members = [
+    ".",
+    "leo-bindings-core",
+    "leo-bindings-macro",
+    "leo-bindings-credits",
+    "examples/dev/leo",
+    "examples/dev",
+    "examples/token/leo",
+    "examples/token",
+    "examples/external"
+]
 
 [workspace.package]
 version = "0.1.0"

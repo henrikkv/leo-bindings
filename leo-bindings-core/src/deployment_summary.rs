@@ -2,7 +2,10 @@ use colored::*;
 use num_format::{Locale, ToFormattedString};
 use snarkvm::{
     ledger::store::helpers::memory::ConsensusMemory,
-    prelude::{deployment_cost, ConsensusVersion, Deployment, Network, Result, VM},
+    prelude::{
+        ConsensusVersion, Deployment, Execution, Network, Result, VM, deployment_cost,
+        execution_cost,
+    },
 };
 
 /// Pretty‑print deployment statistics without a table, using the same UI
@@ -123,5 +126,65 @@ pub fn print_deployment_stats<N: Network>(
         )));
     }
 
+    Ok(())
+}
+
+/// Pretty‑print execution statistics without a table, using the same UI
+/// conventions as `print_deployment_plan`.
+pub fn print_execution_stats<N: Network>(
+    vm: &VM<N, ConsensusMemory<N>>,
+    program_name: &str,
+    execution: &Execution<N>,
+    priority_fee: Option<u64>,
+    consensus_version: ConsensusVersion,
+) -> Result<()> {
+    use colored::*;
+
+    // ── Gather cost components ────────────────────────────────────────────
+    let (base_fee, (storage_cost, execution_cost)) =
+        execution_cost(&vm.process().read(), execution, consensus_version)?;
+
+    let base_cr = base_fee as f64 / 1_000_000.0;
+    let prio_cr = priority_fee.unwrap_or(0) as f64 / 1_000_000.0;
+    let total_cr = base_cr + prio_cr;
+
+    // ── Header ────────────────────────────────────────────────────────────
+    println!(
+        "\n{} {}",
+        "📊 Execution Summary for".bold(),
+        program_name.bold()
+    );
+    println!(
+        "{}",
+        "──────────────────────────────────────────────".dimmed()
+    );
+
+    // ── Cost breakdown ────────────────────────────────────────────────────
+    println!("{}", "💰 Cost Breakdown (credits)".bold());
+    println!(
+        "  {:22}{}{:.6}",
+        "Transaction Storage:".cyan(),
+        "".yellow(),
+        storage_cost as f64 / 1_000_000.0
+    );
+    println!(
+        "  {:22}{}{:.6}",
+        "On‑chain Execution:".cyan(),
+        "".yellow(),
+        execution_cost as f64 / 1_000_000.0
+    );
+    println!(
+        "  {:22}{}{:.6}",
+        "Priority Fee:".cyan(),
+        "".yellow(),
+        prio_cr
+    );
+    println!("  {:22}{}{:.6}", "Total Fee:".cyan(), "".yellow(), total_cr);
+
+    // ── Footer rule ───────────────────────────────────────────────────────
+    println!(
+        "{}",
+        "──────────────────────────────────────────────".dimmed()
+    );
     Ok(())
 }

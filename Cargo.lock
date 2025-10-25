@@ -536,6 +536,17 @@ dependencies = [
 [[package]]
 name = "credits_bindings"
 version = "0.1.0"
+dependencies = [
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+]
+
+[[package]]
+name = "credits_bindings"
+version = "0.1.0"
 source = "git+https://github.com/henrikkv/leo-bindings#a9b2259e4ac3086f75b8b1a1756d068d2a4e7f9b"
 dependencies = [
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
@@ -694,6 +705,26 @@ dependencies = [
  "proc-macro2",
  "quote 1.0.41",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "dev-example"
+version = "0.1.0"
+dependencies = [
+ "dev_bindings",
+ "leo-bindings 0.1.0",
+ "snarkvm",
+]
+
+[[package]]
+name = "dev_bindings"
+version = "0.1.0"
+dependencies = [
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
 ]
 
 [[package]]
@@ -4001,6 +4032,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
+name = "token-example"
+version = "0.1.0"
+dependencies = [
+ "credits_bindings 0.1.0",
+ "leo-bindings 0.1.0",
+ "rand 0.8.5",
+ "snarkvm",
+ "token_bindings",
+]
+
+[[package]]
+name = "token_bindings"
+version = "0.1.0"
+dependencies = [
+ "leo-bindings 0.1.0",
+ "leo-bindings-core 0.1.0",
+ "rand 0.8.5",
+ "serde_json",
+ "snarkvm",
+]
+
+[[package]]
 name = "tokio"
 version = "1.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4293,7 +4346,7 @@ name = "war"
 version = "0.1.0"
 source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
- "credits_bindings",
+ "credits_bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "rand 0.8.5",
  "snarkvm",
@@ -4305,7 +4358,7 @@ name = "war_game_bindings"
 version = "0.1.0"
 source = "git+https://github.com/henrikkv/berlin#6269b644bd9d0655424ecc2e252f6228432f6c46"
 dependencies = [
- "credits_bindings",
+ "credits_bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-bindings 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "leo-bindings-core 0.1.0 (git+https://github.com/henrikkv/leo-bindings)",
  "rand 0.8.5",

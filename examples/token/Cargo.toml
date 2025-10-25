@@ -1,11 +1,13 @@
 [package]
-name = "external"
+name = "token-example"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+token_bindings = { path = "leo" }
+credits_bindings.workspace = true
 leo-bindings.workspace = true
 
 [dev-dependencies]
-war = { git = "https://github.com/henrikkv/berlin" }
 snarkvm.workspace = true
+rand.workspace = true
