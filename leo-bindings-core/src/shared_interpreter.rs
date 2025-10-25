@@ -1,11 +1,11 @@
 use crate::types::ToValue;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use leo_ast::Location;
 use leo_ast::NetworkName;
 use leo_interpreter::{Element, Frame, FunctionVariant, Interpreter};
 use leo_parser;
 use leo_span::source_map::FileName;
-use leo_span::{with_session_globals, SessionGlobals, Symbol, SESSION_GLOBALS};
+use leo_span::{SESSION_GLOBALS, SessionGlobals, Symbol, with_session_globals};
 use snarkvm::prelude::{Program, TestnetV0};
 use std::{cell::RefCell, collections::HashMap, fs, path::Path, rc::Rc};
 

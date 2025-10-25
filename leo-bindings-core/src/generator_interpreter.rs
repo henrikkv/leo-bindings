@@ -97,23 +97,21 @@ pub fn generate_interpreter_impl(
                 create_session_if_not_set_then(|_| {
                     let interpreter_exists = with_shared_interpreter(|_| true).is_some();
                     if !interpreter_exists {
-                        let signer: Value = deployer.address().into();
                         let block_height = 0u32;
                         let network = NetworkName::from_str("testnet").unwrap();
 
                         let interpreter = Interpreter::new(
                             &[] as &[(PathBuf, Vec<PathBuf>)],
                             &[] as &[PathBuf],
-                            signer,
+                            deployer.private_key().to_string(),
                             block_height,
                             network,
                         ).unwrap();
 
                         let session = SessionGlobals::default();
                         initialize_shared_interpreter(interpreter, session);
+                        #(#deployment_calls)*
                     }
-
-                    #(#deployment_calls)*
 
                     let program_exists = with_shared_interpreter(|state| {
                         state.interpreter.borrow().is_program_loaded(program_name)
