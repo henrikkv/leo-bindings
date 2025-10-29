@@ -144,24 +144,25 @@ impl InterpreterExtensions for Interpreter {
 
         for (name, record_type) in aleo_program.records().iter() {
             use snarkvm::prelude::EntryType;
-            self.cursor.structs.insert(
-                vec![Symbol::intern(&name.to_string())],
-                record_type
-                    .entries()
-                    .iter()
-                    .map(|(id, entry)| {
-                        let inner_type = match entry {
-                            EntryType::Public(t)
-                            | EntryType::Private(t)
-                            | EntryType::Constant(t) => t,
-                        };
-                        (
-                            leo_ast::Identifier::from(id).name,
-                            leo_ast::Type::from_snarkvm(inner_type, None),
-                        )
-                    })
-                    .collect(),
-            );
+            let type_name = Symbol::intern(&name.to_string());
+
+            let mut members: indexmap::IndexMap<Symbol, leo_ast::Type> = indexmap::IndexMap::new();
+
+            members.insert(Symbol::intern("owner"), leo_ast::Type::Address);
+
+            for (id, entry) in record_type.entries().iter() {
+                let inner_type = match entry {
+                    EntryType::Public(t) | EntryType::Private(t) | EntryType::Constant(t) => t,
+                };
+                members.insert(
+                    leo_ast::Identifier::from(id).name,
+                    leo_ast::Type::from_snarkvm(inner_type, None),
+                );
+            }
+
+            self.cursor
+                .records
+                .insert((program, vec![type_name]), members);
         }
 
         for (name, _mapping) in aleo_program.mappings().iter() {

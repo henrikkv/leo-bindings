@@ -37,6 +37,8 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
     let interpreter_impl =
         generate_interpreter_impl(simplified, &function_types, &mapping_types, &program_trait);
 
+    let type_imports = generate_type_imports(&simplified.imports);
+
     quote! {
         pub mod #program_module {
             use leo_bindings::{anyhow, snarkvm, indexmap};
@@ -46,6 +48,8 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
             use leo_bindings::utils::Account;
+
+            #type_imports
 
             #network_aliases
 
@@ -163,7 +167,7 @@ fn generate_network_impl(
         use snarkvm::ledger::block::Transaction;
         use snarkvm::console::program::{Record, Plaintext};
         use snarkvm::synthesizer::VM;
-        use snarkvm::synthesizer::process::execution_cost_v2;
+        use snarkvm::synthesizer::process::execution_cost;
         use snarkvm::prelude::ConsensusVersion;
         use snarkvm::ledger::query::{QueryTrait, Query};
         use leo_package::Package;
@@ -717,7 +721,7 @@ fn generate_function(
 
             let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
             let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
-            let (total_cost, _) = execution_cost_v2(&vm.process().read(), execution)?;
+            let (total_cost, _) = execution_cost(&vm.process().read(), execution, ConsensusVersion::V10)?;
 
             match &transaction {
                 Transaction::Execute(_, _, execution, fee) => {
@@ -799,5 +803,22 @@ fn generate_network_aliases(program_name_pascal: &str, program_struct: &Ident) -
         pub type #canary_struct = network::#program_struct<snarkvm::prelude::CanaryV0>;
 
         pub type #interpreter_struct = interpreter::#interpreter_struct<snarkvm::prelude::TestnetV0>;
+    }
+}
+
+fn generate_type_imports(imports: &[String]) -> TokenStream {
+    let import_statements: Vec<TokenStream> = imports
+        .iter()
+        .map(|import| {
+            let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
+            let import_module = Ident::new(import, Span::call_site());
+            quote! {
+                pub use #import_crate_name::#import_module::*;
+            }
+        })
+        .collect();
+
+    quote! {
+        #(#import_statements)*
     }
 }
