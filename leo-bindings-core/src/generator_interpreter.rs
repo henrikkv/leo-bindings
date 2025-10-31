@@ -37,7 +37,7 @@ pub fn generate_interpreter_impl(
 
     let function_implementations: Vec<TokenStream> = function_types
         .iter()
-        .map(|types| generate_interpreter_function(types, program_name))
+        .map(generate_interpreter_function)
         .collect();
 
     let mapping_implementations: Vec<TokenStream> = mapping_types
@@ -81,6 +81,10 @@ pub fn generate_interpreter_impl(
             pub struct #program_struct<N: Network> {
                 pub endpoint: String,
                 _network: std::marker::PhantomData<N>,
+            }
+
+            impl<N: Network> #program_struct<N> {
+                const PROGRAM_NAME: &str = #program_name;
             }
 
             impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
@@ -183,8 +187,7 @@ fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
         fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             with_shared_interpreter(|state| {
                 let interpreter = state.interpreter.borrow();
-                let program_symbol = interpreter.cursor.current_program()
-                    .expect("No current program set in interpreter");
+                let program_symbol = Symbol::intern(Self::PROGRAM_NAME);
                 let mapping_name_symbol = Symbol::intern(#mapping_name_literal);
 
                 let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from((key).to_value());
@@ -201,7 +204,7 @@ fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
     }
 }
 
-fn generate_interpreter_function(types: &FunctionTypes, program_name_lower: &str) -> TokenStream {
+fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
     let FunctionTypes {
         name: function_name,
         input_params,
@@ -238,10 +241,9 @@ fn generate_interpreter_function(types: &FunctionTypes, program_name_lower: &str
                 let mut function_args: Vec<leo_ast::interpreter_value::Value> = Vec::new();
                 #(function_args.push(#interpreter_input_conversions);)*
 
-                interpreter.cursor.set_program(#program_name_lower);
+                let program_symbol = Symbol::intern(Self::PROGRAM_NAME);
+                interpreter.cursor.set_program(Self::PROGRAM_NAME);
 
-                let program_symbol = interpreter.cursor.current_program()
-                    .ok_or_else(|| anyhow!("No current program set in interpreter"))?;
                 let function_name_symbol = Symbol::intern(stringify!(#function_name));
 
                 interpreter.cursor.values.extend(function_args);
