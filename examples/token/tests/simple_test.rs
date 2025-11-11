@@ -1,5 +1,7 @@
 #[test]
 fn token() {
+    leo_bindings::utils::init_test_logger();
+
     use credits_bindings::credits::*;
     use leo_bindings::utils::*;
     use token_bindings::token::*;

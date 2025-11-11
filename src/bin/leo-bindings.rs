@@ -28,6 +28,8 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
+    leo_bindings::utils::init_simple_logger();
+
     let cli = Cli::parse();
     create_session_if_not_set_then(|_| match cli.command {
         Commands::Update { path, yes } => update_bindings(&path, yes),
@@ -140,6 +142,7 @@ members = ["."]
 leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 rand = "0.8"
 snarkvm = "4.3.1"
+log = "0.4"
 "#,
     );
 
@@ -177,6 +180,7 @@ path = "lib.rs"
 leo-bindings.workspace = true
 rand.workspace = true
 snarkvm.workspace = true
+log.workspace = true
 "#,
         lib_name, lib_name
     ));
@@ -361,6 +365,7 @@ path = "lib.rs"
 
 [dependencies]
 leo-bindings.workspace = true
+log.workspace = true
 
 [build-dependencies]
 leo-bindings-core = {{ git = "https://github.com/henrikkv/leo-bindings" }}

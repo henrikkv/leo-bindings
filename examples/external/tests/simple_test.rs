@@ -1,5 +1,7 @@
 #[test]
 fn external() {
+    leo_bindings::utils::init_test_logger();
+
     use leo_bindings::utils::*;
     use snarkvm::prelude::TestnetV0;
     use war_game_bindings::war_game::*;

@@ -595,11 +595,11 @@ fn generate_new(
                         .call();
                     match check_response {
                         Ok(_) => {
-                            println!("✅ Found '{}', skipping deployment", program_id);
+                            log::info!("✅ Found '{}', skipping deployment", program_id);
                             true
                         },
                         Err(_) => {
-                            println!("📦 Deploying '{}'", program_id);
+                            log::info!("📦 Deploying '{}'", program_id);
                             false
                         }
                     }
@@ -625,7 +625,7 @@ fn generate_new(
                     let program: Program<N> = bytecode.parse()
                         .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
 
-                    println!("📦 Creating deployment tx for '{}'...", program_id);
+                    log::info!("📦 Creating deployment tx for '{}'...", program_id);
                     let rng = &mut rand::thread_rng();
                     let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
                     let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
@@ -648,7 +648,7 @@ fn generate_new(
                         _ => panic!("Expected a deployment transaction."),
                     };
 
-                    println!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
+                    log::info!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
 
                     ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, N::SHORT_NAME))
                         .send_json(&transaction)?;
@@ -691,7 +691,7 @@ fn generate_function(
             let rng = &mut rand::thread_rng();
             let locator = Locator::<N>::new(program_id, function_id);
 
-            println!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
+            log::debug!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
             let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
             let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
 
@@ -733,7 +733,7 @@ fn generate_function(
             ensure!(public_balance >= total_cost,
                 "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
 
-            println!("📡 Broadcasting tx: {}",transaction.id());
+            log::info!("📡 Broadcasting tx: {}",transaction.id());
             broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
             wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
 

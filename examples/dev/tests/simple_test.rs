@@ -7,12 +7,14 @@ const ENDPOINT: &str = "http://localhost:3030";
 
 #[test]
 fn dev_testnet() {
+    leo_bindings::utils::init_test_logger();
     let alice = get_dev_account(0).unwrap();
     run_dev_tests(&DevTestnet::new(&alice, ENDPOINT).unwrap(), &alice);
 }
 
 #[test]
 fn dev_interpreter() {
+    leo_bindings::utils::init_test_logger();
     let alice = get_dev_account(0).unwrap();
     run_dev_tests(&DevInterpreter::new(&alice, ENDPOINT).unwrap(), &alice);
 }

@@ -169,3 +169,22 @@ pub fn wait_for_program_availability(
         }
     }
 }
+
+pub fn init_simple_logger() {
+    use std::io::Write;
+    let _ = env_logger::Builder::from_env(
+        env_logger::Env::default().filter_or("RUST_LOG", "info"),
+    )
+        .format(|buf, record| writeln!(buf, "{}", record.args()))
+        .try_init();
+}
+
+pub fn init_test_logger() {
+    use std::io::Write;
+    let _ = env_logger::Builder::from_env(
+        env_logger::Env::default().filter_or("RUST_LOG", "info"),
+    )
+        .is_test(true)
+        .format(|buf, record| writeln!(buf, "{}", record.args()))
+        .try_init();
+}

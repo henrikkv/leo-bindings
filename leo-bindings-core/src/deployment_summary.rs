@@ -28,35 +28,35 @@ pub fn print_deployment_stats<N: Network>(
     let total_fee_cr = base_fee_cr + prio_fee_cr;
 
     // ── Header ────────────────────────────────────────────────────────────
-    println!(
+    log::info!(
         "\n{} {}",
         "📊 Deployment Summary for".bold(),
         program_id.bold()
     );
-    println!(
+    log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
 
     // ── High‑level metrics ────────────────────────────────────────────────
-    println!(
+    log::info!(
         "  {:22}{}",
         "Total Variables:".cyan(),
         variables.to_formatted_string(&Locale::en).yellow()
     );
-    println!(
+    log::info!(
         "  {:22}{}",
         "Total Constraints:".cyan(),
         constraints.to_formatted_string(&Locale::en).yellow()
     );
-    println!(
+    log::info!(
         "  {:22}{}",
         "Max Variables:".cyan(),
         N::MAX_DEPLOYMENT_VARIABLES
             .to_formatted_string(&Locale::en)
             .green()
     );
-    println!(
+    log::info!(
         "  {:22}{}",
         "Max Constraints:".cyan(),
         N::MAX_DEPLOYMENT_CONSTRAINTS
@@ -65,38 +65,38 @@ pub fn print_deployment_stats<N: Network>(
     );
 
     // ── Cost breakdown ────────────────────────────────────────────────────
-    println!("\n{}", "💰 Cost Breakdown (credits)".bold());
-    println!(
+    log::info!("\n{}", "💰 Cost Breakdown (credits)".bold());
+    log::info!(
         "  {:22}{}{:.6}",
         "Transaction Storage:".cyan(),
         "".yellow(), // spacer for alignment
         storage_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Program Synthesis:".cyan(),
         "".yellow(),
         synthesis_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Namespace:".cyan(),
         "".yellow(),
         namespace_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Constructor:".cyan(),
         "".yellow(),
         constructor_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Priority Fee:".cyan(),
         "".yellow(),
         prio_fee_cr
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Total Fee:".cyan(),
         "".yellow(),
@@ -104,7 +104,7 @@ pub fn print_deployment_stats<N: Network>(
     );
 
     // ── Footer rule ───────────────────────────────────────────────────────
-    println!(
+    log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
@@ -149,40 +149,40 @@ pub fn print_execution_stats<N: Network>(
     let total_cr = base_cr + prio_cr;
 
     // ── Header ────────────────────────────────────────────────────────────
-    println!(
+    log::info!(
         "\n{} {}",
         "📊 Execution Summary for".bold(),
         program_name.bold()
     );
-    println!(
+    log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
 
     // ── Cost breakdown ────────────────────────────────────────────────────
-    println!("{}", "💰 Cost Breakdown (credits)".bold());
-    println!(
+    log::info!("{}", "💰 Cost Breakdown (credits)".bold());
+    log::info!(
         "  {:22}{}{:.6}",
         "Transaction Storage:".cyan(),
         "".yellow(),
         storage_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "On‑chain Execution:".cyan(),
         "".yellow(),
         execution_cost as f64 / 1_000_000.0
     );
-    println!(
+    log::info!(
         "  {:22}{}{:.6}",
         "Priority Fee:".cyan(),
         "".yellow(),
         prio_cr
     );
-    println!("  {:22}{}{:.6}", "Total Fee:".cyan(), "".yellow(), total_cr);
+    log::info!("  {:22}{}{:.6}", "Total Fee:".cyan(), "".yellow(), total_cr);
 
     // ── Footer rule ───────────────────────────────────────────────────────
-    println!(
+    log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
