@@ -4,17 +4,16 @@ use snarkvm::prelude::Network;
 use std::str::FromStr;
 
 const ENDPOINT: &str = "http://localhost:3030";
-const PRIVATE_KEY: &str = "APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH";
 
 #[test]
 fn dev_testnet() {
-    let alice = Account::from_str(PRIVATE_KEY).unwrap();
+    let alice = get_dev_account(0).unwrap();
     run_dev_tests(&DevTestnet::new(&alice, ENDPOINT).unwrap(), &alice);
 }
 
 #[test]
 fn dev_interpreter() {
-    let alice = Account::from_str(PRIVATE_KEY).unwrap();
+    let alice = get_dev_account(0).unwrap();
     run_dev_tests(&DevInterpreter::new(&alice, ENDPOINT).unwrap(), &alice);
 }
 

@@ -1621,6 +1621,7 @@ dependencies = [
  "leo-span",
  "num-format",
  "rand",
+ "rand_chacha",
  "regex",
  "serde_json",
  "snarkvm 4.3.1",

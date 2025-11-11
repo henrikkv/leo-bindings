@@ -1,4 +1,6 @@
-use anyhow::anyhow;
+use anyhow::{Result, anyhow};
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
 use snarkvm::prelude::*;
 use std::str::FromStr;
 use std::thread::sleep;
@@ -86,6 +88,26 @@ pub fn get_public_balance<N: Network>(
         None => 0,
         Some(..) => panic!("Failed to deserialize balance for {address}"),
     }
+}
+
+pub fn get_development_key<N: Network>(index: u16) -> Result<PrivateKey<N>> {
+    let mut rng = ChaChaRng::seed_from_u64(1234567890u64);
+    for _ in 0..index {
+        let _ = PrivateKey::<N>::new(&mut rng)?;
+    }
+
+    PrivateKey::<N>::new(&mut rng)
+}
+
+pub fn get_dev_account<N: Network>(index: u16) -> Result<Account<N>> {
+    if index > 3 {
+        return Err(anyhow!(
+            "Development account index must be 0-3, got {}",
+            index
+        ));
+    }
+    let private_key = get_development_key(index)?;
+    Account::try_from(private_key).map_err(|e| anyhow!("Failed to create account: {}", e))
 }
 
 pub fn broadcast_transaction<N: Network>(
