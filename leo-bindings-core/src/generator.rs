@@ -691,7 +691,7 @@ fn generate_function(
             let rng = &mut rand::thread_rng();
             let locator = Locator::<N>::new(program_id, function_id);
 
-            log::debug!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
+            log::info!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
             let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
             let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
 
