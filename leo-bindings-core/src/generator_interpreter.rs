@@ -102,6 +102,7 @@ pub fn generate_interpreter_impl(
                     let interpreter_exists = with_shared_interpreter(|_| true).is_some();
                     if !interpreter_exists {
                         let block_height = 0u32;
+                        let block_timestamp = 0i64;
                         let network = NetworkName::from_str("testnet").unwrap();
 
                         let interpreter = Interpreter::new(
@@ -109,6 +110,7 @@ pub fn generate_interpreter_impl(
                             &[] as &[PathBuf],
                             deployer.private_key().to_string(),
                             block_height,
+                            block_timestamp,
                             network,
                         ).unwrap();
 
