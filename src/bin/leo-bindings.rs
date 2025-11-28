@@ -141,7 +141,7 @@ members = ["."]
 [workspace.dependencies]
 leo-bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 rand = "0.8"
-snarkvm = "4.3.1"
+snarkvm = { git = "https://github.com/ProvableHQ/snarkVM.git", tag = "v4.4.0" }
 log = "0.4"
 "#,
     );
