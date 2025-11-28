@@ -1,4 +1,5 @@
 pub mod utils;
+pub mod interpreter_cheats;
 
 pub use leo_bindings_core::*;
 pub use leo_bindings_macro::generate_bindings;
