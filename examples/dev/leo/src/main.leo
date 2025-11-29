@@ -5,6 +5,9 @@ program dev.aleo {
     mapping balances: u64 => u64;
 
     mapping bs: u64 => B;
+
+    mapping block_heights: u64 => u32;
+    mapping block_timestamps: u64 => i64;
     
     transition main(public a: u32, public b: u32) -> public u32 {
         let c: u32 = a + b;
@@ -89,5 +92,13 @@ program dev.aleo {
 
     transition test_all_types(f: field, s: scalar, g: group, flag: bool) -> (field, scalar, group, bool) {
         return (f, s, g, flag);
+    }
+
+    async transition store_block_info(id: u64) -> Future {
+        return finalize_store_block_info(id);
+    }
+    async function finalize_store_block_info(id: u64) {
+        Mapping::set(block_heights, id, block.height);
+        Mapping::set(block_timestamps, id, block.timestamp);
     }
 }

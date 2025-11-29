@@ -79,6 +79,16 @@
       "name": "bs",
       "key_type": "u64",
       "value_type": "B"
+    },
+    {
+      "name": "block_heights",
+      "key_type": "u64",
+      "value_type": "u32"
+    },
+    {
+      "name": "block_timestamps",
+      "key_type": "u64",
+      "value_type": "i64"
     }
   ],
   "functions": [
@@ -312,6 +322,23 @@
         }
       ],
       "is_async": false
+    },
+    {
+      "name": "store_block_info",
+      "inputs": [
+        {
+          "name": "id",
+          "type": "u64",
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Future",
+          "mode": "None"
+        }
+      ],
+      "is_async": true
     }
   ]
 }

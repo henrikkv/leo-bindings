@@ -16,7 +16,15 @@ fn dev_testnet() {
 fn dev_interpreter() {
     leo_bindings::utils::init_test_logger();
     let alice = get_dev_account(0).unwrap();
-    run_dev_tests(&DevInterpreter::new(&alice, ENDPOINT).unwrap(), &alice);
+    let dev = DevInterpreter::new(&alice, ENDPOINT).unwrap();
+    run_dev_tests(&dev, &alice);
+
+    leo_bindings::interpreter_cheats::set_block_height(1000);
+    leo_bindings::interpreter_cheats::set_block_timestamp(1234567890);
+
+    dev.store_block_info(&alice, 0).unwrap();
+    assert_eq!(dev.get_block_heights(0), Some(1000u32));
+    assert_eq!(dev.get_block_timestamps(0), Some(1234567890i64));
 }
 
 fn run_dev_tests<N: Network, P: DevAleo<N>>(dev: &P, alice: &Account<N>) {

@@ -24,6 +24,14 @@ mapping bs:
     key as u64.public;
     value as B.public;
 
+mapping block_heights:
+    key as u64.public;
+    value as u32.public;
+
+mapping block_timestamps:
+    key as u64.public;
+    value as i64.public;
+
 function main:
     input r0 as u32.public;
     input r1 as u32.public;
@@ -50,12 +58,8 @@ finalize store_nested:
 function nested_array:
     input r0 as [[u8; 5u32]; 5u32].private;
     cast 0u8 0u8 0u8 0u8 0u8 into r1 as [u8; 5u32];
-    cast 0u8 0u8 0u8 0u8 0u8 into r2 as [u8; 5u32];
-    cast 0u8 0u8 0u8 0u8 0u8 into r3 as [u8; 5u32];
-    cast 0u8 0u8 0u8 0u8 0u8 into r4 as [u8; 5u32];
-    cast 0u8 0u8 0u8 0u8 0u8 into r5 as [u8; 5u32];
-    cast r1 r2 r3 r4 r5 into r6 as [[u8; 5u32]; 5u32];
-    output r6 as [[u8; 5u32]; 5u32].private;
+    cast r1 r1 r1 r1 r1 into r2 as [[u8; 5u32]; 5u32];
+    output r2 as [[u8; 5u32]; 5u32].private;
 
 function create_user:
     input r0 as address.private;
@@ -100,6 +104,16 @@ function test_all_types:
     output r1 as scalar.private;
     output r2 as group.private;
     output r3 as boolean.private;
+
+function store_block_info:
+    input r0 as u64.private;
+    async store_block_info r0 into r1;
+    output r1 as dev.aleo/store_block_info.future;
+
+finalize store_block_info:
+    input r0 as u64.public;
+    set block.height into block_heights[r0];
+    set block.timestamp into block_timestamps[r0];
 
 constructor:
     assert.eq edition 0u16;
