@@ -1,0 +1,18 @@
+[package]
+name = "delegated_proving_test_bindings"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "delegated_proving_test_bindings"
+path = "lib.rs"
+
+[dependencies]
+leo-bindings.workspace = true
+rand.workspace = true
+snarkvm.workspace = true
+log.workspace = true
+
+[build-dependencies]
+leo-bindings-core.workspace = true
+serde_json.workspace = true

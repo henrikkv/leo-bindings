@@ -1,0 +1,61 @@
+use delegated_proving_test_bindings::delegated_proving_test::*;
+use leo_bindings::utils::*;
+
+const ENDPOINT: &str = "http://localhost:3030";
+
+const TEST_A: u64 = 1000;
+const TEST_B: u64 = 10;
+const TEST_C: u64 = 2;
+const TEST_D: u64 = 1;
+const EXPECTED: u64 = 150;
+
+#[test]
+fn test_interpreter() {
+    leo_bindings::utils::init_test_logger();
+    let alice = get_dev_account(0).unwrap();
+
+    let program = DelegatedProvingTestInterpreter::new(&alice, ENDPOINT).unwrap();
+
+    let result = program
+        .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
+        .unwrap();
+    assert_eq!(result, EXPECTED);
+    println!(
+        "✅ Interpreter test passed: divide({}, {}, {}, {}) = {}",
+        TEST_A, TEST_B, TEST_C, TEST_D, result
+    );
+}
+
+#[test]
+#[ignore]
+fn test_network_local_proving() {
+    leo_bindings::utils::init_test_logger();
+    let alice = get_dev_account(0).unwrap();
+
+    let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT).unwrap();
+
+    let result = program
+        .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
+        .unwrap();
+    assert_eq!(result, EXPECTED);
+    println!(
+        "✅ Local proving test passed: divide({}, {}, {}, {}) = {}",
+        TEST_A, TEST_B, TEST_C, TEST_D, result
+    );
+}
+
+#[test]
+fn test_network_delegated_proving() {
+    leo_bindings::utils::init_test_logger();
+    let alice = get_dev_account(0).unwrap();
+
+    let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT)
+        .unwrap()
+        .enable_delegated_proving()
+        .unwrap();
+
+    let result = program
+        .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
+        .unwrap();
+    dbg!(result);
+}

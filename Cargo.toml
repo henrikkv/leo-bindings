@@ -8,7 +8,9 @@ members = [
     "examples/dev",
     "examples/token/leo",
     "examples/token",
-    "examples/external"
+    "examples/external",
+    "examples/delegated",
+    "examples/delegated/leo"
 ]
 
 [workspace.package]

@@ -1,0 +1,9 @@
+[package]
+name = "delegated-example"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+delegated_proving_test_bindings = { path = "leo" }
+leo-bindings.workspace = true
+snarkvm.workspace = true

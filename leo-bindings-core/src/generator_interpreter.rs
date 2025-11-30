@@ -170,6 +170,22 @@ pub fn generate_interpreter_impl(
 
             #(#mapping_implementations)*
         }
+
+        impl #program_struct<TestnetV0> {
+            pub fn enable_delegated_proving(self) -> Result<Self, anyhow::Error> {
+                log::debug!("Not delegating when using interpreter");
+                Ok(self)
+            }
+            pub fn with_delegated_proving(self, _api_key: String, _endpoint: Option<String>) -> Self {
+                log::debug!("Not delegating when using interpreter");
+                self
+            }
+            pub fn disable_delegated_proving(self) -> Self {
+                log::debug!("Not delegating when using interpreter");
+                self
+            }
+        }
+
         #cheats_module
         }
     };

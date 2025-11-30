@@ -1,0 +1,7 @@
+outputs/
+build/
+*.avm
+*.prover
+*.verifier
+signatures.json
+.env

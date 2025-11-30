@@ -180,6 +180,7 @@ fn generate_network_impl(
         pub struct #program_struct<N: Network> {
             pub package: Package,
             pub endpoint: String,
+            pub delegated_proving_config: Option<leo_bindings::DelegatedProvingConfig>,
             _network: std::marker::PhantomData<N>,
         }
 
@@ -189,6 +190,24 @@ fn generate_network_impl(
             #(#function_implementations)*
 
             #(#mapping_implementations)*
+        }
+
+        impl<N: Network> #program_struct<N> {
+            pub fn enable_delegated_proving(mut self) -> Result<Self, anyhow::Error> {
+                self.delegated_proving_config = Some(leo_bindings::DelegatedProvingConfig::from_env()?);
+                log::info!("✅ Delegated proving enabled");
+                Ok(self)
+            }
+            pub fn with_delegated_proving(mut self, api_key: String, endpoint: Option<String>) -> Self {
+                self.delegated_proving_config = Some(leo_bindings::DelegatedProvingConfig::new(api_key, endpoint));
+                log::info!("✅ Delegated proving enabled");
+                self
+            }
+            pub fn disable_delegated_proving(mut self) -> Self {
+                self.delegated_proving_config = None;
+                log::info!("ℹ️ Delegated proving disabled");
+                self
+            }
         }
     }
 }
@@ -660,6 +679,7 @@ fn generate_new(
                 Ok(Self {
                     package,
                     endpoint: endpoint.to_string(),
+                    delegated_proving_config: None,
                     _network: std::marker::PhantomData,
                 })
             });
@@ -709,15 +729,40 @@ fn generate_function(
             vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
                 .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
 
-            let (transaction, response) = vm.execute_with_response(
-                account.private_key(),
-                (program_id, function_id),
-                function_args.iter(),
-                None,
-                0,
-                Some(&query as &dyn QueryTrait<N>),
-                rng,
-            ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
+            let delegated_result = self.delegated_proving_config.as_ref().and_then(|config| {
+                let authorization = vm
+                    .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
+                    .map_err(|e| {
+                        log::warn!("Failed to create authorization: {}", e);
+                        e
+                    })
+                    .ok()?;
+
+                match leo_bindings::delegated::execute_with_delegated_proving::<N>(
+                    config,
+                    authorization,
+                    false,
+                ) {
+                    Ok(transaction) => { Some((transaction, Vec::new())) }
+                    Err(e) => { None }
+                }
+            });
+
+            let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = match delegated_result {
+                Some(result) => result,
+                None => {
+                    let (transaction, response) = vm.execute_with_response(
+                        account.private_key(),
+                        (program_id, function_id),
+                        function_args.iter(),
+                        None,
+                        0,
+                        Some(&query as &dyn QueryTrait<N>),
+                        rng,
+                    ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
+                    (transaction, response.outputs().to_vec())
+                }
+            };
 
             let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
             let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
@@ -725,7 +770,7 @@ fn generate_function(
 
             match &transaction {
                 Transaction::Execute(_, _, execution, fee) => {
-                    print_execution_stats(&vm, &program_id.to_string(), execution, None, ConsensusVersion::V10)?;
+                    print_execution_stats(&vm, &program_id.to_string(), &execution, None, ConsensusVersion::V10)?;
                 },
                 _ => panic!("Expected an execution transaction."),
             };
@@ -736,8 +781,6 @@ fn generate_function(
             log::info!("📡 Broadcasting tx: {}",transaction.id());
             broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
             wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
-
-            let function_outputs: Vec<Value<N>> = response.outputs().to_vec();
 
             #return_conversions
         }

@@ -25,3 +25,5 @@ leo-parser = { workspace = true }
 leo-errors = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
+dotenvy = "0.15"
+ureq = { workspace = true }
