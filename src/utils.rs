@@ -1,7 +1,10 @@
 use anyhow::{Result, anyhow};
+use env_logger::{Builder, Env};
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+use serde::{Deserialize, Serialize};
 use snarkvm::prelude::*;
+use std::env;
 use std::str::FromStr;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -169,21 +172,105 @@ pub fn wait_for_program_availability(
         }
     }
 }
+#[derive(Debug, Clone)]
+pub struct DelegatedProvingConfig {
+    pub api_key: String,
+    pub endpoint: String,
+    pub enabled: bool,
+}
+
+impl DelegatedProvingConfig {
+    pub fn new(api_key: &str, endpoint: Option<&str>) -> Self {
+        Self {
+            api_key: api_key.to_string(),
+            endpoint: endpoint
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "https://api.explorer.provable.com/v2".to_string()),
+            enabled: false,
+        }
+    }
+    pub fn from_env() -> Result<Self> {
+        dotenvy::dotenv().ok();
+        let api_key = env::var("PROVABLE_API_KEY")
+            .map_err(|_| anyhow!("PROVABLE_API_KEY environment variable not set"))?;
+        let endpoint = env::var("PROVABLE_ENDPOINT")
+            .unwrap_or_else(|_| "https://api.explorer.provable.com/v2".to_string());
+        Ok(Self {
+            api_key,
+            endpoint,
+            enabled: false,
+        })
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct ProvingRequest {
+    authorization: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fee_authorization: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ProvingResponse {
+    transaction: serde_json::Value,
+}
+
+pub fn execute_with_delegated_proving<N: Network>(
+    config: &DelegatedProvingConfig,
+    authorization: Authorization<N>,
+) -> Result<Transaction<N>> {
+    let authorization_json = serde_json::to_value(&authorization)
+        .map_err(|e| anyhow!("Failed to serialize authorization: {}", e))?;
+
+    let proving_request = ProvingRequest {
+        authorization: authorization_json,
+        fee_authorization: None,
+    };
+
+    let url = format!("{}/{}/prove", config.endpoint, N::SHORT_NAME);
+
+    let response = ureq::post(&url)
+        .header("X-Provable-API-Key", &config.api_key)
+        .header("Content-Type", "application/json")
+        .header("X-ALEO-METHOD", "submitProvingRequest")
+        .send_json(&proving_request);
+
+    let mut response = match response {
+        Ok(r) => r,
+        Err(ureq::Error::StatusCode(status)) => {
+            return Err(anyhow!("Request failed with status {}", status,));
+        }
+        Err(e) => {
+            return Err(anyhow!("Failed to send request: {}", e));
+        }
+    };
+
+    let proving_response: ProvingResponse = response
+        .body_mut()
+        .read_json()
+        .map_err(|e| anyhow!("Failed to parse response: {}", e))?;
+
+    let transaction_str = serde_json::to_string(&proving_response.transaction)
+        .map_err(|e| anyhow!("Failed to serialize transaction: {}", e))?;
+
+    let transaction: Transaction<N> = serde_json::from_str(&transaction_str)
+        .map_err(|e| anyhow!("Failed to deserialize transaction: {}", e))?;
+
+    log::info!("✅ Received proved transaction: {}", transaction.id());
+
+    Ok(transaction)
+}
 
 pub fn init_simple_logger() {
     use std::io::Write;
-    let _ = env_logger::Builder::from_env(
-        env_logger::Env::default().filter_or("RUST_LOG", "info"),
-    )
+    let _ = Builder::from_env(Env::default().filter_or("RUST_LOG", "info"))
         .format(|buf, record| writeln!(buf, "{}", record.args()))
         .try_init();
 }
 
 pub fn init_test_logger() {
     use std::io::Write;
-    let _ = env_logger::Builder::from_env(
-        env_logger::Env::default().filter_or("RUST_LOG", "info"),
-    )
+    let _ = Builder::from_env(Env::default().filter_or("RUST_LOG", "info"))
         .is_test(true)
         .format(|buf, record| writeln!(buf, "{}", record.args()))
         .try_init();

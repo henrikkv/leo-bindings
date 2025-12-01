@@ -65,7 +65,8 @@ pub fn generate_interpreter_impl(
 
     let expanded = quote! {
         pub mod interpreter {
-            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter};
+            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
+            use leo_bindings::utils::*;
             use anyhow::anyhow;
             use snarkvm::prelude::TestnetV0;
             use snarkvm::prelude::TestnetV0 as N;
@@ -74,7 +75,6 @@ pub fn generate_interpreter_impl(
             use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
             use std::str::FromStr;
             use std::path::PathBuf;
-            use leo_bindings::{initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
 
             pub use super::*;
 
@@ -172,15 +172,15 @@ pub fn generate_interpreter_impl(
         }
 
         impl #program_struct<TestnetV0> {
-            pub fn enable_delegated_proving(self) -> Result<Self, anyhow::Error> {
-                log::debug!("Not delegating when using interpreter");
-                Ok(self)
-            }
-            pub fn with_delegated_proving(self, _api_key: String, _endpoint: Option<String>) -> Self {
+            pub fn configure_delegation(self, _config: DelegatedProvingConfig) -> Self {
                 log::debug!("Not delegating when using interpreter");
                 self
             }
-            pub fn disable_delegated_proving(self) -> Self {
+            pub fn enable_delegation(self) -> Self {
+                log::debug!("Not delegating when using interpreter");
+                self
+            }
+            pub fn disable_delegation(self) -> Self {
                 log::debug!("Not delegating when using interpreter");
                 self
             }

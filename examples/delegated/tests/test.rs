@@ -11,7 +11,7 @@ const EXPECTED: u64 = 150;
 
 #[test]
 fn test_interpreter() {
-    leo_bindings::utils::init_test_logger();
+    init_test_logger();
     let alice = get_dev_account(0).unwrap();
 
     let program = DelegatedProvingTestInterpreter::new(&alice, ENDPOINT).unwrap();
@@ -27,9 +27,8 @@ fn test_interpreter() {
 }
 
 #[test]
-#[ignore]
 fn test_network_local_proving() {
-    leo_bindings::utils::init_test_logger();
+    init_test_logger();
     let alice = get_dev_account(0).unwrap();
 
     let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT).unwrap();
@@ -46,13 +45,12 @@ fn test_network_local_proving() {
 
 #[test]
 fn test_network_delegated_proving() {
-    leo_bindings::utils::init_test_logger();
+    init_test_logger();
     let alice = get_dev_account(0).unwrap();
 
     let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT)
         .unwrap()
-        .enable_delegated_proving()
-        .unwrap();
+        .enable_delegation();
 
     let result = program
         .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)

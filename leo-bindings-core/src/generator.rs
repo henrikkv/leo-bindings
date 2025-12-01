@@ -96,7 +96,7 @@ fn generate_trait(
 
     quote! {
         pub trait #program_trait<N: snarkvm::prelude::Network> {
-            fn new(deployer: &leo_bindings::utils::Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
+            fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
@@ -160,6 +160,7 @@ fn generate_network_impl(
 
     quote! {
         use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_execution_stats, print_deployment_stats};
+        use leo_bindings::utils::*;
         use anyhow::ensure;
         use snarkvm::ledger::query::*;
         use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
@@ -175,7 +176,6 @@ fn generate_network_impl(
         use leo_span::create_session_if_not_set_then;
         use aleo_std::StorageMode;
         use std::str::FromStr;
-        use leo_bindings::utils::{get_public_balance, broadcast_transaction, wait_for_transaction_confirmation, wait_for_program_availability};
 
         pub struct #program_struct<N: Network> {
             pub package: Package,
@@ -193,19 +193,22 @@ fn generate_network_impl(
         }
 
         impl<N: Network> #program_struct<N> {
-            pub fn enable_delegated_proving(mut self) -> Result<Self, anyhow::Error> {
-                self.delegated_proving_config = Some(leo_bindings::DelegatedProvingConfig::from_env()?);
-                log::info!("✅ Delegated proving enabled");
-                Ok(self)
-            }
-            pub fn with_delegated_proving(mut self, api_key: String, endpoint: Option<String>) -> Self {
-                self.delegated_proving_config = Some(leo_bindings::DelegatedProvingConfig::new(api_key, endpoint));
-                log::info!("✅ Delegated proving enabled");
+            pub fn configure_delegation(mut self, config: leo_bindings::DelegatedProvingConfig) -> Self {
+                self.delegated_proving_config = Some(config);
                 self
             }
-            pub fn disable_delegated_proving(mut self) -> Self {
-                self.delegated_proving_config = None;
-                log::info!("ℹ️ Delegated proving disabled");
+            pub fn enable_delegation(mut self) -> Self {
+                if let Some(config) = &mut self.delegated_proving_config {
+                    config.enabled = true;
+                    log::info!("✅ Delegated proving enabled");
+                }
+                self
+            }
+            pub fn disable_delegation(mut self) -> Self {
+                if let Some(config) = &mut self.delegated_proving_config {
+                    config.enabled = false;
+                    log::info!("ℹ️ Delegated proving disabled");
+                }
                 self
             }
         }
@@ -729,24 +732,27 @@ fn generate_function(
             vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
                 .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
 
-            let delegated_result = self.delegated_proving_config.as_ref().and_then(|config| {
-                let authorization = vm
-                    .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
-                    .map_err(|e| {
-                        log::warn!("Failed to create authorization: {}", e);
-                        e
-                    })
-                    .ok()?;
+            let delegated_result = self.delegated_proving_config.as_ref()
+                .filter(|config| config.enabled)
+                .and_then(|config| {
+                    let authorization = vm
+                        .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
+                        .map_err(|e| {
+                            log::warn!("Failed to create authorization: {}", e);
+                            e
+                        })
+                        .ok()?;
 
-                match leo_bindings::delegated::execute_with_delegated_proving::<N>(
-                    config,
-                    authorization,
-                    false,
-                ) {
-                    Ok(transaction) => { Some((transaction, Vec::new())) }
-                    Err(e) => { None }
-                }
-            });
+                    match execute_with_delegated_proving(
+                        config,
+                        authorization,
+                    ) {
+                        Ok(transaction) => {
+                            Some((transaction, Vec::new()))
+                        }
+                        Err(e) => { None }
+                    }
+                });
 
             let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = match delegated_result {
                 Some(result) => result,

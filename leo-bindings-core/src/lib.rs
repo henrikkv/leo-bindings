@@ -7,7 +7,6 @@ pub mod shared_interpreter;
 pub mod signature;
 pub mod types;
 
-pub use delegated::*;
 pub use deployment_summary::*;
 pub use generator::*;
 pub use generator_interpreter::*;
