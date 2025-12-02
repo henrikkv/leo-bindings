@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow};
 use env_logger::{Builder, Env};
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use snarkvm::prelude::*;
 use std::env;
 use std::str::FromStr;
@@ -113,12 +113,27 @@ pub fn get_dev_account<N: Network>(index: u16) -> Result<Account<N>> {
     Account::try_from(private_key).map_err(|e| anyhow!("Failed to create account: {}", e))
 }
 
+pub fn get_account_from_env<N: Network>() -> Result<Account<N>> {
+    dotenvy::dotenv().ok();
+    let private_key_str =
+        env::var("PRIVATE_KEY").map_err(|_| anyhow!("PRIVATE_KEY environment variable not set"))?;
+    let private_key = PrivateKey::<N>::from_str(&private_key_str)
+        .map_err(|e| anyhow!("Failed to parse PRIVATE_KEY: {}", e))?;
+    Account::try_from(private_key).map_err(|e| anyhow!("Failed to create account: {}", e))
+}
+
 pub fn broadcast_transaction<N: Network>(
     transaction: Transaction<N>,
     endpoint: &str,
     network_path: &str,
 ) -> Result<(), anyhow::Error> {
-    ureq::post(&format!("{endpoint}/{network_path}/transaction/broadcast"))
+    let url = format!("{endpoint}/{network_path}/transaction/broadcast");
+    let mut request = ureq::post(&url);
+    dotenvy::dotenv().ok();
+    if let Ok(api_key) = env::var("PROVABLE_API_KEY") {
+        request = request.header("X-Provable-API-Key", &api_key);
+    }
+    request
         .send_json(&transaction)
         .map(|_| ())
         .map_err(|error| anyhow!("Failed to broadcast transaction {error}"))
@@ -143,14 +158,19 @@ pub fn wait_for_transaction_confirmation<N: Network>(
                 let status = json.get("status").and_then(|s| s.as_str()).unwrap();
                 match status {
                     "accepted" => return Ok(()),
-                    "rejected" => panic!("❌ Transaction rejected: {json}"),
-                    _ => panic!("⚠️ Status '{status}': {json}"),
+                    "rejected" => return Err(anyhow!("Transaction rejected: {json}")),
+                    _ => return Err(anyhow!("Unexpected status '{status}': {json}")),
                 }
             }
             Err(ureq::Error::StatusCode(500)) => {
                 sleep(Duration::from_secs(1));
             }
-            Err(e) => panic!("❌ Error fetching transaction: {}", e),
+            Err(ureq::Error::StatusCode(404)) => {
+                sleep(Duration::from_secs(2));
+            }
+            Err(e) => {
+                return Err(anyhow!("Failed to fetch transaction status: {}", e));
+            }
         }
     }
 }
@@ -185,21 +205,27 @@ impl DelegatedProvingConfig {
             api_key: api_key.to_string(),
             endpoint: endpoint
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://api.explorer.provable.com/v2".to_string()),
+                .unwrap_or_else(|| "https://api.explorer.provable.com".to_string()),
             enabled: false,
         }
     }
     pub fn from_env() -> Result<Self> {
         dotenvy::dotenv().ok();
-        let api_key = env::var("PROVABLE_API_KEY")
-            .map_err(|_| anyhow!("PROVABLE_API_KEY environment variable not set"))?;
+        let api_key =
+            env::var("PROVABLE_API_KEY").map_err(|_| anyhow!("PROVABLE_API_KEY not set"))?;
         let endpoint = env::var("PROVABLE_ENDPOINT")
-            .unwrap_or_else(|_| "https://api.explorer.provable.com/v2".to_string());
+            .unwrap_or_else(|_| "https://api.explorer.provable.com".to_string());
+
         Ok(Self {
             api_key,
             endpoint,
             enabled: false,
         })
+    }
+
+    pub fn enabled(mut self) -> Self {
+        self.enabled = true;
+        self
     }
 }
 
@@ -209,11 +235,6 @@ struct ProvingRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     fee_authorization: Option<serde_json::Value>,
     broadcast: bool,
-}
-
-#[derive(Debug, Deserialize)]
-struct ProvingResponse {
-    transaction: serde_json::Value,
 }
 
 pub fn execute_with_delegated_proving<N: Network>(
@@ -226,10 +247,17 @@ pub fn execute_with_delegated_proving<N: Network>(
     let proving_request = ProvingRequest {
         authorization: authorization_json,
         fee_authorization: None,
-        broadcast: true,
+        broadcast: false,
     };
 
-    let url = format!("{}/{}/prove", config.endpoint, N::SHORT_NAME);
+    let url = format!("{}/v2/{}/prove", config.endpoint, N::SHORT_NAME);
+
+    log::info!("Sending proving request to {}", url);
+    log::debug!(
+        "Proving request payload: {}",
+        serde_json::to_string_pretty(&proving_request)
+            .unwrap_or_else(|_| "Failed to serialize".to_string())
+    );
 
     let response = ureq::post(&url)
         .header("X-Provable-API-Key", &config.api_key)
@@ -247,12 +275,19 @@ pub fn execute_with_delegated_proving<N: Network>(
         }
     };
 
-    let proving_response: ProvingResponse = response
+    let response_text = response
         .body_mut()
-        .read_json()
-        .map_err(|e| anyhow!("Failed to parse response: {}", e))?;
+        .read_to_string()
+        .map_err(|e| anyhow!("Failed to read response body: {}", e))?;
 
-    let transaction_str = serde_json::to_string(&proving_response.transaction)
+    let response_json: serde_json::Value = serde_json::from_str(&response_text)
+        .map_err(|e| anyhow!("Failed to parse response as JSON: {}", e,))?;
+
+    let transaction_value = response_json
+        .get("transaction")
+        .ok_or_else(|| anyhow!("'transaction' field missing: {}", response_text))?;
+
+    let transaction_str = serde_json::to_string(transaction_value)
         .map_err(|e| anyhow!("Failed to serialize transaction: {}", e))?;
 
     let transaction: Transaction<N> = serde_json::from_str(&transaction_str)

@@ -1,7 +1,8 @@
 use delegated_proving_test_bindings::delegated_proving_test::*;
 use leo_bindings::utils::*;
+use snarkvm::prelude::*;
 
-const ENDPOINT: &str = "https://api.explorer.provable.com/v2";
+const ENDPOINT: &str = "https://api.explorer.provable.com";
 
 const TEST_A: u64 = 1000;
 const TEST_B: u64 = 10;
@@ -29,7 +30,8 @@ fn test_interpreter() {
 #[test]
 fn test_network_local_proving() {
     init_test_logger();
-    let alice = get_dev_account(0).unwrap();
+
+    let alice: Account<TestnetV0> = get_account_from_env().unwrap();
 
     let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT).unwrap();
 
@@ -46,11 +48,15 @@ fn test_network_local_proving() {
 #[test]
 fn test_network_delegated_proving() {
     init_test_logger();
-    let alice = get_dev_account(0).unwrap();
 
-    let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT);
-    dbg!(&program);
-    let program = program.unwrap().enable_delegation();
+    let alice: Account<TestnetV0> = get_account_from_env().unwrap();
+
+    let delegation_config = DelegatedProvingConfig::from_env().unwrap();
+
+    let program = DelegatedProvingTestTestnet::new(&alice, ENDPOINT)
+        .unwrap()
+        .configure_delegation(delegation_config)
+        .enable_delegation();
 
     let result = program
         .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)

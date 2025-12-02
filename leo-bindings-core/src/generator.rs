@@ -127,9 +127,10 @@ fn generate_network_impl(
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
             let dependency_addition = quote! {
                 let dependency_id = ProgramID::<N>::from_str(#dependency_id)?;
-                wait_for_program_availability(&dependency_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                let api_endpoint = format!("{}/v2", endpoint);
+                wait_for_program_availability(&dependency_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
                 let dependency_program: Program<N> = {
-                    let mut response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, dependency_id)).call().unwrap();
+                    let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, dependency_id)).call().unwrap();
                     let json_text = response.body_mut().read_to_string().unwrap();
                     let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
                     json_response.as_str().unwrap().to_string().parse().unwrap()
@@ -610,11 +611,12 @@ fn generate_new(
                 )?;
 
                 let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
+                let api_endpoint = format!("{}/v2", endpoint);
 
                 #(#deployment_calls)*
 
                 let program_exists = {
-                    let check_response = ureq::get(&format!("{}/{}/program/{}", endpoint, N::SHORT_NAME, program_id))
+                    let check_response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
                         .call();
                     match check_response {
                         Ok(_) => {
@@ -673,11 +675,10 @@ fn generate_new(
 
                     log::info!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
 
-                    ureq::post(&format!("{}/{}/transaction/broadcast", endpoint, N::SHORT_NAME))
-                        .send_json(&transaction)?;
+                    broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
 
-                    wait_for_transaction_confirmation::<N>(&transaction.id(), endpoint, N::SHORT_NAME, 60)?;
-                    wait_for_program_availability(&program_id.to_string(), endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+                    wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 120)?;
+                    wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
                 }
 
                 Ok(Self {
@@ -708,6 +709,7 @@ fn generate_function(
     quote! {
         fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
             let endpoint = &self.endpoint;
+            let api_endpoint = format!("{}/v2", endpoint);
             let program_id = ProgramID::try_from(#program_id).unwrap();
             let function_id = Identifier::try_from(stringify!(#name)).unwrap();
             let function_args: Vec<Value<N>> = vec![#input_conversions];
@@ -717,11 +719,11 @@ fn generate_function(
 
             log::info!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
             let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
-            let query = Query::<N, BlockMemory<N>>::from(self.endpoint.parse::<http::uri::Uri>()?);
+            let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
 
-            wait_for_program_availability(&program_id.to_string(), &self.endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
+            wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
             let program: Program<N> = {
-                let mut response = ureq::get(&format!("{}/{}/program/{}", self.endpoint, N::SHORT_NAME, program_id))
+                let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
                     .call().unwrap();
                 let json_text = response.body_mut().read_to_string().unwrap();
                 let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
@@ -771,7 +773,7 @@ fn generate_function(
                 }
             };
 
-            let public_balance = get_public_balance(&account.address(), &self.endpoint, N::SHORT_NAME);
+            let public_balance = get_public_balance(&account.address(), &api_endpoint, N::SHORT_NAME);
             let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
             let (total_cost, _) = execution_cost(&vm.process().read(), execution, ConsensusVersion::V10)?;
 
@@ -786,8 +788,8 @@ fn generate_function(
                 "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
 
             log::info!("📡 Broadcasting tx: {}",transaction.id());
-            broadcast_transaction(transaction.clone(), &self.endpoint, N::SHORT_NAME)?;
-            wait_for_transaction_confirmation::<N>(&transaction.id(), &self.endpoint, N::SHORT_NAME, 30)?;
+            broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
+            wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 30)?;
 
             #return_conversions
         }
