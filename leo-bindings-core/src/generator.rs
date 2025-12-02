@@ -177,6 +177,7 @@ fn generate_network_impl(
         use aleo_std::StorageMode;
         use std::str::FromStr;
 
+        #[derive(Debug)]
         pub struct #program_struct<N: Network> {
             pub package: Package,
             pub endpoint: String,

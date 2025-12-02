@@ -8,4 +8,7 @@ program delegated_proving_test.aleo {
         let final_result: u64 = result3 + result5;
         return final_result;
     }
+
+    @noupgrade
+    async constructor() {}
 }

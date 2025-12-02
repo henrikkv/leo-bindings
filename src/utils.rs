@@ -208,6 +208,7 @@ struct ProvingRequest {
     authorization: serde_json::Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     fee_authorization: Option<serde_json::Value>,
+    broadcast: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -225,14 +226,15 @@ pub fn execute_with_delegated_proving<N: Network>(
     let proving_request = ProvingRequest {
         authorization: authorization_json,
         fee_authorization: None,
+        broadcast: true,
     };
 
     let url = format!("{}/{}/prove", config.endpoint, N::SHORT_NAME);
 
     let response = ureq::post(&url)
         .header("X-Provable-API-Key", &config.api_key)
-        .header("Content-Type", "application/json")
         .header("X-ALEO-METHOD", "submitProvingRequest")
+        .header("Content-Type", "application/json")
         .send_json(&proving_request);
 
     let mut response = match response {
