@@ -298,6 +298,64 @@ pub fn execute_with_delegated_proving<N: Network>(
     Ok(transaction)
 }
 
+pub fn extract_outputs_from_authorization<N: Network>(
+    authorization: &Authorization<N>,
+    view_key: &ViewKey<N>,
+) -> Result<Vec<Value<N>>> {
+    let request = authorization.peek_next()?;
+    let function_id = snarkvm::console::program::compute_function_id(
+        request.network_id(),
+        request.program_id(),
+        request.function_name(),
+    )?;
+    let num_inputs = request.inputs().len();
+
+    let transitions = authorization.transitions();
+    let main_transition = transitions
+        .values()
+        .last()
+        .ok_or_else(|| anyhow!("Authorization contains no transitions"))?;
+
+    main_transition
+        .outputs()
+        .iter()
+        .enumerate()
+        .map(|(i, output)| {
+            decrypt_output(output, i, num_inputs, function_id, request.tvk(), view_key)
+        })
+        .collect()
+}
+
+fn decrypt_output<N: Network>(
+    output: &snarkvm::ledger::block::Output<N>,
+    output_index: usize,
+    num_inputs: usize,
+    function_id: Field<N>,
+    tvk: &Field<N>,
+    view_key: &ViewKey<N>,
+) -> Result<Value<N>> {
+    use snarkvm::ledger::block::Output;
+
+    match output {
+        Output::Constant(_, Some(plaintext)) | Output::Public(_, Some(plaintext)) => {
+            Ok(Value::Plaintext(plaintext.clone()))
+        }
+        Output::Private(_, Some(ciphertext)) => {
+            let index = Field::from_u16(u16::try_from(num_inputs + output_index)?);
+            let output_view_key = N::hash_psd4(&[function_id, *tvk, index])?;
+            let plaintext = ciphertext.decrypt_symmetric(output_view_key)?;
+            Ok(Value::Plaintext(plaintext))
+        }
+        Output::Record(_, _, Some(record_ciphertext), _) => {
+            let record_plaintext = record_ciphertext.decrypt(view_key)?;
+            Ok(Value::Record(record_plaintext))
+        }
+        Output::Future(_, Some(future)) => Ok(Value::Future(future.clone())),
+        Output::ExternalRecord(_) => Err(anyhow!("External record outputs are not supported")),
+        _ => Err(anyhow!("Output value is missing from transition")),
+    }
+}
+
 pub fn init_simple_logger() {
     use std::io::Write;
     let _ = Builder::from_env(Env::default().filter_or("RUST_LOG", "info"))

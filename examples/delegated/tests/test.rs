@@ -61,5 +61,9 @@ fn test_network_delegated_proving() {
     let result = program
         .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
         .unwrap();
-    dbg!(result);
+    assert_eq!(result, EXPECTED);
+    println!(
+        "✅ Delegated proving test passed: divide({}, {}, {}, {}) = {}",
+        TEST_A, TEST_B, TEST_C, TEST_D, result
+    );
 }

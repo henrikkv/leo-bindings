@@ -740,21 +740,16 @@ fn generate_function(
                 .and_then(|config| {
                     let authorization = vm
                         .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
-                        .map_err(|e| {
-                            log::warn!("Failed to create authorization: {}", e);
-                            e
-                        })
+                        .map_err(|e| log::warn!("Failed to create authorization: {}", e))
                         .ok()?;
 
-                    match execute_with_delegated_proving(
-                        config,
-                        authorization,
-                    ) {
-                        Ok(transaction) => {
-                            Some((transaction, Vec::new()))
-                        }
-                        Err(e) => { None }
-                    }
+                    let function_outputs = extract_outputs_from_authorization(&authorization, account.view_key())
+                        .map_err(|e| log::warn!("Failed to extract outputs: {}", e))
+                        .ok()?;
+
+                    let transaction = execute_with_delegated_proving(config, authorization).ok()?;
+
+                    Some((transaction, function_outputs))
                 });
 
             let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = match delegated_result {
