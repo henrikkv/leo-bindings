@@ -370,3 +370,66 @@ pub fn init_test_logger() {
         .format(|buf, record| writeln!(buf, "{}", record.args()))
         .try_init();
 }
+
+fn fetch_latest_block_height(endpoint: &str, network_path: &str) -> Result<u32> {
+    let url = format!("{}/{}/block/height/latest", endpoint, network_path);
+    let mut response = ureq::get(&url)
+        .call()
+        .map_err(|e| anyhow!("Failed to fetch latest block height: {}", e))?;
+    let height_str = response
+        .body_mut()
+        .read_to_string()
+        .map_err(|e| anyhow!("Failed to read response: {}", e))?;
+    u32::from_str(&height_str).map_err(|e| anyhow!("Failed to parse block height: {}", e))
+}
+
+pub fn fetch_mapping_value(
+    url: &str,
+) -> Result<Option<String>> {
+    let mut retries = 0;
+    let max_retries = 3;
+
+    loop {
+        match ureq::get(url).call() {
+            Ok(mut response) => {
+                let json_text = response.body_mut().read_to_string()?;
+                return Ok(Some(json_text));
+            }
+            Err(ureq::Error::StatusCode(404)) => {
+                return Ok(None);
+            }
+            Err(ureq::Error::StatusCode(522)) | Err(ureq::Error::StatusCode(500)) => {
+                if retries >= max_retries {
+                    return Err(anyhow!(
+                        "Failed to fetch mapping value after {} tries",
+                        max_retries
+                    ));
+                }
+                let backoff_ms = 100 * (2_u64.pow(retries));
+                log::warn!(
+                    "Server error fetching mapping (attempt {}/{}). Retrying in {}ms...",
+                    retries + 1,
+                    max_retries + 1,
+                    backoff_ms
+                );
+                sleep(Duration::from_millis(backoff_ms));
+                retries += 1;
+            }
+            Err(e) => {
+                if retries >= max_retries {
+                    return Err(anyhow!("Failed to fetch mapping value after {} tries", e));
+                }
+                let backoff_ms = 100 * (2_u64.pow(retries));
+                log::warn!(
+                    "Error fetching mapping (attempt {}/{}): {}. Retrying in {}ms...",
+                    retries + 1,
+                    max_retries + 1,
+                    e,
+                    backoff_ms
+                );
+                sleep(Duration::from_millis(backoff_ms));
+                retries += 1;
+            }
+        }
+    }
+}

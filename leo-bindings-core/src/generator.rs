@@ -803,24 +803,20 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
         fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             let program_id = #program_id;
             let mapping_name = #mapping_name_literal;
+            let api_endpoint = format!("{}/v2", self.endpoint);
 
             let key_value: Value<N> = key.to_value();
             let url = format!("{}/{}/program/{}/mapping/{}/{}",
-                self.endpoint, N::SHORT_NAME, program_id, mapping_name,
+                &api_endpoint, N::SHORT_NAME, program_id, mapping_name,
                 key_value.to_string().replace("\"", ""));
 
-            let response = ureq::get(&url).call();
-
-            match response {
-                Ok(mut response) => {
-                    let json_text = response.body_mut().read_to_string().unwrap();
-                    let value: Option<Value<N>> = serde_json::from_str(&json_text).unwrap();
-                    match value {
-                        Some(val) => Some(<#value_type>::from_value(val)),
-                        None => None,
-                    }
-                },
-                Err(ureq::Error::StatusCode(404)) => None,
+            match leo_bindings::utils::fetch_mapping_value(&url) {
+                Ok(Some(json_text)) => {
+                    let value: Option<Value<N>> = serde_json::from_str(&json_text)
+                        .expect("Failed to parse mapping value JSON");
+                    value.map(|val| <#value_type>::from_value(val))
+                }
+                Ok(None) => None,
                 Err(e) => panic!("Failed to fetch mapping value: {}", e),
             }
         }
