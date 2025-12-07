@@ -383,13 +383,10 @@ fn fetch_latest_block_height(endpoint: &str, network_path: &str) -> Result<u32> 
     u32::from_str(&height_str).map_err(|e| anyhow!("Failed to parse block height: {}", e))
 }
 
-pub fn fetch_mapping_value(
-    url: &str,
-) -> Result<Option<String>> {
-    let mut retries = 0;
+pub fn fetch_mapping_value(url: &str) -> Result<Option<String>> {
     let max_retries = 3;
 
-    loop {
+    for attempt in 0..=max_retries {
         match ureq::get(url).call() {
             Ok(mut response) => {
                 let json_text = response.body_mut().read_to_string()?;
@@ -398,38 +395,19 @@ pub fn fetch_mapping_value(
             Err(ureq::Error::StatusCode(404)) => {
                 return Ok(None);
             }
-            Err(ureq::Error::StatusCode(522)) | Err(ureq::Error::StatusCode(500)) => {
-                if retries >= max_retries {
-                    return Err(anyhow!(
-                        "Failed to fetch mapping value after {} tries",
-                        max_retries
-                    ));
-                }
-                let backoff_ms = 100 * (2_u64.pow(retries));
-                log::warn!(
-                    "Server error fetching mapping (attempt {}/{}). Retrying in {}ms...",
-                    retries + 1,
-                    max_retries + 1,
-                    backoff_ms
-                );
-                sleep(Duration::from_millis(backoff_ms));
-                retries += 1;
-            }
             Err(e) => {
-                if retries >= max_retries {
-                    return Err(anyhow!("Failed to fetch mapping value after {} tries", e));
+                if attempt >= max_retries {
+                    return Err(anyhow!("Failed to fetch mapping value: {}", e));
                 }
-                let backoff_ms = 100 * (2_u64.pow(retries));
                 log::warn!(
-                    "Error fetching mapping (attempt {}/{}): {}. Retrying in {}ms...",
-                    retries + 1,
+                    "Error fetching mapping (attempt {}/{}): {}. Retrying in 5s...",
+                    attempt + 1,
                     max_retries + 1,
                     e,
-                    backoff_ms
                 );
-                sleep(Duration::from_millis(backoff_ms));
-                retries += 1;
+                sleep(Duration::from_secs(5));
             }
         }
     }
+    unreachable!()
 }
