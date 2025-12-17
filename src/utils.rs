@@ -252,13 +252,6 @@ pub fn execute_with_delegated_proving<N: Network>(
 
     let url = format!("{}/v2/{}/prove", config.endpoint, N::SHORT_NAME);
 
-    log::info!("Sending proving request to {}", url);
-    log::debug!(
-        "Proving request payload: {}",
-        serde_json::to_string_pretty(&proving_request)
-            .unwrap_or_else(|_| "Failed to serialize".to_string())
-    );
-
     let response = ureq::post(&url)
         .header("X-Provable-API-Key", &config.api_key)
         .header("X-ALEO-METHOD", "submitProvingRequest")
