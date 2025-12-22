@@ -1,4 +1,4 @@
-use crate::client::ProvableClient;
+use crate::config::Client;
 use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
 use snarkvm::prelude::{Authorization, Network, Transaction};
@@ -16,7 +16,7 @@ struct ProvingResponse {
     transaction: serde_json::Value,
 }
 
-impl<N: Network> ProvableClient<N> {
+impl<N: Network> Client<N> {
     /// Submit an authorization for delegated proving
     ///
     pub async fn prove(&self, authorization: &Authorization<N>) -> Result<Transaction<N>> {

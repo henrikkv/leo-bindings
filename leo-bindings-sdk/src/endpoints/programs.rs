@@ -1,10 +1,10 @@
-use crate::client::ProvableClient;
+use crate::config::Client;
 use crate::error::{Error, Result};
 use crate::utils::poll_until;
 use snarkvm::prelude::Network;
 use std::time::Duration;
 
-impl<N: Network> ProvableClient<N> {
+impl<N: Network> Client<N> {
     /// Fetch a program's bytecode from the network
     ///
     /// GET /{network}/program/{id}
@@ -78,7 +78,7 @@ impl<N: Network> ProvableClient<N> {
                     }
                 }
             },
-            self.program_availability_timeout,
+            Duration::from_secs(60),
             Duration::from_secs(1),
         )
         .await

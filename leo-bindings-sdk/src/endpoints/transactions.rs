@@ -1,4 +1,4 @@
-use crate::client::ProvableClient;
+use crate::config::Client;
 use crate::error::{Error, Result};
 use crate::utils::poll_until;
 use snarkvm::prelude::{Network, Transaction};
@@ -11,7 +11,7 @@ pub enum TransactionStatus {
     Pending,
 }
 
-impl<N: Network> ProvableClient<N> {
+impl<N: Network> Client<N> {
     /// Broadcast a transaction and wait for confirmation
     ///
     /// POST /{network}/transaction/broadcast
@@ -37,12 +37,9 @@ impl<N: Network> ProvableClient<N> {
             self.network_name()
         );
 
-        let jwt_token = self.get_valid_jwt_token().await?;
-
         let response = self
             .client
             .post(&url)
-            .header("Authorization", format!("Bearer {}", jwt_token))
             .header("Content-Type", "application/json")
             .body(serde_json::to_string(transaction)?)
             .send()
@@ -159,7 +156,7 @@ impl<N: Network> ProvableClient<N> {
                     }
                 }
             },
-            self.confirmation_timeout,
+            Duration::from_secs(120),
             Duration::from_secs(1),
         )
         .await

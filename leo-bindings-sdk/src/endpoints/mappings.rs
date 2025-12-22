@@ -1,8 +1,8 @@
-use crate::client::ProvableClient;
+use crate::config::Client;
 use crate::error::{Error, Result};
 use snarkvm::prelude::{Network, Value};
 
-impl<N: Network> ProvableClient<N> {
+impl<N: Network> Client<N> {
     /// Query a mapping value from the network
     ///
     /// GET /{network}/program/{program}/mapping/{mapping}/{key}

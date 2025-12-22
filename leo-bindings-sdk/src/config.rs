@@ -1,115 +1,183 @@
 use crate::error::{Error, Result};
-use reqwest_middleware::{ClientBuilder as MiddlewareClientBuilder, ClientWithMiddleware};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
+use snarkvm::prelude::Network;
 use std::marker::PhantomData;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use tokio::sync::RwLock;
 
 #[derive(Debug, Clone)]
-pub(crate) struct ClientConfig {
-    pub endpoint: String,
-    pub consumer_id: Option<String>,
-    pub api_key: Option<String>,
-    pub timeout: Duration,
-    pub confirmation_timeout: Duration,
-    pub program_availability_timeout: Duration,
+struct JwtToken {
+    token: String,
+    expires_at: u64,
 }
 
-impl Default for ClientConfig {
-    fn default() -> Self {
+pub struct Credentials {
+    consumer_id: String,
+    api_key: String,
+    jwt_token: RwLock<Option<JwtToken>>,
+}
+
+impl Credentials {
+    pub fn new(consumer_id: &str, api_key: &str) -> Self {
         Self {
-            endpoint: String::new(),
-            consumer_id: None,
-            api_key: None,
-            timeout: Duration::from_secs(30),
-            confirmation_timeout: Duration::from_secs(120),
-            program_availability_timeout: Duration::from_secs(60),
+            consumer_id: consumer_id.to_string(),
+            api_key: api_key.to_string(),
+            jwt_token: RwLock::new(None),
         }
     }
-}
 
-pub struct ClientBuilder<N> {
-    config: ClientConfig,
-    _network: PhantomData<N>,
-}
+    async fn fetch_jwt(&self, client: &ClientWithMiddleware) -> Result<JwtToken> {
+        let url = format!("https://api.provable.com/jwts/{}", self.consumer_id);
 
-impl<N> Default for ClientBuilder<N> {
-    fn default() -> Self {
-        Self {
-            config: ClientConfig::default(),
-            _network: PhantomData,
+        let response = client
+            .post(&url)
+            .header("X-Provable-API-Key", &self.api_key)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let status = response.status().as_u16();
+            let message = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Failed to fetch JWT token".to_string());
+            return Err(Error::JwtFetchFailed { status, message });
         }
+
+        let auth_header = response
+            .headers()
+            .get("Authorization")
+            .ok_or_else(|| Error::BadResponse("Missing Authorization header".to_string()))?
+            .to_str()
+            .map_err(|_| Error::BadResponse("Invalid Authorization header".to_string()))?;
+
+        let token = auth_header
+            .strip_prefix("Bearer ")
+            .ok_or_else(|| Error::BadResponse("Invalid Authorization header format".to_string()))?
+            .to_string();
+
+        let body_text = response
+            .text()
+            .await
+            .map_err(|e| Error::BadResponse(format!("Failed to read response body: {}", e)))?;
+
+        let body_json: serde_json::Value = serde_json::from_str(&body_text)
+            .map_err(|e| Error::BadResponse(format!("Failed to parse response body: {}", e)))?;
+
+        let expires_at = body_json
+            .get("exp")
+            .and_then(|v| v.as_u64())
+            .ok_or_else(|| {
+                Error::BadResponse("Missing or invalid 'exp' field in response".to_string())
+            })?;
+
+        Ok(JwtToken { token, expires_at })
+    }
+
+    pub(crate) async fn get_valid_jwt_token(
+        &self,
+        client: &ClientWithMiddleware,
+    ) -> Result<String> {
+        let current_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        {
+            let token_guard = self.jwt_token.read().await;
+            if let Some(token) = token_guard.as_ref()
+                && token.expires_at > current_time + 300
+            {
+                return Ok(token.token.clone());
+            }
+        }
+
+        let new_token = self.fetch_jwt(client).await?;
+        let token_string = new_token.token.clone();
+        {
+            let mut token_guard = self.jwt_token.write().await;
+            *token_guard = Some(new_token);
+        }
+
+        Ok(token_string)
     }
 }
 
-impl<N: snarkvm::prelude::Network> ClientBuilder<N> {
-    pub fn new() -> Self {
-        Self::default()
-    }
+pub struct Client<N: Network> {
+    pub(crate) client: ClientWithMiddleware,
+    pub(crate) endpoint: String,
+    pub(crate) credentials: Option<Credentials>,
+    pub(crate) _network: PhantomData<N>,
+}
 
-    pub fn endpoint(mut self, endpoint: impl Into<String>) -> Self {
-        self.config.endpoint = endpoint.into();
-        self
-    }
+impl<N: Network> Client<N> {
+    pub fn new(endpoint: &str, credentials: Option<Credentials>) -> Result<Self> {
+        if endpoint.is_empty() {
+            return Err(Error::Config("Endpoint is required".to_string()));
+        }
 
-    pub fn consumer_id(mut self, consumer_id: impl Into<String>) -> Self {
-        self.config.consumer_id = Some(consumer_id.into());
-        self
-    }
-
-    pub fn api_key(mut self, api_key: impl Into<String>) -> Self {
-        self.config.api_key = Some(api_key.into());
-        self
-    }
-
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.config.timeout = timeout;
-        self
-    }
-
-    pub fn confirmation_timeout(mut self, timeout: Duration) -> Self {
-        self.config.confirmation_timeout = timeout;
-        self
-    }
-
-    pub fn program_timeout(mut self, timeout: Duration) -> Self {
-        self.config.program_availability_timeout = timeout;
-        self
-    }
-
-    pub(crate) fn build_http_client(&self) -> Result<ClientWithMiddleware> {
         let retry_policy = ExponentialBackoff::builder()
             .retry_bounds(Duration::from_millis(500), Duration::from_secs(10))
             .build_with_max_retries(3);
 
         let reqwest_client = reqwest::Client::builder()
-            .timeout(self.config.timeout)
+            .timeout(Duration::from_secs(30))
             .build()
             .map_err(Error::Http)?;
 
-        let client = MiddlewareClientBuilder::new(reqwest_client)
+        let client = ClientBuilder::new(reqwest_client)
             .with(RetryTransientMiddleware::new_with_policy(retry_policy))
             .build();
 
-        Ok(client)
+        Ok(Self {
+            client,
+            endpoint: endpoint.to_string(),
+            credentials,
+            _network: PhantomData,
+        })
     }
 
-    pub(crate) fn get_config(&self) -> ClientConfig {
-        self.config.clone()
+    pub fn from_env() -> Result<Self> {
+        let _ = dotenvy::dotenv();
+
+        let endpoint = std::env::var("ENDPOINT")
+            .map_err(|_| Error::Config("ENDPOINT environment variable required".to_string()))?;
+
+        let consumer_id = std::env::var("PROVABLE_CONSUMER_ID").ok();
+        let api_key = std::env::var("PROVABLE_API_KEY").ok();
+
+        let credentials = match (consumer_id, api_key) {
+            (Some(cid), Some(key)) => Some(Credentials::new(&cid, &key)),
+            (None, None) => None,
+            _ => {
+                return Err(Error::Config(
+                    "Set PROVABLE_CONSUMER_ID and PROVABLE_API_KEY together".to_string(),
+                ));
+            }
+        };
+
+        Self::new(&endpoint, credentials)
     }
 
-    pub(crate) fn validate(&self) -> Result<()> {
-        if self.config.endpoint.is_empty() {
-            return Err(Error::Config("Endpoint is required".to_string()));
-        }
-
-        if self.config.consumer_id.is_some() != self.config.api_key.is_some() {
-            return Err(Error::Config("consumer_id and api_key not set".to_string()));
-        }
-
-        Ok(())
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
     }
 
-    pub fn build(self) -> Result<crate::client::ProvableClient<N>> {
-        crate::client::ProvableClient::from_builder(self)
+    pub fn has_credentials(&self) -> bool {
+        self.credentials.is_some()
+    }
+
+    pub(crate) fn network_name(&self) -> &str {
+        N::SHORT_NAME
+    }
+
+    pub(crate) async fn get_valid_jwt_token(&self) -> Result<String> {
+        let credentials = self
+            .credentials
+            .as_ref()
+            .ok_or(Error::JwtCredentialsRequired)?;
+
+        credentials.get_valid_jwt_token(&self.client).await
     }
 }

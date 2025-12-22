@@ -1,6 +1,6 @@
 use aleo_std::StorageMode;
 use leo_bindings::utils::*;
-use leo_bindings_sdk::ProvableClient;
+use leo_bindings_sdk::Client;
 use snarkvm::ledger::query::{Query, QueryTrait};
 use snarkvm::ledger::store::ConsensusStore;
 use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
@@ -13,7 +13,7 @@ const ENDPOINT: &str = "https://api.explorer.provable.com";
 async fn test_mapping_query() {
     let account = get_account_from_env().unwrap();
 
-    let client = ProvableClient::<TestnetV0>::new(ENDPOINT);
+    let client = Client::<TestnetV0>::new(ENDPOINT, None).unwrap();
 
     let key = Value::from(Literal::Address(account.address()));
 
@@ -31,10 +31,10 @@ async fn test_transfer_credits() {
 
     println!("🔑 Account address: {}", account.address());
 
-    let client = ProvableClient::<TestnetV0>::new(ENDPOINT);
+    let client = Client::<TestnetV0>::new(ENDPOINT, None).unwrap();
 
     let key = Value::from(Literal::Address(account.address()));
-    let balance_before: Option<Value<TestnetV0>> = client
+    let balance_before = client
         .mapping("credits.aleo", "account", &key)
         .await
         .expect("Failed to query balance");
@@ -89,12 +89,10 @@ async fn test_transfer_credits() {
 #[ignore]
 async fn test_delegated_proving() {
     let account = get_account_from_env().unwrap();
-    let consumer_id = std::env::var("PROVABLE_CONSUMER_ID").expect("PROVABLE_CONSUMER_ID not set");
-    let api_key = std::env::var("PROVABLE_API_KEY").expect("PROVABLE_API_KEY not set");
 
     println!("🔑 Account address: {}", account.address());
 
-    let client = ProvableClient::<TestnetV0>::with_jwt_credentials(ENDPOINT, consumer_id, api_key);
+    let client = Client::<TestnetV0>::from_env().unwrap();
 
     let vm = VM::from(
         ConsensusStore::<TestnetV0, ConsensusMemory<TestnetV0>>::open(StorageMode::Production)

@@ -1,8 +1,8 @@
-use crate::client::ProvableClient;
+use crate::config::Client;
 use crate::error::{Error, Result};
 use snarkvm::prelude::Network;
 
-impl<N: Network> ProvableClient<N> {
+impl<N: Network> Client<N> {
     /// Get the latest block height
     ///
     /// GET /{network}/block/height/latest
