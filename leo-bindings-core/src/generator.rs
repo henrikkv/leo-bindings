@@ -1,4 +1,4 @@
-use crate::generate_interpreter_impl;
+use crate::generator_interpreter::generate_interpreter_impl;
 use crate::signature::{FunctionBinding, SimplifiedBindings};
 use crate::types::get_rust_type;
 use convert_case::{Case::Pascal, Casing};
@@ -95,6 +95,7 @@ fn generate_trait(
         .collect();
 
     quote! {
+        /// Program trait with network and interpreter implementations.
         pub trait #program_trait<N: snarkvm::prelude::Network> {
             fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
@@ -342,12 +343,14 @@ pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<Toke
         });
 
         quote! {
+            /// Record from Leo.
             #[derive(Debug, Clone)]
             pub struct #record_name<N: Network> {
                 #(#member_definitions),*,
                 #extra_record_fields
             }
 
+            /// Convert to a SnarkVM Value.
             impl<N: Network> ToValue<N> for #record_name<N> {
                 fn to_value(&self) -> Value<N> {
                     match self.to_record() {
@@ -357,6 +360,7 @@ pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<Toke
                 }
             }
 
+            /// Create from a SnarkVM Value
             impl<N: Network> FromValue<N> for #record_name<N> {
                 fn from_value(value: Value<N>) -> Self {
                     match value {
@@ -383,6 +387,7 @@ pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<Toke
             }
 
             impl<N: Network> #record_name<N> {
+                /// Convert to a SnarkVM Record.
                 pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
                     let data = IndexMap::from([
                         #(#member_conversions),*
@@ -446,12 +451,14 @@ pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<Toke
                 .multiunzip();
 
             quote! {
+                /// Struct from Leo.
                 #[derive(Debug, Clone, Copy)]
                 pub struct #struct_name<N: Network> {
                     #(#definitions)*
                     _network: std::marker::PhantomData<N>
                 }
 
+                /// Convert to a SnarkVM Value.
                 impl<N: Network> ToValue<N> for #struct_name<N> {
                     fn to_value(&self) -> Value<N> {
                         let members = IndexMap::from([
@@ -461,6 +468,7 @@ pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<Toke
                     }
                 }
 
+                /// Create from a SnarkVM Value.
                 impl<N: Network> FromValue<N> for #struct_name<N> {
                     fn from_value(value: Value<N>) -> Self {
                         match value {
@@ -489,19 +497,19 @@ pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<Toke
         .collect()
 }
 
-pub struct FunctionTypes {
-    pub name: Ident,
-    pub input_params: TokenStream,
-    pub input_conversions: TokenStream,
-    pub return_type: TokenStream,
-    pub return_conversions: TokenStream,
+pub(crate) struct FunctionTypes {
+    pub(crate) name: Ident,
+    pub(crate) input_params: TokenStream,
+    pub(crate) input_conversions: TokenStream,
+    pub(crate) return_type: TokenStream,
+    pub(crate) return_conversions: TokenStream,
 }
 
-pub struct MappingTypes {
-    pub getter_name: Ident,
-    pub mapping_name_literal: String,
-    pub key_type: TokenStream,
-    pub value_type: TokenStream,
+pub(crate) struct MappingTypes {
+    pub(crate) getter_name: Ident,
+    pub(crate) mapping_name_literal: String,
+    pub(crate) key_type: TokenStream,
+    pub(crate) value_type: TokenStream,
 }
 
 fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> {

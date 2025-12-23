@@ -5,7 +5,7 @@ use convert_case::{Case::Pascal, Casing};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 
-pub fn generate_interpreter_impl(
+pub(crate) fn generate_interpreter_impl(
     simplified: &SimplifiedBindings,
     function_types: &[FunctionTypes],
     mapping_types: &[MappingTypes],
@@ -64,6 +64,9 @@ pub fn generate_interpreter_impl(
     };
 
     let expanded = quote! {
+        /// Faster bindings for testing Leo code locally.
+        ///
+        /// The interpreter state resets after the session.
         pub mod interpreter {
             use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
             use leo_bindings::utils::*;

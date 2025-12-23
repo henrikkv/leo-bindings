@@ -3,7 +3,9 @@ use crate::signature::SimplifiedBindings;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 
-pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindings) -> TokenStream {
+pub(crate) fn generate_interpreter_cheats_from_simplified(
+    simplified: &SimplifiedBindings,
+) -> TokenStream {
     let program_name = &simplified.program_name;
     let cheats_module_name = syn::Ident::new(
         &format!("{}_interpreter_cheats", program_name),
@@ -16,6 +18,7 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
         let value_type = get_rust_type(&mapping.value_type);
 
         quote! {
+            /// Setter for a mapping in the interpreter.
             pub fn #setter_name(key: #key_type, value: #value_type) -> Result<()> {
                 with_shared_interpreter(|state| {
                     let key_value = leo_ast::interpreter_value::Value::from((key).to_value());
@@ -36,6 +39,7 @@ pub fn generate_interpreter_cheats_from_simplified(simplified: &SimplifiedBindin
     });
 
     quote! {
+        /// Cheats for testing with the interpreter bindings.
         pub mod #cheats_module_name {
             use super::*;
             use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_shared_interpreter};

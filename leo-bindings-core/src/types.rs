@@ -75,10 +75,12 @@ pub fn parse_array_type(type_name: &str) -> Option<ArrayInfo> {
     None
 }
 
+/// Converts Rust types to SnarkVM types.
 pub trait ToValue<N: Network> {
     fn to_value(&self) -> Value<N>;
 }
 
+/// Converts SnarkVM types to Rust types.
 pub trait FromValue<N: Network> {
     fn from_value(value: Value<N>) -> Self;
 }

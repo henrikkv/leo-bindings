@@ -14,6 +14,9 @@ fn simplified_from_json_string(json: String) -> SimplifiedBindings {
     serde_json::from_str(&json).expect("Failed to parse signatures from json")
 }
 
+/// Generates Rust bindings for a Leo program.
+///
+/// The input is the path of a "signatures.json" file with types from the Leo program.
 #[proc_macro]
 pub fn generate_bindings(input: TokenStream) -> TokenStream {
     let input_str = input.to_string();

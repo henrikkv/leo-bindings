@@ -38,7 +38,7 @@ impl<N: Network> Client<N> {
 
     /// Check if a program exists on the network
     ///
-    /// GET /{network}/program/{id} (checking for 404)
+    /// GET /{network}/program/{id}
     ///
     pub async fn program_exists(&self, program_id: &str) -> Result<bool> {
         match self.program(program_id).await {
