@@ -59,6 +59,9 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
 
             #trait_definition
 
+            /// Main bindings that connect to the Provable API or a local devnet.
+            ///
+            /// The network bindings can optionally use the Provable delegated proving service.
             pub mod network {
                 use super::*;
                 #network_impl

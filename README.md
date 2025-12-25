@@ -2,6 +2,10 @@
 
 Rust bindings for interacting with Leo programs.
 
+## Documentation
+
+Documentation is available at: <https://henrikkv.github.io/leo-bindings/leo_bindings>
+
 ## Deploying to devnet
 
 Start the devnet with:
@@ -27,8 +31,8 @@ It is not needed for the interpreter.
 leo-bindings update
 ```
 
-Install and run `leo-bindings update` in the top level of the Leo project.
-Run again if `program.json` changes.
+Install leo-bindings with `cargo install --path .` and run `leo-bindings update` in the top level of the Leo project.
+Run again if `program.json` changes to update the generated files.
 Keep this workspace as it was generated, and import it in another package.
 
 The generated bindings are available at `projectname_bindings::projectname::*` in rust.
@@ -37,3 +41,4 @@ The trait `ProjectnameAleo<N>` is implemented by `network::ProjectnameNetwork<N>
 Type aliases `ProjectnameTestnet`, `ProjectnameMainnet`, `ProjectnameCanary`, and `ProjectnameInterpreter` are available.
 See how to use the trait in the [dev example](examples/dev/tests/simple_test.rs).
 
+`cargo doc --open` can be used to explore the generated code. [credits.aleo documentation](https://henrikkv.github.io/leo-bindings/credits_bindings/credits/trait.CreditsAleo.html)
