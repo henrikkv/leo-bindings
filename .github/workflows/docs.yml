@@ -24,6 +24,11 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install Leo CLI
+        run: |
+          cargo install leo-lang
+          leo --version
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
