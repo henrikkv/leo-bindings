@@ -22,6 +22,7 @@ edition = "2024"
 leo-bindings = { path = "." }
 leo-bindings-core = { path = "leo-bindings-core" }
 leo-bindings-macro = { path = "leo-bindings-macro" }
+leo-bindings-sdk = { path = "leo-bindings-sdk" }
 credits_bindings = { path = "leo-bindings-credits" }
 snarkvm = "4.4.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -75,6 +76,7 @@ path = "src/bin/leo-bindings.rs"
 [dependencies]
 leo-bindings-core.workspace = true
 leo-bindings-macro.workspace = true
+leo-bindings-sdk.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 clap.workspace = true

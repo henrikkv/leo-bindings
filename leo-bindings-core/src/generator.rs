@@ -48,6 +48,7 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
             use leo_bindings::utils::Account;
+            use leo_bindings::leo_bindings_sdk::Client;
 
             #type_imports
 
@@ -100,7 +101,7 @@ fn generate_trait(
     quote! {
         /// Program trait with network and interpreter implementations.
         pub trait #program_trait<N: snarkvm::prelude::Network> {
-            fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
+            fn new(deployer: &Account<N>, client: Client) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
@@ -164,6 +165,7 @@ fn generate_network_impl(
     );
 
     quote! {
+        use leo_bindings::leo_bindings_sdk::{Client, Credentials};
         use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_execution_stats, print_deployment_stats};
         use leo_bindings::utils::*;
         use anyhow::ensure;
@@ -182,8 +184,9 @@ fn generate_network_impl(
         use aleo_std::StorageMode;
         use std::str::FromStr;
 
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         pub struct #program_struct<N: Network> {
+            pub client: Client,
             pub package: Package,
             pub endpoint: String,
             pub delegated_proving_config: Option<leo_bindings::DelegatedProvingConfig>,
@@ -603,11 +606,13 @@ fn generate_new(
     program_name: &str,
 ) -> TokenStream {
     quote! {
-        fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> {
+        fn new(deployer: &Account<N>, client: Client) -> Result<Self, anyhow::Error> {
             use leo_package::Package;
             use leo_span::create_session_if_not_set_then;
             use std::path::Path;
             #(#trait_imports)*
+
+            let endpoint = client.endpoint().to_string();
 
             let result = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -618,11 +623,11 @@ fn generate_new(
                     false,
                     false,
                     Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
-                    Some(endpoint),
+                    Some(&endpoint),
                 )?;
 
                 let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
-                let api_endpoint = format!("{}/v2", endpoint);
+                let api_endpoint = format!("{}/v2", &endpoint);
 
                 #(#deployment_calls)*
 
@@ -693,8 +698,9 @@ fn generate_new(
                 }
 
                 Ok(Self {
+                    client,
                     package,
-                    endpoint: endpoint.to_string(),
+                    endpoint,
                     delegated_proving_config: None,
                     _network: std::marker::PhantomData,
                 })

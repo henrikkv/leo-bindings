@@ -364,18 +364,6 @@ pub fn init_test_logger() {
         .try_init();
 }
 
-fn fetch_latest_block_height(endpoint: &str, network_path: &str) -> Result<u32> {
-    let url = format!("{}/{}/block/height/latest", endpoint, network_path);
-    let mut response = ureq::get(&url)
-        .call()
-        .map_err(|e| anyhow!("Failed to fetch latest block height: {}", e))?;
-    let height_str = response
-        .body_mut()
-        .read_to_string()
-        .map_err(|e| anyhow!("Failed to read response: {}", e))?;
-    u32::from_str(&height_str).map_err(|e| anyhow!("Failed to parse block height: {}", e))
-}
-
 pub fn fetch_mapping_value(url: &str) -> Result<Option<String>> {
     let max_retries = 3;
 

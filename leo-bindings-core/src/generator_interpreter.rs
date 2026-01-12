@@ -28,7 +28,7 @@ pub(crate) fn generate_interpreter_impl(
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
-            let deployment = quote! { #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, endpoint).unwrap(); };
+            let deployment = quote! { #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, client.clone()).unwrap(); };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
             (deployment, trait_import)
@@ -92,12 +92,13 @@ pub(crate) fn generate_interpreter_impl(
 
             impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
 
-            fn new(deployer: &Account<TestnetV0>, endpoint: &str) -> Result<Self, anyhow::Error> {
+            fn new(deployer: &Account<TestnetV0>, client: Client) -> Result<Self, anyhow::Error> {
                 use std::path::Path;
                 use leo_ast::interpreter_value::Value;
                 use leo_interpreter::Interpreter;
                 #(#trait_imports)*
 
+                let endpoint = client.endpoint();
                 let program_name = #program_name;
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 

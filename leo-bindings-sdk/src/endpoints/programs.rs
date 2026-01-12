@@ -4,16 +4,16 @@ use crate::utils::poll_until;
 use snarkvm::prelude::Network;
 use std::time::Duration;
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Fetch a program's bytecode from the network
     ///
     /// GET /{network}/program/{id}
     ///
-    pub async fn program(&self, program_id: &str) -> Result<String> {
+    pub async fn program<N: Network>(&self, program_id: &str) -> Result<String> {
         let url = format!(
             "{}/v2/{}/program/{}",
             self.endpoint,
-            self.network_name(),
+            N::SHORT_NAME,
             program_id
         );
 
@@ -40,15 +40,15 @@ impl<N: Network> Client<N> {
     ///
     /// GET /{network}/program/{id}
     ///
-    pub async fn program_exists(&self, program_id: &str) -> Result<bool> {
-        match self.program(program_id).await {
+    pub async fn program_exists<N: Network>(&self, program_id: &str) -> Result<bool> {
+        match self.program::<N>(program_id).await {
             Ok(_) => Ok(true),
             Err(Error::NotFound(_)) => Ok(false),
             Err(e) => Err(e),
         }
     }
 
-    pub async fn wait_for_program(&self, program_id: &str) -> Result<()> {
+    pub async fn wait_for_program<N: Network>(&self, program_id: &str) -> Result<()> {
         let program_id_owned = program_id.to_string();
 
         poll_until(
@@ -57,7 +57,7 @@ impl<N: Network> Client<N> {
                 let url = format!(
                     "{}/v2/{}/program/{}",
                     self.endpoint,
-                    self.network_name(),
+                    N::SHORT_NAME,
                     program_id
                 );
                 let client = self.client.clone();

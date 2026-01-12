@@ -2,12 +2,12 @@ use crate::config::Client;
 use crate::error::{Error, Result};
 use snarkvm::prelude::{Network, Value};
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Query a mapping value from the network
     ///
     /// GET /{network}/program/{program}/mapping/{mapping}/{key}
     ///
-    pub async fn mapping(
+    pub async fn mapping<N: Network>(
         &self,
         program_id: &str,
         mapping_name: &str,
@@ -18,7 +18,7 @@ impl<N: Network> Client<N> {
         let url = format!(
             "{}/v2/{}/program/{}/mapping/{}/{}",
             self.endpoint,
-            self.network_name(),
+            N::SHORT_NAME,
             program_id,
             mapping_name,
             key_str
