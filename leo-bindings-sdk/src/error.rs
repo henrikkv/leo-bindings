@@ -54,6 +54,15 @@ pub enum Error {
     #[error("API error {status}: {message}")]
     ApiError { status: u16, message: String },
 
+    #[error("VM error: {0}")]
+    VmError(String),
+
+    #[error("Program {0} not found in VM")]
+    ProgramNotFound(String),
+
+    #[error("Failed to parse program: {0}")]
+    ProgramParse(String),
+
     #[error("Internal error: {0}")]
     Internal(String),
 }

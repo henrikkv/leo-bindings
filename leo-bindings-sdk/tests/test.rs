@@ -1,23 +1,19 @@
-use aleo_std::StorageMode;
-use leo_bindings::utils::*;
-use leo_bindings_sdk::Client;
-use snarkvm::ledger::query::{Query, QueryTrait};
-use snarkvm::ledger::store::ConsensusStore;
-use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
+use leo_bindings_sdk::{Account, Client, VMManager};
 use snarkvm::prelude::*;
-use snarkvm::synthesizer::VM;
 
 const ENDPOINT: &str = "https://api.explorer.provable.com";
 
 #[tokio::test]
 async fn test_mapping_query() {
-    let account = get_account_from_env().unwrap();
+    let account = Account::<TestnetV0>::from_env().unwrap();
 
-    let client = Client::<TestnetV0>::new(ENDPOINT, None).unwrap();
+    let client = Client::new(ENDPOINT, None).unwrap();
 
     let key = Value::from(Literal::Address(account.address()));
 
-    let result = client.mapping("credits.aleo", "account", &key).await;
+    let result = client
+        .mapping::<TestnetV0>("credits.aleo", "account", &key)
+        .await;
 
     assert!(result.is_ok(), "Mapping query failed: {:?}", result.err());
 
@@ -27,52 +23,50 @@ async fn test_mapping_query() {
 #[tokio::test]
 #[ignore]
 async fn test_transfer_credits() {
-    let account = get_account_from_env().unwrap();
+    let account = Account::<TestnetV0>::from_env().unwrap();
 
     println!("🔑 Account address: {}", account.address());
 
-    let client = Client::<TestnetV0>::new(ENDPOINT, None).unwrap();
+    let client = Client::new(ENDPOINT, None).unwrap();
+
+    let vm_manager = VMManager::<TestnetV0>::new(&client).unwrap();
 
     let key = Value::from(Literal::Address(account.address()));
     let balance_before = client
-        .mapping("credits.aleo", "account", &key)
+        .mapping::<TestnetV0>("credits.aleo", "account", &key)
         .await
         .expect("Failed to query balance");
 
     println!("💰 Balance before: {:?}", balance_before);
 
-    let vm = VM::from(
-        ConsensusStore::<TestnetV0, ConsensusMemory<TestnetV0>>::open(StorageMode::Production)
-            .unwrap(),
-    )
-    .unwrap();
+    let credits_program_str = client
+        .program::<TestnetV0>("credits.aleo")
+        .await
+        .expect("Failed to fetch credits.aleo");
 
-    let query = Query::<TestnetV0, BlockMemory<TestnetV0>>::from(
-        ENDPOINT.parse::<http::uri::Uri>().unwrap(),
-    );
+    let credits_program =
+        Program::<TestnetV0>::from_str(&credits_program_str).expect("Failed to parse credits.aleo");
 
-    let rng = &mut rand::thread_rng();
-
-    let program_id = ProgramID::<TestnetV0>::from_str("credits.aleo").unwrap();
-    let function_name = Identifier::<TestnetV0>::from_str("transfer_public").unwrap();
+    vm_manager
+        .add_program(&credits_program, 1)
+        .expect("Failed to add credits.aleo to VM");
 
     let transfer_amount = 1u64;
-    let inputs = [
+    let inputs = vec![
         Value::from(Literal::Address(account.address())),
         Value::from(Literal::U64(U64::new(transfer_amount))),
     ];
 
     println!("📝 Creating transfer transaction...");
 
-    let (transaction, _response) = vm
-        .execute_with_response(
+    let (transaction, _outputs) = vm_manager
+        .execute(
             account.private_key(),
-            (program_id, function_name),
-            inputs.iter(),
+            "credits.aleo",
+            "transfer_public",
+            inputs.into_iter(),
             None,
             0,
-            Some(&query as &dyn QueryTrait<TestnetV0>),
-            rng,
         )
         .expect("Failed to create transaction");
 
@@ -88,38 +82,29 @@ async fn test_transfer_credits() {
 #[tokio::test]
 #[ignore]
 async fn test_delegated_proving() {
-    let account = get_account_from_env().unwrap();
+    let account = Account::<TestnetV0>::from_env().unwrap();
 
     println!("🔑 Account address: {}", account.address());
 
-    let client = Client::<TestnetV0>::from_env().unwrap();
+    let client = Client::from_env().unwrap();
 
-    let vm = VM::from(
-        ConsensusStore::<TestnetV0, ConsensusMemory<TestnetV0>>::open(StorageMode::Production)
-            .unwrap(),
-    )
-    .unwrap();
+    let vm_manager = VMManager::<TestnetV0>::new(&client).unwrap();
 
     let program_id = ProgramID::<TestnetV0>::from_str("delegated_proving_test.aleo").unwrap();
 
     println!("📥 Fetching program from network...");
     let program_text = client
-        .program(&program_id.to_string())
+        .program::<TestnetV0>(&program_id.to_string())
         .await
         .expect("Failed to fetch program");
 
-    let program = snarkvm::prelude::Program::<TestnetV0>::from_str(&program_text)
-        .expect("Failed to parse program");
+    let program = Program::<TestnetV0>::from_str(&program_text).expect("Failed to parse program");
 
-    vm.process()
-        .write()
-        .add_program(&program)
+    vm_manager
+        .add_program(&program, 1)
         .expect("Failed to add program to VM");
 
-    let rng = &mut rand::thread_rng();
-    let function_name = Identifier::<TestnetV0>::from_str("divide").unwrap();
-
-    let inputs = [
+    let inputs = vec![
         Value::from(Literal::U64(U64::new(1000))),
         Value::from(Literal::U64(U64::new(10))),
         Value::from(Literal::U64(U64::new(2))),
@@ -128,13 +113,12 @@ async fn test_delegated_proving() {
 
     println!("📝 Creating authorization for delegated proving...");
 
-    let authorization = vm
+    let authorization = vm_manager
         .authorize(
             account.private_key(),
             program_id,
-            function_name,
-            inputs.iter(),
-            rng,
+            "divide",
+            inputs.into_iter(),
         )
         .expect("Failed to create authorization");
 
