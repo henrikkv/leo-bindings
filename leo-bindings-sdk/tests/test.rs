@@ -39,6 +39,7 @@ async fn test_transfer_credits() {
 
     println!("💰 Balance before: {:?}", balance_before);
 
+    println!("📥 Fetching credits.aleo program...");
     let credits_program_str = client
         .program::<TestnetV0>("credits.aleo")
         .await
@@ -48,7 +49,7 @@ async fn test_transfer_credits() {
         Program::<TestnetV0>::from_str(&credits_program_str).expect("Failed to parse credits.aleo");
 
     vm_manager
-        .add_program(&credits_program, 1)
+        .add_program(&credits_program)
         .expect("Failed to add credits.aleo to VM");
 
     let transfer_amount = 1u64;
@@ -64,10 +65,11 @@ async fn test_transfer_credits() {
             account.private_key(),
             "credits.aleo",
             "transfer_public",
-            inputs.into_iter(),
+            inputs,
             None,
             0,
         )
+        .await
         .expect("Failed to create transaction");
 
     println!("✅ Transaction created: {}", transaction.id());
@@ -90,18 +92,18 @@ async fn test_delegated_proving() {
 
     let vm_manager = VMManager::<TestnetV0>::new(&client).unwrap();
 
-    let program_id = ProgramID::<TestnetV0>::from_str("delegated_proving_test.aleo").unwrap();
+    let program_id = "delegated_proving_test.aleo";
 
     println!("📥 Fetching program from network...");
     let program_text = client
-        .program::<TestnetV0>(&program_id.to_string())
+        .program::<TestnetV0>(program_id)
         .await
         .expect("Failed to fetch program");
 
     let program = Program::<TestnetV0>::from_str(&program_text).expect("Failed to parse program");
 
     vm_manager
-        .add_program(&program, 1)
+        .add_program(&program)
         .expect("Failed to add program to VM");
 
     let inputs = vec![
@@ -114,12 +116,8 @@ async fn test_delegated_proving() {
     println!("📝 Creating authorization for delegated proving...");
 
     let authorization = vm_manager
-        .authorize(
-            account.private_key(),
-            program_id,
-            "divide",
-            inputs.into_iter(),
-        )
+        .authorize(account.private_key(), program_id, "divide", inputs)
+        .await
         .expect("Failed to create authorization");
 
     println!("✅ Authorization created");
