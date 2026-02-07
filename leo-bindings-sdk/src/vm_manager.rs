@@ -32,11 +32,13 @@ impl<N: Network> VMManager<N> {
         &self.client
     }
 
-    pub fn add_program(&self, program: &Program<N>) -> Result<()> {
+    pub async fn add_program(&self, program: &Program<N>) -> Result<()> {
+        let program_id = program.id().to_string();
+        let edition = self.client.program_edition::<N>(&program_id).await?;
         self.vm
             .process()
             .write()
-            .add_program(program)
+            .add_program_with_edition(program, edition)
             .map_err(|e| Error::VmError(format!("Failed to add program '{}': {}", program.id(), e)))
     }
 

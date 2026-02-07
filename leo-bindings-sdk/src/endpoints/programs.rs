@@ -48,6 +48,35 @@ impl Client {
         }
     }
 
+    /// Fetch the latest edition number for a program
+    ///
+    /// GET /{network}/program/{id}/latest_edition
+    ///
+    pub async fn program_edition<N: Network>(&self, program_id: &str) -> Result<u16> {
+        let url = format!(
+            "{}/v2/{}/program/{}/latest_edition",
+            self.endpoint,
+            N::SHORT_NAME,
+            program_id
+        );
+
+        let response = self.client.get(&url).send().await?;
+
+        if response.status().is_success() {
+            let edition: u16 = response.json().await?;
+            Ok(edition)
+        } else if response.status() == 404 {
+            Err(Error::NotFound(format!("Program {} not found", program_id)))
+        } else {
+            let status = response.status().as_u16();
+            let message = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            Err(Error::ApiError { status, message })
+        }
+    }
+
     pub async fn wait_for_program<N: Network>(&self, program_id: &str) -> Result<()> {
         let program_id_owned = program_id.to_string();
 

@@ -50,6 +50,7 @@ async fn test_transfer_credits() {
 
     vm_manager
         .add_program(&credits_program)
+        .await
         .expect("Failed to add credits.aleo to VM");
 
     let transfer_amount = 1u64;
@@ -104,6 +105,7 @@ async fn test_delegated_proving() {
 
     vm_manager
         .add_program(&program)
+        .await
         .expect("Failed to add program to VM");
 
     let inputs = vec![

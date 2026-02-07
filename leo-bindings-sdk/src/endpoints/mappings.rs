@@ -1,6 +1,6 @@
 use crate::config::Client;
 use crate::error::{Error, Result};
-use snarkvm::prelude::{Network, Value};
+use snarkvm::prelude::{Address, Literal, Network, Plaintext, Value};
 
 impl Client {
     /// Query a mapping value from the network
@@ -40,6 +40,20 @@ impl Client {
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
             Err(Error::ApiError { status, message })
+        }
+    }
+
+    pub async fn public_balance<N: Network>(&self, address: &Address<N>) -> Result<u64> {
+        let key = Value::from(Literal::Address(*address));
+        let balance = self.mapping::<N>("credits.aleo", "account", &key).await?;
+
+        match balance {
+            Some(Value::Plaintext(Plaintext::Literal(Literal::U64(amount), _))) => Ok(*amount),
+            None => Ok(0),
+            Some(other) => Err(Error::BadResponse(format!(
+                "Unexpected balance format: {:?}",
+                other
+            ))),
         }
     }
 }
