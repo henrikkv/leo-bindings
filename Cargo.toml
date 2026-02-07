@@ -58,6 +58,7 @@ reqwest-middleware = "0.3"
 reqwest-retry = "0.6"
 tokio = "1"
 thiserror = "1.0"
+async-trait = "0.1"
 
 [package]
 name = "leo-bindings"
@@ -102,3 +103,4 @@ rand_chacha.workspace = true
 dotenvy.workspace = true
 env_logger.workspace = true
 log.workspace = true
+async-trait.workspace = true

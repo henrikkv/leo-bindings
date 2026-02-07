@@ -47,8 +47,7 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
             use snarkvm::prelude::Network;
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
-            use leo_bindings::utils::Account;
-            use leo_bindings::leo_bindings_sdk::Client;
+            use leo_bindings::leo_bindings_sdk::{Client, VMManager, Account};
 
             #type_imports
 
@@ -84,7 +83,7 @@ fn generate_trait(
             let name = &types.name;
             let input_params = &types.input_params;
             let return_type = &types.return_type;
-            quote! { fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
+            quote! { async fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
         })
         .collect();
 
@@ -94,14 +93,15 @@ fn generate_trait(
             let getter_name = &types.getter_name;
             let key_type = &types.key_type;
             let value_type = &types.value_type;
-            quote! { fn #getter_name(&self, key: #key_type) -> Option<#value_type>; }
+            quote! { async fn #getter_name(&self, key: #key_type) -> Option<#value_type>; }
         })
         .collect();
 
     quote! {
         /// Program trait with network and interpreter implementations.
-        pub trait #program_trait<N: snarkvm::prelude::Network> {
-            fn new(deployer: &Account<N>, client: Client) -> Result<Self, anyhow::Error> where Self: Sized;
+        #[leo_bindings::async_trait::async_trait]
+        pub trait #program_trait<N: snarkvm::prelude::Network>: Send + Sync {
+            async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
@@ -117,39 +117,18 @@ fn generate_network_impl(
 ) -> TokenStream {
     let program_id = Literal::string(&format!("{}.aleo", &simplified.program_name));
 
-    let (deployment_calls, trait_imports, dependency_additions): (Vec<_>, Vec<_>, Vec<_>) = simplified
+    let dependency_ids: Vec<TokenStream> = simplified
         .imports
         .iter()
         .map(|import| {
-            let import_pascal = import.to_case(Pascal);
-            let import_module = Ident::new(import, Span::call_site());
-            let import_struct = Ident::new(&format!("{}Network", import_pascal), Span::call_site());
-            let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
-            let dependency_id = format!("{}.aleo", import);
-            let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
-
-            let deployment = quote! { #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, endpoint)?; };
-            let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
-            let dependency_addition = quote! {
-                let dependency_id = ProgramID::<N>::from_str(#dependency_id)?;
-                let api_endpoint = format!("{}/v2", endpoint);
-                wait_for_program_availability(&dependency_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let dependency_program: Program<N> = {
-                    let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, dependency_id)).call().unwrap();
-                    let json_text = response.body_mut().read_to_string().unwrap();
-                    let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
-                    json_response.as_str().unwrap().to_string().parse().unwrap()
-                };
-                vm.process().write().add_program(&dependency_program)?;
-            };
-            (deployment, trait_import, dependency_addition)
+            let id = Literal::string(&format!("{}.aleo", import));
+            quote! { #id }
         })
-        .multiunzip();
-    let dependency_additions = quote! { #(#dependency_additions)* };
+        .collect();
 
     let function_implementations: Vec<TokenStream> = function_types
         .iter()
-        .map(|types| generate_function(&dependency_additions, types, &program_id))
+        .map(|types| generate_function(&dependency_ids, types, &program_id))
         .collect();
 
     let mapping_implementations: Vec<TokenStream> = mapping_types
@@ -157,69 +136,32 @@ fn generate_network_impl(
         .map(|types| generate_mapping(types, &program_id))
         .collect();
 
-    let new_implementation = generate_new(
-        &deployment_calls,
-        &dependency_additions,
-        &trait_imports,
-        &simplified.program_name,
-    );
+    let new_implementation = generate_new(&dependency_ids, &simplified.program_name);
 
     quote! {
-        use leo_bindings::leo_bindings_sdk::{Client, Credentials};
-        use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_execution_stats, print_deployment_stats};
-        use leo_bindings::utils::*;
-        use anyhow::ensure;
-        use snarkvm::ledger::query::*;
-        use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
-        use snarkvm::ledger::store::ConsensusStore;
-        use snarkvm::ledger::block::Transaction;
+        use leo_bindings::leo_bindings_sdk::{Client, VMManager};
+        use leo_bindings::{leo_package, leo_ast, leo_span, log};
         use snarkvm::console::program::{Record, Plaintext};
-        use snarkvm::synthesizer::VM;
-        use snarkvm::synthesizer::process::execution_cost;
-        use snarkvm::prelude::ConsensusVersion;
-        use snarkvm::ledger::query::{QueryTrait, Query};
         use leo_package::Package;
         use leo_ast::NetworkName;
         use leo_span::create_session_if_not_set_then;
-        use aleo_std::StorageMode;
+        use std::path::Path;
         use std::str::FromStr;
 
         #[derive(Debug, Clone)]
         pub struct #program_struct<N: Network> {
-            pub client: Client,
+            pub vm_manager: VMManager<N>,
             pub package: Package,
-            pub endpoint: String,
-            pub delegated_proving_config: Option<leo_bindings::DelegatedProvingConfig>,
             _network: std::marker::PhantomData<N>,
         }
 
+        #[leo_bindings::async_trait::async_trait]
         impl<N: Network> #program_trait<N> for #program_struct<N> {
             #new_implementation
 
             #(#function_implementations)*
 
             #(#mapping_implementations)*
-        }
-
-        impl<N: Network> #program_struct<N> {
-            pub fn configure_delegation(mut self, config: leo_bindings::DelegatedProvingConfig) -> Self {
-                self.delegated_proving_config = Some(config);
-                self
-            }
-            pub fn enable_delegation(mut self) -> Self {
-                if let Some(config) = &mut self.delegated_proving_config {
-                    config.enabled = true;
-                    log::info!("✅ Delegated proving enabled");
-                }
-                self
-            }
-            pub fn disable_delegation(mut self) -> Self {
-                if let Some(config) = &mut self.delegated_proving_config {
-                    config.enabled = false;
-                    log::info!("ℹ️ Delegated proving disabled");
-                }
-                self
-            }
         }
     }
 }
@@ -402,12 +344,12 @@ pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<Toke
                     let nonce = self.__nonce.clone();
                     let version = self.__version.clone();
 
-                    Record::<N, Plaintext<N>>::from_plaintext(
+                    Ok(Record::<N, Plaintext<N>>::from_plaintext(
                         owner,
                         data,
                         nonce,
                         version
-                    ).map_err(|e| anyhow::anyhow!("Failed to create record: {}", e))
+                    )?)
                 }
 
                 #(#getter_methods)*
@@ -513,7 +455,7 @@ pub(crate) struct FunctionTypes {
 
 pub(crate) struct MappingTypes {
     pub(crate) getter_name: Ident,
-    pub(crate) mapping_name_literal: String,
+    pub(crate) mapping_name: String,
     pub(crate) key_type: TokenStream,
     pub(crate) value_type: TokenStream,
 }
@@ -542,7 +484,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                        None => return Err(anyhow!("Missing output at index 0")),
+                        None => return Err(anyhow!("Missing output")),
                     }
                 };
                 (
@@ -558,7 +500,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                                None => return Err(anyhow!("Missing output at index {}", #i)),
+                                None => return Err(anyhow!("Missing output")),
                             }
                         };
                         (output_type, conversion)
@@ -583,135 +525,70 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
 fn generate_mapping_types(mappings: &[crate::signature::MappingBinding]) -> Vec<MappingTypes> {
     mappings
         .iter()
-        .map(|mapping| {
-            let getter_name = Ident::new(&format!("get_{}", mapping.name), Span::call_site());
-            let mapping_name_literal = mapping.name.clone();
-            let key_type = get_rust_type(&mapping.key_type);
-            let value_type = get_rust_type(&mapping.value_type);
-
-            MappingTypes {
-                getter_name,
-                mapping_name_literal,
-                key_type,
-                value_type,
-            }
+        .map(|mapping| MappingTypes {
+            getter_name: Ident::new(&format!("get_{}", mapping.name), Span::call_site()),
+            mapping_name: mapping.name.clone(),
+            key_type: get_rust_type(&mapping.key_type),
+            value_type: get_rust_type(&mapping.value_type),
         })
         .collect()
 }
 
-fn generate_new(
-    deployment_calls: &[TokenStream],
-    dependency_additions: &TokenStream,
-    trait_imports: &[TokenStream],
-    program_name: &str,
-) -> TokenStream {
+fn generate_new(dependency_ids: &[TokenStream], program_name: &str) -> TokenStream {
     quote! {
-        fn new(deployer: &Account<N>, client: Client) -> Result<Self, anyhow::Error> {
-            use leo_package::Package;
-            use leo_span::create_session_if_not_set_then;
-            use std::path::Path;
-            #(#trait_imports)*
-
-            let endpoint = client.endpoint().to_string();
-
-            let result = create_session_if_not_set_then(|_| {
+        async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+            let package = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-
-                let package = Package::from_directory(
+                Package::from_directory(
                     crate_dir,
                     crate_dir,
                     false,
                     false,
                     Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
-                    Some(&endpoint),
-                )?;
+                    Some(vm_manager.client().endpoint()),
+                )
+            })?;
 
-                let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
-                let api_endpoint = format!("{}/v2", &endpoint);
+            let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
+            let program_exists = vm_manager.client().program_exists::<N>(&program_id.to_string()).await?;
 
-                #(#deployment_calls)*
+            if program_exists {
+                log::info!("✅ Found '{}', skipping deployment", program_id);
+            } else {
+                log::info!("📦 Deploying '{}'", program_id);
 
-                let program_exists = {
-                    let check_response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
-                        .call();
-                    match check_response {
-                        Ok(_) => {
-                            log::info!("✅ Found '{}', skipping deployment", program_id);
-                            true
-                        },
-                        Err(_) => {
-                            log::info!("📦 Deploying '{}'", program_id);
-                            false
-                        }
-                    }
-                };
-
-                if !program_exists {
+                let bytecode = create_session_if_not_set_then(|_| {
                     let program_symbol = leo_span::Symbol::intern(#program_name);
                     let target_program = package.programs.iter()
                         .find(|p| p.name == program_symbol)
-                        .ok_or_else(|| anyhow!("Program '{}' not found in package", #program_name))?;
+                        .ok_or_else(|| anyhow!("Program not found in package"))?;
 
-                    let bytecode = match &target_program.data {
-                        leo_package::ProgramData::Bytecode(bytecode) => {
-                            bytecode.clone()
-                        },
+                    match &target_program.data {
+                        leo_package::ProgramData::Bytecode(bytecode) => Ok(bytecode.clone()),
                         leo_package::ProgramData::SourcePath { directory, source: _ } => {
                             let aleo_path = directory.join("build").join("main.aleo");
-                            std::fs::read_to_string(&aleo_path)
-                                .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?
+                            std::fs::read_to_string(&aleo_path).map_err(anyhow::Error::from)
                         }
-                    };
+                    }
+                })?;
 
-                    let program: Program<N> = bytecode.parse()
-                        .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
+                let program: Program<N> = bytecode.parse()?;
 
-                    log::info!("📦 Creating deployment tx for '{}'...", program_id);
-                    let rng = &mut rand::thread_rng();
-                    let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
-                    let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
+                let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
+                vm_manager.deploy_and_broadcast(deployer, &program, &dependencies).await?;
+            }
 
-                     #dependency_additions
-
-                    let transaction = vm.deploy(
-                        deployer.private_key(),
-                        &program,
-                        None,
-                        0,
-                        Some(&query),
-                        rng,
-                    ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
-
-                    match &transaction {
-                        Transaction::Deploy(_, _, _, deployment, fee) => {
-                            print_deployment_stats(&vm, &program_id.to_string(), deployment, None, ConsensusVersion::V10)?;
-                        },
-                        _ => panic!("Expected a deployment transaction."),
-                    };
-
-                    log::info!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
-
-                    broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
-
-                    wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 120)?;
-                    wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                }
-
-                Ok(Self {
-                    client,
-                    package,
-                    endpoint,
-                    delegated_proving_config: None,
-                    _network: std::marker::PhantomData,
-                })
-            });
-            result
+            Ok(Self {
+                vm_manager,
+                package,
+                _network: std::marker::PhantomData,
+            })
         }
     }
 }
 
 fn generate_function(
-    dependency_additions: &TokenStream,
+    dependency_ids: &[TokenStream],
     types: &FunctionTypes,
     program_id: &Literal,
 ) -> TokenStream {
@@ -724,84 +601,19 @@ fn generate_function(
     } = types;
 
     quote! {
-        fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
-            let endpoint = &self.endpoint;
-            let api_endpoint = format!("{}/v2", endpoint);
-            let program_id = ProgramID::try_from(#program_id).unwrap();
-            let function_id = Identifier::try_from(stringify!(#name)).unwrap();
+        async fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
+            let program_id_str = #program_id;
+            let function_name = stringify!(#name);
             let function_args: Vec<Value<N>> = vec![#input_conversions];
+            let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
 
-            let rng = &mut rand::thread_rng();
-            let locator = Locator::<N>::new(program_id, function_id);
-
-            log::info!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
-            let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
-            let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
-
-            wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-            let program: Program<N> = {
-                let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
-                    .call().unwrap();
-                let json_text = response.body_mut().read_to_string().unwrap();
-                let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
-                json_response.as_str().unwrap().parse().unwrap()
-            };
-
-            #dependency_additions
-
-            vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
-                .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
-
-            let delegated_result = self.delegated_proving_config.as_ref()
-                .filter(|config| config.enabled)
-                .and_then(|config| {
-                    let authorization = vm
-                        .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
-                        .map_err(|e| log::warn!("Failed to create authorization: {}", e))
-                        .ok()?;
-
-                    let function_outputs = extract_outputs_from_authorization(&authorization, account.view_key())
-                        .map_err(|e| log::warn!("Failed to extract outputs: {}", e))
-                        .ok()?;
-
-                    let transaction = execute_with_delegated_proving(config, authorization).ok()?;
-
-                    Some((transaction, function_outputs))
-                });
-
-            let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = match delegated_result {
-                Some(result) => result,
-                None => {
-                    let (transaction, response) = vm.execute_with_response(
-                        account.private_key(),
-                        (program_id, function_id),
-                        function_args.iter(),
-                        None,
-                        0,
-                        Some(&query as &dyn QueryTrait<N>),
-                        rng,
-                    ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
-                    (transaction, response.outputs().to_vec())
-                }
-            };
-
-            let public_balance = get_public_balance(&account.address(), &api_endpoint, N::SHORT_NAME);
-            let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
-            let (total_cost, _) = execution_cost(&vm.process().read(), execution, ConsensusVersion::V10)?;
-
-            match &transaction {
-                Transaction::Execute(_, _, execution, fee) => {
-                    print_execution_stats(&vm, &program_id.to_string(), &execution, None, ConsensusVersion::V10)?;
-                },
-                _ => panic!("Expected an execution transaction."),
-            };
-
-            ensure!(public_balance >= total_cost,
-                "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
-
-            log::info!("📡 Broadcasting tx: {}",transaction.id());
-            broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
-            wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 30)?;
+            let function_outputs = self.vm_manager.execute_and_broadcast(
+                account,
+                program_id_str,
+                function_name,
+                function_args,
+                &dependencies,
+            ).await?;
 
             #return_conversions
         }
@@ -811,30 +623,23 @@ fn generate_function(
 fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
     let MappingTypes {
         getter_name,
-        mapping_name_literal,
+        mapping_name,
         key_type,
         value_type,
     } = types;
 
     quote! {
-        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-            let program_id = #program_id;
-            let mapping_name = #mapping_name_literal;
-            let api_endpoint = format!("{}/v2", self.endpoint);
+        async fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
 
             let key_value: Value<N> = key.to_value();
-            let url = format!("{}/{}/program/{}/mapping/{}/{}",
-                &api_endpoint, N::SHORT_NAME, program_id, mapping_name,
-                key_value.to_string().replace("\"", ""));
 
-            match leo_bindings::utils::fetch_mapping_value(&url) {
-                Ok(Some(json_text)) => {
-                    let value: Option<Value<N>> = serde_json::from_str(&json_text)
-                        .expect("Failed to parse mapping value JSON");
-                    value.map(|val| <#value_type>::from_value(val))
-                }
+            match self.vm_manager.client().mapping::<N>(#program_id, #mapping_name, &key_value).await {
+                Ok(Some(val)) => Some(<#value_type>::from_value(val)),
                 Ok(None) => None,
-                Err(e) => panic!("Failed to fetch mapping value: {}", e),
+                Err(e) => {
+                    log::error!("Failed to fetch mapping value: {}", e);
+                    None
+                }
             }
         }
     }

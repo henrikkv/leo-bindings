@@ -751,6 +751,7 @@ dependencies = [
  "delegated_proving_test_bindings",
  "leo-bindings 0.1.0",
  "snarkvm 4.4.0",
+ "tokio",
 ]
 
 [[package]]
@@ -802,6 +803,7 @@ dependencies = [
  "dev_bindings",
  "leo-bindings 0.1.0",
  "snarkvm 4.4.0",
+ "tokio",
 ]
 
 [[package]]
@@ -1029,6 +1031,7 @@ version = "0.1.0"
 dependencies = [
  "leo-bindings 0.1.0",
  "snarkvm 4.4.0",
+ "tokio",
  "war",
 ]
 
@@ -1777,6 +1780,7 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
+ "async-trait",
  "clap",
  "colored 3.0.0",
  "dotenvy",
@@ -1865,7 +1869,6 @@ dependencies = [
  "serde_json",
  "snarkvm 4.4.0",
  "syn 2.0.111",
- "ureq",
 ]
 
 [[package]]
@@ -1927,8 +1930,11 @@ version = "0.1.0"
 dependencies = [
  "aleo-std",
  "anyhow",
+ "colored 3.0.0",
  "dotenvy",
  "http",
+ "log",
+ "num-format",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "reqwest",
@@ -5240,6 +5246,7 @@ dependencies = [
  "rand 0.8.5",
  "snarkvm 4.4.0",
  "token_bindings",
+ "tokio",
 ]
 
 [[package]]

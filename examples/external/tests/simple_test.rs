@@ -1,14 +1,18 @@
-#[test]
-fn external() {
+#[tokio::test]
+async fn external() {
     leo_bindings::utils::init_test_logger();
 
-    use leo_bindings::utils::*;
+    use leo_bindings::leo_bindings_sdk::{Account, Client, VMManager};
     use snarkvm::prelude::TestnetV0;
     use war_game_bindings::war_game::*;
 
     const ENDPOINT: &str = "http://localhost:3030";
-    let alice: Account<TestnetV0> = get_dev_account(0).unwrap();
-    let war = WarGameInterpreter::new(&alice, ENDPOINT).unwrap();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let client = Client::new(ENDPOINT, None).unwrap();
+    let vm_manager = VMManager::new(&client).unwrap();
+    let war = WarGameInterpreter::new(&alice, vm_manager).await.unwrap();
 
-    war.create_game(&alice, 1, 1, 2, 3, 5, 29, 91).unwrap();
+    war.create_game(&alice, 1, 1, 2, 3, 5, 29, 91)
+        .await
+        .unwrap();
 }

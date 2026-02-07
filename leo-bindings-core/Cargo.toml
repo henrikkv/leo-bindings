@@ -26,4 +26,3 @@ leo-errors = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 dotenvy = { workspace = true }
-ureq = { workspace = true }

@@ -9,3 +9,4 @@ leo-bindings.workspace = true
 [dev-dependencies]
 war = { git = "https://github.com/henrikkv/berlin" }
 snarkvm.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

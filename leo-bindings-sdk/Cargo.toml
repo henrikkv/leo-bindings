@@ -18,6 +18,9 @@ rand_chacha.workspace = true
 dotenvy.workspace = true
 aleo-std.workspace = true
 http.workspace = true
+colored.workspace = true
+num-format.workspace = true
+log.workspace = true
 
 [dev-dependencies]
 tokio-test = "0.4"

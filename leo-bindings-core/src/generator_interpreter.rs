@@ -28,7 +28,9 @@ pub(crate) fn generate_interpreter_impl(
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
-            let deployment = quote! { #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, client.clone()).unwrap(); };
+            let deployment = quote! {
+                let _ = #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, client.clone()).await?;
+            };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
             (deployment, trait_import)
@@ -69,15 +71,17 @@ pub(crate) fn generate_interpreter_impl(
         /// The interpreter state resets after the session.
         pub mod interpreter {
             use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
-            use leo_bindings::utils::*;
+            use leo_bindings::leo_bindings_sdk::{Account, VMManager};
             use anyhow::anyhow;
             use snarkvm::prelude::TestnetV0;
             use snarkvm::prelude::TestnetV0 as N;
             use leo_package::Package;
             use leo_ast::NetworkName;
+            use leo_ast::interpreter_value::{Value as LeoValue, ValueVariants};
+            use leo_interpreter::Interpreter;
             use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
             use std::str::FromStr;
-            use std::path::PathBuf;
+            use std::path::{Path, PathBuf};
 
             pub use super::*;
 
@@ -90,21 +94,22 @@ pub(crate) fn generate_interpreter_impl(
                 const PROGRAM_NAME: &str = #program_name;
             }
 
+            #[leo_bindings::async_trait::async_trait]
             impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
 
-            fn new(deployer: &Account<TestnetV0>, client: Client) -> Result<Self, anyhow::Error> {
-                use std::path::Path;
-                use leo_ast::interpreter_value::Value;
-                use leo_interpreter::Interpreter;
+            async fn new(deployer: &Account<TestnetV0>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
                 #(#trait_imports)*
 
-                let endpoint = client.endpoint();
+                let endpoint = vm_manager.client().endpoint();
                 let program_name = #program_name;
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
-                create_session_if_not_set_then(|_| {
-                    let interpreter_exists = with_shared_interpreter(|_| true).is_some();
-                    if !interpreter_exists {
+                let needs_init = create_session_if_not_set_then(|_| {
+                    with_shared_interpreter(|_| true).is_none()
+                });
+
+                if needs_init {
+                    create_session_if_not_set_then(|_| {
                         let block_height = 0u32;
                         let block_timestamp = 0i64;
                         let network = NetworkName::from_str("testnet").unwrap();
@@ -120,9 +125,12 @@ pub(crate) fn generate_interpreter_impl(
 
                         let session = SessionGlobals::default();
                         initialize_shared_interpreter(interpreter, session);
-                        #(#deployment_calls)*
-                    }
+                    });
 
+                    #(#deployment_calls)*
+                }
+
+                create_session_if_not_set_then(|_| {
                     let program_exists = with_shared_interpreter(|state| {
                         state.interpreter.borrow().is_program_loaded(program_name)
                     }).unwrap_or(false);
@@ -176,18 +184,6 @@ pub(crate) fn generate_interpreter_impl(
         }
 
         impl #program_struct<TestnetV0> {
-            pub fn configure_delegation(self, _config: DelegatedProvingConfig) -> Self {
-                log::debug!("Not delegating when using interpreter");
-                self
-            }
-            pub fn enable_delegation(self) -> Self {
-                log::debug!("Not delegating when using interpreter");
-                self
-            }
-            pub fn disable_delegation(self) -> Self {
-                log::debug!("Not delegating when using interpreter");
-                self
-            }
         }
 
         #cheats_module
@@ -200,17 +196,17 @@ pub(crate) fn generate_interpreter_impl(
 fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
     let MappingTypes {
         getter_name,
-        mapping_name_literal,
+        mapping_name,
         key_type,
         value_type,
     } = types;
 
     quote! {
-        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
+        async fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             with_shared_interpreter(|state| {
                 let interpreter = state.interpreter.borrow();
                 let program_symbol = Symbol::intern(Self::PROGRAM_NAME);
-                let mapping_name_symbol = Symbol::intern(#mapping_name_literal);
+                let mapping_name_symbol = Symbol::intern(#mapping_name);
 
                 let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from((key).to_value());
 
@@ -254,7 +250,7 @@ fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
         .collect();
 
     quote! {
-        fn #function_name(&self, account: &Account<TestnetV0>, #input_params) -> #function_return_type {
+        async fn #function_name(&self, account: &Account<TestnetV0>, #input_params) -> #function_return_type {
             let function_outputs = with_shared_interpreter(|state| -> Result<Vec<snarkvm::prelude::Value<TestnetV0>>, anyhow::Error> {
                 let mut interpreter = state.interpreter.borrow_mut();
 
@@ -306,7 +302,6 @@ fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
                     .map_err(|e| anyhow!("Failed to execute function '{}': {}", stringify!(#function_name), e))?;
 
                 let mut function_outputs: Vec<snarkvm::prelude::Value<TestnetV0>> = if let Some(leo_value) = interpreter_result.value {
-                    use leo_ast::interpreter_value::ValueVariants;
                     match &leo_value.contents {
                         ValueVariants::Tuple(elements) => {
                             elements.iter()
@@ -324,8 +319,6 @@ fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
                 };
 
                 if let Some(leo_ast::interpreter_value::AsyncExecution::AsyncFunctionCall { function, arguments }) = interpreter.cursor.futures.pop() {
-                    use snarkvm::prelude::{ProgramID, Identifier, Future};
-
                     let fake_future = Future::new(
                         ProgramID::from_str("future.aleo").unwrap(),
                         Identifier::from_str("noop").unwrap(),
