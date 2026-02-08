@@ -1785,6 +1785,7 @@ dependencies = [
  "colored 3.0.0",
  "dotenvy",
  "env_logger",
+ "futures",
  "http",
  "indexmap",
  "itertools 0.14.0",

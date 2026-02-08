@@ -21,6 +21,7 @@ pub use leo_bindings_sdk;
 pub use aleo_std;
 pub use anyhow;
 pub use async_trait;
+pub use futures;
 pub use http;
 pub use indexmap;
 pub use leo_ast;

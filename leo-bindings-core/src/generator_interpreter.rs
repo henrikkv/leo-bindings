@@ -29,7 +29,7 @@ pub(crate) fn generate_interpreter_impl(
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
             let deployment = quote! {
-                let _ = #import_crate_name::#import_module::interpreter::#import_struct::new(deployer, client.clone()).await?;
+                let _ = futures::executor::block_on(#import_crate_name::#import_module::interpreter::#import_struct::new(deployer, vm_manager.clone()))?;
             };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
@@ -70,7 +70,7 @@ pub(crate) fn generate_interpreter_impl(
         ///
         /// The interpreter state resets after the session.
         pub mod interpreter {
-            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions};
+            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, futures};
             use leo_bindings::leo_bindings_sdk::{Account, VMManager};
             use anyhow::anyhow;
             use snarkvm::prelude::TestnetV0;

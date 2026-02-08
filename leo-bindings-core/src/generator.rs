@@ -117,14 +117,26 @@ fn generate_network_impl(
 ) -> TokenStream {
     let program_id = Literal::string(&format!("{}.aleo", &simplified.program_name));
 
-    let dependency_ids: Vec<TokenStream> = simplified
+    let (deployment_calls, trait_imports, dependency_ids): (Vec<TokenStream>, Vec<TokenStream>, Vec<TokenStream>) = simplified
         .imports
         .iter()
         .map(|import| {
+            let import_pascal = import.to_case(Pascal);
+            let import_module = Ident::new(import, Span::call_site());
+            let import_struct = Ident::new(&format!("{}Network", import_pascal), Span::call_site());
+            let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
+            let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
+
+            let deployment = quote! {
+                let _ = #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, vm_manager.clone()).await?;
+            };
+            let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
             let id = Literal::string(&format!("{}.aleo", import));
-            quote! { #id }
+            let dependency_id = quote! { #id };
+
+            (deployment, trait_import, dependency_id)
         })
-        .collect();
+        .multiunzip();
 
     let function_implementations: Vec<TokenStream> = function_types
         .iter()
@@ -136,7 +148,12 @@ fn generate_network_impl(
         .map(|types| generate_mapping(types, &program_id))
         .collect();
 
-    let new_implementation = generate_new(&dependency_ids, &simplified.program_name);
+    let new_implementation = generate_new(
+        &deployment_calls,
+        &trait_imports,
+        &dependency_ids,
+        &simplified.program_name,
+    );
 
     quote! {
         use leo_bindings::leo_bindings_sdk::{Client, VMManager};
@@ -534,9 +551,18 @@ fn generate_mapping_types(mappings: &[crate::signature::MappingBinding]) -> Vec<
         .collect()
 }
 
-fn generate_new(dependency_ids: &[TokenStream], program_name: &str) -> TokenStream {
+fn generate_new(
+    deployment_calls: &[TokenStream],
+    trait_imports: &[TokenStream],
+    dependency_ids: &[TokenStream],
+    program_name: &str,
+) -> TokenStream {
     quote! {
         async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+            #(#trait_imports)*
+
+            #(#deployment_calls)*
+
             let package = create_session_if_not_set_then(|_| {
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
                 Package::from_directory(
