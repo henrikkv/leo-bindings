@@ -1,4 +1,3 @@
-use crate::interpreter_cheats::generate_interpreter_cheats_from_simplified;
 use crate::signature::SimplifiedBindings;
 use crate::{FunctionTypes, MappingTypes};
 use convert_case::{Case::Pascal, Casing};
@@ -47,8 +46,6 @@ pub(crate) fn generate_interpreter_impl(
         .map(generate_interpreter_mapping)
         .collect();
 
-    let cheats_module = generate_interpreter_cheats_from_simplified(simplified);
-
     let dev_account_funding = if simplified.program_name == "credits" {
         let cheats_module = Ident::new(
             &format!("{}_interpreter_cheats", program_name),
@@ -64,39 +61,33 @@ pub(crate) fn generate_interpreter_impl(
     } else {
         quote! {}
     };
+    quote! {
+        use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, futures};
+        use leo_bindings::leo_bindings_sdk::{Account, VMManager};
+        use anyhow::anyhow;
+        use snarkvm::prelude::TestnetV0;
+        use snarkvm::prelude::TestnetV0 as N;
+        use leo_package::Package;
+        use leo_ast::NetworkName;
+        use leo_ast::interpreter_value::{Value as LeoValue, ValueVariants};
+        use leo_interpreter::Interpreter;
+        use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
+        use std::str::FromStr;
+        use std::path::{Path, PathBuf};
 
-    let expanded = quote! {
-        /// Faster bindings for testing Leo code locally.
-        ///
-        /// The interpreter state resets after the session.
-        pub mod interpreter {
-            use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, futures};
-            use leo_bindings::leo_bindings_sdk::{Account, VMManager};
-            use anyhow::anyhow;
-            use snarkvm::prelude::TestnetV0;
-            use snarkvm::prelude::TestnetV0 as N;
-            use leo_package::Package;
-            use leo_ast::NetworkName;
-            use leo_ast::interpreter_value::{Value as LeoValue, ValueVariants};
-            use leo_interpreter::Interpreter;
-            use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
-            use std::str::FromStr;
-            use std::path::{Path, PathBuf};
+        pub use super::*;
 
-            pub use super::*;
+        pub struct #program_struct<N: Network> {
+            pub endpoint: String,
+            _network: std::marker::PhantomData<N>,
+        }
 
-            pub struct #program_struct<N: Network> {
-                pub endpoint: String,
-                _network: std::marker::PhantomData<N>,
-            }
+        impl<N: Network> #program_struct<N> {
+            const PROGRAM_NAME: &str = #program_name;
+        }
 
-            impl<N: Network> #program_struct<N> {
-                const PROGRAM_NAME: &str = #program_name;
-            }
-
-            #[leo_bindings::async_trait::async_trait]
-            impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
-
+        #[leo_bindings::async_trait::async_trait]
+        impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
             async fn new(deployer: &Account<TestnetV0>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
                 #(#trait_imports)*
 
@@ -183,14 +174,7 @@ pub(crate) fn generate_interpreter_impl(
             #(#mapping_implementations)*
         }
 
-        impl #program_struct<TestnetV0> {
-        }
-
-        #cheats_module
-        }
-    };
-
-    expanded
+    }
 }
 
 fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {

@@ -1,4 +1,5 @@
 use crate::generator_interpreter::generate_interpreter_impl;
+use crate::interpreter_cheats::generate_interpreter_cheats_from_simplified;
 use crate::signature::{FunctionBinding, SimplifiedBindings};
 use crate::types::get_rust_type;
 use convert_case::{Case::Pascal, Casing};
@@ -36,6 +37,7 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
 
     let interpreter_impl =
         generate_interpreter_impl(simplified, &function_types, &mapping_types, &program_trait);
+    let cheats_module = generate_interpreter_cheats_from_simplified(simplified);
 
     let type_imports = generate_type_imports(&simplified.imports);
 
@@ -67,7 +69,14 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
                 #network_impl
             }
 
-            #interpreter_impl
+            /// Faster bindings for testing Leo code locally.
+            ///
+            /// The interpreter state resets after the session.
+            pub mod interpreter {
+                #interpreter_impl
+
+                #cheats_module
+            }
         }
     }
 }
