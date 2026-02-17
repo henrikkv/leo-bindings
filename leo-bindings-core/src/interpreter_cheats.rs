@@ -6,9 +6,9 @@ use quote::quote;
 pub(crate) fn generate_interpreter_cheats_from_simplified(
     simplified: &SimplifiedBindings,
 ) -> TokenStream {
-    let program_name = &simplified.program_name;
+    let program_id = &simplified.program_id;
     let cheats_module_name = syn::Ident::new(
-        &format!("{}_interpreter_cheats", program_name),
+        &format!("{}_interpreter_cheats", program_id),
         Span::call_site(),
     );
     let mapping_setters = simplified.mappings.iter().map(|mapping| {
@@ -25,7 +25,7 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
                     let value_value = leo_ast::interpreter_value::Value::from((value).to_value());
                     let mut interpreter = state.interpreter.borrow_mut();
                     let mapping_id = leo_ast::Location::new(
-                        Symbol::intern(#program_name),
+                        Symbol::intern(#program_id),
                         vec![Symbol::intern(#mapping_name)],
                     );
                     interpreter.cursor.mappings.get_mut(&mapping_id)

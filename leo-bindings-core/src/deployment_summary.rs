@@ -133,7 +133,7 @@ pub fn print_deployment_stats<N: Network>(
 /// conventions as `print_deployment_plan`.
 pub fn print_execution_stats<N: Network>(
     vm: &VM<N, ConsensusMemory<N>>,
-    program_name: &str,
+    program_id: &str,
     execution: &Execution<N>,
     priority_fee: Option<u64>,
     consensus_version: ConsensusVersion,
@@ -152,7 +152,7 @@ pub fn print_execution_stats<N: Network>(
     log::info!(
         "\n{} {}",
         "📊 Execution Summary for".bold(),
-        program_name.bold()
+        program_id.bold()
     );
     log::info!(
         "{}",

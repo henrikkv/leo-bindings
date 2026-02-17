@@ -124,7 +124,8 @@ struct TupleType {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimplifiedBindings {
-    pub program_name: String,
+    #[serde(alias = "program_name")]
+    pub program_id: String,
     pub imports: Vec<String>,
     pub records: Vec<StructBinding>,
     pub structs: Vec<StructBinding>,
@@ -186,7 +187,7 @@ pub fn get_signatures(input: String) -> String {
         .map(|imports_map| imports_map.keys().cloned().collect())
         .unwrap_or_default();
 
-    let (program_name, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();
+    let (program_id, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();
 
     let (records, structs): (Vec<StructBinding>, Vec<StructBinding>) = program_scope
         .structs
@@ -269,7 +270,7 @@ pub fn get_signatures(input: String) -> String {
         .collect();
 
     let simplified = SimplifiedBindings {
-        program_name,
+        program_id,
         imports,
         records,
         structs,

@@ -25,13 +25,13 @@ pub fn generate_bindings(input: TokenStream) -> TokenStream {
     let simplified = simplified_from_json_string(json);
 
     let crate_name = std::env::var("CARGO_CRATE_NAME").unwrap();
-    let expected_crate_name = format!("{}_bindings", simplified.program_name);
+    let expected_crate_name = format!("{}_bindings", simplified.program_id);
 
     if crate_name != expected_crate_name {
         let error_msg = format!(
             "Naming convention violation: library '{}' should be named '{}' for program '{}.aleo'. \
             Update your Cargo.toml [lib] name to follow the convention: {{program}}_bindings",
-            crate_name, expected_crate_name, simplified.program_name
+            crate_name, expected_crate_name, simplified.program_id
         );
         return quote::quote! {
             compile_error!(#error_msg);

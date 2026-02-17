@@ -50,7 +50,7 @@ pub trait InterpreterExtensions {
 
     fn load_aleo_program_from_string(&mut self, bytecode: &str) -> Result<()>;
 
-    fn is_program_loaded(&self, program_name: &str) -> bool;
+    fn is_program_loaded(&self, program_id: &str) -> bool;
 
     fn get_loaded_programs(&self) -> Vec<String>;
 
@@ -189,8 +189,8 @@ impl InterpreterExtensions for Interpreter {
         Ok(())
     }
 
-    fn is_program_loaded(&self, program_name: &str) -> bool {
-        let program_symbol = Symbol::intern(program_name);
+    fn is_program_loaded(&self, program_id: &str) -> bool {
+        let program_symbol = Symbol::intern(program_id);
 
         self.cursor
             .functions

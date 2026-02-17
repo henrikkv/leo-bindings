@@ -10,10 +10,10 @@ pub(crate) fn generate_interpreter_impl(
     mapping_types: &[MappingTypes],
     program_trait: &Ident,
 ) -> TokenStream {
-    let program_name = &simplified.program_name;
-    let program_name_pascal = simplified.program_name.to_case(Pascal);
+    let program_id = &simplified.program_id;
+    let program_id_pascal = simplified.program_id.to_case(Pascal);
     let program_struct = Ident::new(
-        &format!("{}Interpreter", program_name_pascal),
+        &format!("{}Interpreter", program_id_pascal),
         Span::call_site(),
     );
 
@@ -46,9 +46,9 @@ pub(crate) fn generate_interpreter_impl(
         .map(generate_interpreter_mapping)
         .collect();
 
-    let dev_account_funding = if simplified.program_name == "credits" {
+    let dev_account_funding = if simplified.program_id == "credits" {
         let cheats_module = Ident::new(
-            &format!("{}_interpreter_cheats", program_name),
+            &format!("{}_interpreter_cheats", program_id),
             Span::call_site(),
         );
         quote! {
@@ -83,7 +83,7 @@ pub(crate) fn generate_interpreter_impl(
         }
 
         impl<N: Network> #program_struct<N> {
-            const PROGRAM_NAME: &str = #program_name;
+            const PROGRAM_ID: &str = #program_id;
         }
 
         #[leo_bindings::async_trait::async_trait]
@@ -92,7 +92,6 @@ pub(crate) fn generate_interpreter_impl(
                 #(#trait_imports)*
 
                 let endpoint = vm_manager.client().endpoint();
-                let program_name = #program_name;
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
                 let needs_init = create_session_if_not_set_then(|_| {
@@ -123,7 +122,7 @@ pub(crate) fn generate_interpreter_impl(
 
                 create_session_if_not_set_then(|_| {
                     let program_exists = with_shared_interpreter(|state| {
-                        state.interpreter.borrow().is_program_loaded(program_name)
+                        state.interpreter.borrow().is_program_loaded(Self::PROGRAM_ID)
                     }).unwrap_or(false);
 
                     if !program_exists {
@@ -137,9 +136,9 @@ pub(crate) fn generate_interpreter_impl(
                                 Some(endpoint),
                             ).unwrap();
 
-                            let target_program_name_symbol = leo_span::Symbol::intern(program_name);
+                            let target_program_id_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
                             let target_program = package.programs.iter()
-                                .find(|p| p.name == target_program_name_symbol)
+                                .find(|p| p.name == target_program_id_symbol)
                                 .unwrap();
 
                             let mut interpreter = state.interpreter.borrow_mut();
@@ -157,7 +156,7 @@ pub(crate) fn generate_interpreter_impl(
 
                     with_shared_interpreter(|state| {
                         let mut interpreter = state.interpreter.borrow_mut();
-                        interpreter.cursor.set_program(program_name);
+                        interpreter.cursor.set_program(Self::PROGRAM_ID);
                     });
 
                     #dev_account_funding
@@ -189,7 +188,7 @@ fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
         async fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             with_shared_interpreter(|state| {
                 let interpreter = state.interpreter.borrow();
-                let program_symbol = Symbol::intern(Self::PROGRAM_NAME);
+                let program_symbol = Symbol::intern(Self::PROGRAM_ID);
                 let mapping_name_symbol = Symbol::intern(#mapping_name);
 
                 let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from((key).to_value());
@@ -243,8 +242,8 @@ fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
                 let mut function_args: Vec<leo_ast::interpreter_value::Value> = Vec::new();
                 #(function_args.push(#interpreter_input_conversions);)*
 
-                let program_symbol = Symbol::intern(Self::PROGRAM_NAME);
-                interpreter.cursor.set_program(Self::PROGRAM_NAME);
+                let program_symbol = Symbol::intern(Self::PROGRAM_ID);
+                interpreter.cursor.set_program(Self::PROGRAM_ID);
 
                 let function_name_symbol = Symbol::intern(stringify!(#function_name));
 

@@ -8,16 +8,13 @@ use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::quote;
 
 pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
-    let program_name_pascal = simplified.program_name.to_case(Pascal);
+    let program_id_pascal = simplified.program_id.to_case(Pascal);
 
-    let program_module = Ident::new(&simplified.program_name, Span::call_site());
-    let program_trait = Ident::new(&format!("{}Aleo", program_name_pascal), Span::call_site());
-    let program_struct = Ident::new(
-        &format!("{}Network", program_name_pascal),
-        Span::call_site(),
-    );
+    let program_module = Ident::new(&simplified.program_id, Span::call_site());
+    let program_trait = Ident::new(&format!("{}Aleo", program_id_pascal), Span::call_site());
+    let program_struct = Ident::new(&format!("{}Network", program_id_pascal), Span::call_site());
 
-    let network_aliases = generate_network_aliases(&program_name_pascal, &program_struct);
+    let network_aliases = generate_network_aliases(&program_id_pascal, &program_struct);
 
     let records = generate_records(&simplified.records);
     let structs = generate_structs(&simplified.structs);
@@ -124,7 +121,7 @@ fn generate_network_impl(
     program_trait: &Ident,
     program_struct: &Ident,
 ) -> TokenStream {
-    let program_id = Literal::string(&format!("{}.aleo", &simplified.program_name));
+    let program_id = Literal::string(&format!("{}.aleo", &simplified.program_id));
 
     let (deployment_calls, trait_imports, dependency_ids): (Vec<TokenStream>, Vec<TokenStream>, Vec<TokenStream>) = simplified
         .imports
@@ -149,19 +146,18 @@ fn generate_network_impl(
 
     let function_implementations: Vec<TokenStream> = function_types
         .iter()
-        .map(|types| generate_function(&dependency_ids, types, &program_id))
+        .map(|types| generate_function(&dependency_ids, types))
         .collect();
 
     let mapping_implementations: Vec<TokenStream> = mapping_types
         .iter()
-        .map(|types| generate_mapping(types, &program_id))
+        .map(generate_mapping)
         .collect();
 
     let new_implementation = generate_new(
         &deployment_calls,
         &trait_imports,
         &dependency_ids,
-        &simplified.program_name,
     );
 
     quote! {
@@ -179,6 +175,10 @@ fn generate_network_impl(
             pub vm_manager: VMManager<N>,
             pub package: Package,
             _network: std::marker::PhantomData<N>,
+        }
+
+        impl<N: Network> #program_struct<N> {
+            const PROGRAM_ID: &str = #program_id;
         }
 
         #[leo_bindings::async_trait::async_trait]
@@ -564,7 +564,6 @@ fn generate_new(
     deployment_calls: &[TokenStream],
     trait_imports: &[TokenStream],
     dependency_ids: &[TokenStream],
-    program_name: &str,
 ) -> TokenStream {
     quote! {
         async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
@@ -584,7 +583,7 @@ fn generate_new(
                 )
             })?;
 
-            let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
+            let program_id = ProgramID::<N>::from_str(Self::PROGRAM_ID)?;
             let program_exists = vm_manager.client().program_exists::<N>(&program_id.to_string()).await?;
 
             if program_exists {
@@ -593,7 +592,7 @@ fn generate_new(
                 log::info!("📦 Deploying '{}'", program_id);
 
                 let bytecode = create_session_if_not_set_then(|_| {
-                    let program_symbol = leo_span::Symbol::intern(#program_name);
+                    let program_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
                     let target_program = package.programs.iter()
                         .find(|p| p.name == program_symbol)
                         .ok_or_else(|| anyhow!("Program not found in package"))?;
@@ -625,7 +624,6 @@ fn generate_new(
 fn generate_function(
     dependency_ids: &[TokenStream],
     types: &FunctionTypes,
-    program_id: &Literal,
 ) -> TokenStream {
     let FunctionTypes {
         name,
@@ -637,7 +635,7 @@ fn generate_function(
 
     quote! {
         async fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
-            let program_id_str = #program_id;
+            let program_id_str = Self::PROGRAM_ID;
             let function_name = stringify!(#name);
             let function_args: Vec<Value<N>> = vec![#input_conversions];
             let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
@@ -655,7 +653,7 @@ fn generate_function(
     }
 }
 
-fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
+fn generate_mapping(types: &MappingTypes) -> TokenStream {
     let MappingTypes {
         getter_name,
         mapping_name,
@@ -668,7 +666,7 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
 
             let key_value: Value<N> = key.to_value();
 
-            match self.vm_manager.client().mapping::<N>(#program_id, #mapping_name, &key_value).await {
+            match self.vm_manager.client().mapping::<N>(Self::PROGRAM_ID, #mapping_name, &key_value).await {
                 Ok(Some(val)) => Some(<#value_type>::from_value(val)),
                 Ok(None) => None,
                 Err(e) => {
@@ -680,18 +678,12 @@ fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
     }
 }
 
-fn generate_network_aliases(program_name_pascal: &str, program_struct: &Ident) -> TokenStream {
-    let testnet_struct = Ident::new(
-        &format!("{}Testnet", program_name_pascal),
-        Span::call_site(),
-    );
-    let mainnet_struct = Ident::new(
-        &format!("{}Mainnet", program_name_pascal),
-        Span::call_site(),
-    );
-    let canary_struct = Ident::new(&format!("{}Canary", program_name_pascal), Span::call_site());
+fn generate_network_aliases(program_id_pascal: &str, program_struct: &Ident) -> TokenStream {
+    let testnet_struct = Ident::new(&format!("{}Testnet", program_id_pascal), Span::call_site());
+    let mainnet_struct = Ident::new(&format!("{}Mainnet", program_id_pascal), Span::call_site());
+    let canary_struct = Ident::new(&format!("{}Canary", program_id_pascal), Span::call_site());
     let interpreter_struct = Ident::new(
-        &format!("{}Interpreter", program_name_pascal),
+        &format!("{}Interpreter", program_id_pascal),
         Span::call_site(),
     );
 
