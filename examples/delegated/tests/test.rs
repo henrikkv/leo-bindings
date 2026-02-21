@@ -16,9 +16,7 @@ async fn test_interpreter() {
     init_test_logger();
     let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
 
-    let client = Client::new(ENDPOINT, None).unwrap();
-    let vm_manager = VMManager::new(&client).unwrap();
-    let program = DelegatedProvingTestInterpreter::new(&alice, vm_manager)
+    let program = DelegatedProvingTestInterpreter::new(&alice)
         .await
         .unwrap();
 

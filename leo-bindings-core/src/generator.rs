@@ -107,7 +107,6 @@ fn generate_trait(
         /// Program trait with network and interpreter implementations.
         #[leo_bindings::async_trait::async_trait]
         pub trait #program_trait<N: snarkvm::prelude::Network>: Send + Sync {
-            async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> where Self: Sized;
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
@@ -149,16 +148,10 @@ fn generate_network_impl(
         .map(|types| generate_function(&dependency_ids, types))
         .collect();
 
-    let mapping_implementations: Vec<TokenStream> = mapping_types
-        .iter()
-        .map(generate_mapping)
-        .collect();
+    let mapping_implementations: Vec<TokenStream> =
+        mapping_types.iter().map(generate_mapping).collect();
 
-    let new_implementation = generate_new(
-        &deployment_calls,
-        &trait_imports,
-        &dependency_ids,
-    );
+    let new_implementation = generate_new(&deployment_calls, &trait_imports, &dependency_ids);
 
     quote! {
         use leo_bindings::leo_bindings_sdk::{Client, VMManager};
@@ -179,12 +172,12 @@ fn generate_network_impl(
 
         impl<N: Network> #program_struct<N> {
             const PROGRAM_ID: &str = #program_id;
+
+            #new_implementation
         }
 
         #[leo_bindings::async_trait::async_trait]
         impl<N: Network> #program_trait<N> for #program_struct<N> {
-            #new_implementation
-
             #(#function_implementations)*
 
             #(#mapping_implementations)*
@@ -566,7 +559,7 @@ fn generate_new(
     dependency_ids: &[TokenStream],
 ) -> TokenStream {
     quote! {
-        async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+        pub async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
             #(#trait_imports)*
 
             #(#deployment_calls)*
@@ -621,10 +614,7 @@ fn generate_new(
     }
 }
 
-fn generate_function(
-    dependency_ids: &[TokenStream],
-    types: &FunctionTypes,
-) -> TokenStream {
+fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> TokenStream {
     let FunctionTypes {
         name,
         input_params,

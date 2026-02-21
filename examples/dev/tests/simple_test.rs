@@ -19,9 +19,7 @@ async fn dev_testnet() {
 async fn dev_interpreter() {
     leo_bindings::utils::init_test_logger();
     let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
-    let client = Client::new(ENDPOINT, None).unwrap();
-    let vm_manager = VMManager::new(&client).unwrap();
-    let dev = DevInterpreter::new(&alice, vm_manager).await.unwrap();
+    let dev = DevInterpreter::new(&alice).await.unwrap();
     run_dev_tests(&dev, &alice).await;
 
     leo_bindings::interpreter_cheats::set_block_height(1000);

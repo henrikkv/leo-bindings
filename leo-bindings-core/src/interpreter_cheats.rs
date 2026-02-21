@@ -21,8 +21,8 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
             /// Setter for a mapping in the interpreter.
             pub fn #setter_name(key: #key_type, value: #value_type) -> Result<()> {
                 with_shared_interpreter(|state| {
-                    let key_value = leo_ast::interpreter_value::Value::from((key).to_value());
-                    let value_value = leo_ast::interpreter_value::Value::from((value).to_value());
+                    let key_value = leo_ast::interpreter_value::Value::from(key.to_value());
+                    let value_value = leo_ast::interpreter_value::Value::from(value.to_value());
                     let mut interpreter = state.interpreter.borrow_mut();
                     let mapping_id = leo_ast::Location::new(
                         Symbol::intern(#program_id),
@@ -42,9 +42,10 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
         /// Cheats for testing with the interpreter bindings.
         pub mod #cheats_module_name {
             use super::*;
-            use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_shared_interpreter};
+            use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_shared_interpreter, ToValue};
             use anyhow::{anyhow, Result};
             use leo_span::Symbol;
+            use snarkvm::prelude::TestnetV0;
 
             #(#mapping_setters)*
         }

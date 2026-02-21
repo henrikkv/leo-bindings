@@ -28,7 +28,7 @@ pub(crate) fn generate_interpreter_impl(
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
             let deployment = quote! {
-                let _ = futures::executor::block_on(#import_crate_name::#import_module::interpreter::#import_struct::new(deployer, vm_manager.clone()))?;
+                let _ = futures::executor::block_on(#import_crate_name::#import_module::interpreter::#import_struct::new(deployer))?;
             };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
@@ -63,7 +63,7 @@ pub(crate) fn generate_interpreter_impl(
     };
     quote! {
         use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, futures};
-        use leo_bindings::leo_bindings_sdk::{Account, VMManager};
+        use leo_bindings::leo_bindings_sdk::Account;
         use anyhow::anyhow;
         use snarkvm::prelude::TestnetV0;
         use snarkvm::prelude::TestnetV0 as N;
@@ -71,14 +71,13 @@ pub(crate) fn generate_interpreter_impl(
         use leo_ast::NetworkName;
         use leo_ast::interpreter_value::{Value as LeoValue, ValueVariants};
         use leo_interpreter::Interpreter;
-        use leo_span::{create_session_if_not_set_then, Symbol, SessionGlobals};
+        use leo_span::{Symbol, SessionGlobals};
         use std::str::FromStr;
         use std::path::{Path, PathBuf};
 
         pub use super::*;
 
         pub struct #program_struct<N: Network> {
-            pub endpoint: String,
             _network: std::marker::PhantomData<N>,
         }
 
@@ -86,88 +85,82 @@ pub(crate) fn generate_interpreter_impl(
             const PROGRAM_ID: &str = #program_id;
         }
 
-        #[leo_bindings::async_trait::async_trait]
-        impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
-            async fn new(deployer: &Account<TestnetV0>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+        impl #program_struct<TestnetV0> {
+            pub async fn new(deployer: &Account<TestnetV0>) -> Result<Self, anyhow::Error> {
                 #(#trait_imports)*
 
-                let endpoint = vm_manager.client().endpoint();
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
-                let needs_init = create_session_if_not_set_then(|_| {
-                    with_shared_interpreter(|_| true).is_none()
-                });
+                let needs_init = with_shared_interpreter(|_| true).is_none();
 
                 if needs_init {
-                    create_session_if_not_set_then(|_| {
-                        let block_height = 0u32;
-                        let block_timestamp = 0i64;
-                        let network = NetworkName::from_str("testnet").unwrap();
+                    let block_height = 0u32;
+                    let block_timestamp = 0i64;
+                    let network = NetworkName::from_str("testnet").unwrap();
 
-                        let interpreter = Interpreter::new(
-                            &[] as &[(PathBuf, Vec<PathBuf>)],
-                            &[] as &[PathBuf],
-                            deployer.private_key().to_string(),
-                            block_height,
-                            block_timestamp,
-                            network,
-                        ).unwrap();
+                    let interpreter = Interpreter::new(
+                        &[] as &[(PathBuf, Vec<PathBuf>)],
+                        &[] as &[PathBuf],
+                        deployer.private_key().to_string(),
+                        block_height,
+                        block_timestamp,
+                        network,
+                    ).unwrap();
 
-                        let session = SessionGlobals::default();
-                        initialize_shared_interpreter(interpreter, session);
-                    });
+                    let session = SessionGlobals::default();
+                    initialize_shared_interpreter(interpreter, session);
 
                     #(#deployment_calls)*
                 }
 
-                create_session_if_not_set_then(|_| {
-                    let program_exists = with_shared_interpreter(|state| {
-                        state.interpreter.borrow().is_program_loaded(Self::PROGRAM_ID)
-                    }).unwrap_or(false);
+                let program_exists = with_shared_interpreter(|state| {
+                    state.interpreter.borrow().is_program_loaded(Self::PROGRAM_ID)
+                }).unwrap_or(false);
 
-                    if !program_exists {
-                        with_shared_interpreter(|state| {
-                            let package = Package::from_directory(
-                                crate_dir,
-                                crate_dir,
-                                false,
-                                false,
-                                Some(NetworkName::from_str("testnet").unwrap()),
-                                Some(endpoint),
-                            ).unwrap();
-
-                            let target_program_id_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
-                            let target_program = package.programs.iter()
-                                .find(|p| p.name == target_program_id_symbol)
-                                .unwrap();
-
-                            let mut interpreter = state.interpreter.borrow_mut();
-
-                            match &target_program.data {
-                                leo_package::ProgramData::Bytecode(bytecode) => {
-                                    interpreter.load_aleo_program_from_string(bytecode).unwrap();
-                                },
-                                leo_package::ProgramData::SourcePath { directory: _, source } => {
-                                    interpreter.load_leo_program(source).unwrap();
-                                }
-                            }
-                        }).unwrap();
-                    }
-
+                if !program_exists {
                     with_shared_interpreter(|state| {
-                        let mut interpreter = state.interpreter.borrow_mut();
-                        interpreter.cursor.set_program(Self::PROGRAM_ID);
-                    });
+                        let package = Package::from_directory(
+                            crate_dir,
+                            crate_dir,
+                            false,
+                            false,
+                            Some(NetworkName::from_str("testnet").unwrap()),
+                            None,
+                        ).unwrap();
 
-                    #dev_account_funding
+                        let target_program_id_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
+                        let target_program = package.programs.iter()
+                            .find(|p| p.name == target_program_id_symbol)
+                            .unwrap();
+
+                        let mut interpreter = state.interpreter.borrow_mut();
+
+                        match &target_program.data {
+                            leo_package::ProgramData::Bytecode(bytecode) => {
+                                interpreter.load_aleo_program_from_string(bytecode).unwrap();
+                            },
+                            leo_package::ProgramData::SourcePath { directory: _, source } => {
+                                interpreter.load_leo_program(source).unwrap();
+                            }
+                        }
+                    }).unwrap();
+                }
+
+                with_shared_interpreter(|state| {
+                    let mut interpreter = state.interpreter.borrow_mut();
+                    interpreter.cursor.set_program(Self::PROGRAM_ID);
                 });
 
+                #dev_account_funding
+
                 Ok(Self {
-                    endpoint: endpoint.to_string(),
                     _network: std::marker::PhantomData,
                 })
             }
+        }
 
+        #[leo_bindings::async_trait::async_trait]
+        impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
             #(#function_implementations)*
 
             #(#mapping_implementations)*
@@ -191,7 +184,7 @@ fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
                 let program_symbol = Symbol::intern(Self::PROGRAM_ID);
                 let mapping_name_symbol = Symbol::intern(#mapping_name);
 
-                let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from((key).to_value());
+                let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from(key.to_value());
 
                 if let Some(mapping) = interpreter.cursor.lookup_mapping(Some(program_symbol), mapping_name_symbol) {
                     if let Some(value_leo) = mapping.get(&key_leo_value) {
