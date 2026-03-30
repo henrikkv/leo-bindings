@@ -537,19 +537,19 @@ impl<N: Network, T: FromValue<N>, const SIZE: usize> FromValue<N> for [T; SIZE] 
     }
 }
 
-impl ToValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
-    fn to_value(&self) -> Value<snarkvm::prelude::TestnetV0> {
-        use leo_ast::interpreter_value::ValueVariants;
-
-        match &self.contents {
-            ValueVariants::Svm(svm_value) => svm_value.clone(),
-            _ => panic!("Only SVM values can be converted via ToValue."),
-        }
-    }
-}
-
-impl FromValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
-    fn from_value(value: Value<snarkvm::prelude::TestnetV0>) -> Self {
-        value.into()
-    }
-}
+// impl ToValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
+//     fn to_value(&self) -> Value<snarkvm::prelude::TestnetV0> {
+//         use leo_ast::interpreter_value::ValueVariants;
+//
+//         match &self.contents {
+//             ValueVariants::Svm(svm_value) => svm_value.clone(),
+//             _ => panic!("Only SVM values can be converted via ToValue."),
+//         }
+//     }
+// }
+//
+// impl FromValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
+//     fn from_value(value: Value<snarkvm::prelude::TestnetV0>) -> Self {
+//         value.into()
+//     }
+// }

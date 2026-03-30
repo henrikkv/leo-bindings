@@ -23,12 +23,13 @@ pub(crate) fn generate_interpreter_impl(
         .map(|import| {
             let import_pascal = import.to_case(Pascal);
             let import_module = Ident::new(import, Span::call_site());
-            let import_struct = Ident::new(&format!("{}Interpreter", import_pascal), Span::call_site());
+            let import_struct =
+                Ident::new(&format!("{}Interpreter", import_pascal), Span::call_site());
             let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
             let deployment = quote! {
-                let _ = futures::executor::block_on(#import_crate_name::#import_module::interpreter::#import_struct::new(deployer))?;
+                #import_crate_name::#import_module::interpreter::#import_struct::new(deployer)?;
             };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
 
@@ -62,7 +63,7 @@ pub(crate) fn generate_interpreter_impl(
         quote! {}
     };
     quote! {
-        use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, initialize_shared_interpreter, with_shared_interpreter, InterpreterExtensions, futures};
+        use leo_bindings::{leo_package, leo_ast, leo_span, leo_interpreter, is_interpreter_initialized, initialize_interpreter_thread, with_interpreter_blocking, InterpreterExtensions, log};
         use leo_bindings::leo_bindings_sdk::Account;
         use anyhow::anyhow;
         use snarkvm::prelude::TestnetV0;
@@ -86,46 +87,48 @@ pub(crate) fn generate_interpreter_impl(
         }
 
         impl #program_struct<TestnetV0> {
-            pub async fn new(deployer: &Account<TestnetV0>) -> Result<Self, anyhow::Error> {
+            pub fn new(deployer: &Account<TestnetV0>) -> Result<Self, anyhow::Error> {
                 #(#trait_imports)*
 
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
 
-                let needs_init = with_shared_interpreter(|_| true).is_none();
+                let needs_init = !is_interpreter_initialized();
 
                 if needs_init {
+                    let private_key_str = deployer.private_key().to_string();
                     let block_height = 0u32;
                     let block_timestamp = 0i64;
-                    let network = NetworkName::from_str("testnet").unwrap();
 
-                    let interpreter = Interpreter::new(
-                        &[] as &[(PathBuf, Vec<PathBuf>)],
-                        &[] as &[PathBuf],
-                        deployer.private_key().to_string(),
-                        block_height,
-                        block_timestamp,
-                        network,
-                    ).unwrap();
-
-                    let session = SessionGlobals::default();
-                    initialize_shared_interpreter(interpreter, session);
+                    initialize_interpreter_thread(move || {
+                        let network = NetworkName::from_str("testnet").unwrap();
+                        let interpreter = Interpreter::new(
+                            &[] as &[(PathBuf, Vec<PathBuf>)],
+                            &[] as &[PathBuf],
+                            private_key_str,
+                            block_height,
+                            block_timestamp,
+                            network,
+                        ).unwrap();
+                        let session = SessionGlobals::default();
+                        (interpreter, session)
+                    });
 
                     #(#deployment_calls)*
                 }
 
-                let program_exists = with_shared_interpreter(|state| {
+                let program_exists = with_interpreter_blocking(|state| {
                     state.interpreter.borrow().is_program_loaded(Self::PROGRAM_ID)
                 }).unwrap_or(false);
 
                 if !program_exists {
-                    with_shared_interpreter(|state| {
+                    with_interpreter_blocking(move |state| {
                         let package = Package::from_directory(
                             crate_dir,
                             crate_dir,
                             false,
                             false,
                             Some(NetworkName::from_str("testnet").unwrap()),
-                            None,
+                            "localhost:3030".into(),
                         ).unwrap();
 
                         let target_program_id_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
@@ -146,7 +149,7 @@ pub(crate) fn generate_interpreter_impl(
                     }).unwrap();
                 }
 
-                with_shared_interpreter(|state| {
+                with_interpreter_blocking(|state| {
                     let mut interpreter = state.interpreter.borrow_mut();
                     interpreter.cursor.set_program(Self::PROGRAM_ID);
                 });
@@ -159,7 +162,6 @@ pub(crate) fn generate_interpreter_impl(
             }
         }
 
-        #[leo_bindings::async_trait::async_trait]
         impl #program_trait<TestnetV0> for #program_struct<TestnetV0> {
             #(#function_implementations)*
 
@@ -178,13 +180,14 @@ fn generate_interpreter_mapping(types: &MappingTypes) -> TokenStream {
     } = types;
 
     quote! {
-        async fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-            with_shared_interpreter(|state| {
+        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
+            let svm_key = ToValue::<TestnetV0>::to_value(&key);
+            with_interpreter_blocking(move |state| {
                 let interpreter = state.interpreter.borrow();
                 let program_symbol = Symbol::intern(Self::PROGRAM_ID);
                 let mapping_name_symbol = Symbol::intern(#mapping_name);
 
-                let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from(key.to_value());
+                let key_leo_value: leo_ast::interpreter_value::Value = leo_ast::interpreter_value::Value::from(svm_key);
 
                 if let Some(mapping) = interpreter.cursor.lookup_mapping(Some(program_symbol), mapping_name_symbol) {
                     if let Some(value_leo) = mapping.get(&key_leo_value) {
@@ -214,23 +217,38 @@ fn generate_interpreter_function(types: &FunctionTypes) -> TokenStream {
         .collect();
     let param_count = input_params_vec.len();
 
-    let interpreter_input_conversions: Vec<TokenStream> = input_params_vec
+    let pre_conversions: Vec<TokenStream> = input_params_vec
         .iter()
         .map(|param| {
             let param_name = param.trim().split(':').next().unwrap().trim();
             let param_ident = Ident::new(param_name, Span::call_site());
+            let svm_ident = Ident::new(&format!("svm_{}", param_name), Span::call_site());
             quote! {
-                leo_ast::interpreter_value::Value::from(ToValue::<TestnetV0>::to_value(&#param_ident))
+                let #svm_ident = ToValue::<TestnetV0>::to_value(&#param_ident);
+            }
+        })
+        .collect();
+
+    let interpreter_input_conversions: Vec<TokenStream> = input_params_vec
+        .iter()
+        .map(|param| {
+            let param_name = param.trim().split(':').next().unwrap().trim();
+            let svm_ident = Ident::new(&format!("svm_{}", param_name), Span::call_site());
+            quote! {
+                leo_ast::interpreter_value::Value::from(#svm_ident)
             }
         })
         .collect();
 
     quote! {
-        async fn #function_name(&self, account: &Account<TestnetV0>, #input_params) -> #function_return_type {
-            let function_outputs = with_shared_interpreter(|state| -> Result<Vec<snarkvm::prelude::Value<TestnetV0>>, anyhow::Error> {
+        fn #function_name(&self, account: &Account<TestnetV0>, #input_params) -> #function_return_type {
+            let signer_address = account.address();
+            #(#pre_conversions)*
+
+            let function_outputs = with_interpreter_blocking(move |state| -> Result<Vec<snarkvm::prelude::Value<TestnetV0>>, anyhow::Error> {
                 let mut interpreter = state.interpreter.borrow_mut();
 
-                interpreter.set_signer(account.address());
+                interpreter.set_signer(signer_address);
 
                 let mut function_args: Vec<leo_ast::interpreter_value::Value> = Vec::new();
                 #(function_args.push(#interpreter_input_conversions);)*

@@ -1,0 +1,2401 @@
+{
+  "modules": {},
+  "imports": {},
+  "stubs": {},
+  "program_scopes": {
+    "dev.aleo": {
+      "program_id": {
+        "name": {
+          "name": "dev",
+          "id": 1438
+        },
+        "network": {
+          "name": "aleo",
+          "id": 1439
+        }
+      },
+      "parents": [],
+      "consts": [],
+      "composites": [
+        [
+          "A",
+          {
+            "identifier": {
+              "name": "A",
+              "id": 1478
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "number",
+                  "id": 1480
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1479
+              }
+            ],
+            "is_record": false,
+            "id": 1477
+          }
+        ],
+        [
+          "B",
+          {
+            "identifier": {
+              "name": "B",
+              "id": 1482
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "number",
+                  "id": 1484
+                },
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 1483
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "a",
+                  "id": 1486
+                },
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "A",
+                        "id": 1487
+                      },
+                      "target": "Unresolved",
+                      "id": 1488
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1485
+              }
+            ],
+            "is_record": false,
+            "id": 1481
+          }
+        ],
+        [
+          "User",
+          {
+            "identifier": {
+              "name": "User",
+              "id": 1604
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "owner",
+                  "id": 1606
+                },
+                "type_": "Address",
+                "id": 1605
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "id",
+                  "id": 1608
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1607
+              },
+              {
+                "mode": "Public",
+                "identifier": {
+                  "name": "balance",
+                  "id": 1610
+                },
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1609
+              }
+            ],
+            "is_record": true,
+            "id": 1603
+          }
+        ],
+        [
+          "Container",
+          {
+            "identifier": {
+              "name": "Container",
+              "id": 1612
+            },
+            "const_parameters": [],
+            "members": [
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "owner",
+                  "id": 1614
+                },
+                "type_": "Address",
+                "id": 1613
+              },
+              {
+                "mode": "None",
+                "identifier": {
+                  "name": "data",
+                  "id": 1616
+                },
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1617
+                      },
+                      "target": "Unresolved",
+                      "id": 1618
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1615
+              }
+            ],
+            "is_record": true,
+            "id": 1611
+          }
+        ]
+      ],
+      "mappings": [
+        [
+          "balances",
+          {
+            "identifier": {
+              "name": "balances",
+              "id": 1445
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Integer": "U64"
+            },
+            "id": 1444
+          }
+        ],
+        [
+          "bs",
+          {
+            "identifier": {
+              "name": "bs",
+              "id": 1447
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Composite": {
+                "path": {
+                  "user_program": null,
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 1448
+                  },
+                  "target": "Unresolved",
+                  "id": 1449
+                },
+                "const_arguments": []
+              }
+            },
+            "id": 1446
+          }
+        ],
+        [
+          "block_heights",
+          {
+            "identifier": {
+              "name": "block_heights",
+              "id": 1451
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Integer": "U32"
+            },
+            "id": 1450
+          }
+        ],
+        [
+          "block_timestamps",
+          {
+            "identifier": {
+              "name": "block_timestamps",
+              "id": 1453
+            },
+            "key_type": {
+              "Integer": "U64"
+            },
+            "value_type": {
+              "Integer": "I64"
+            },
+            "id": 1452
+          }
+        ]
+      ],
+      "storage_variables": [],
+      "functions": [
+        [
+          "main",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "main",
+              "id": 1455
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 1457
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 1456
+              },
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 1459
+                },
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 1458
+              }
+            ],
+            "output": [
+              {
+                "mode": "Public",
+                "type_": {
+                  "Integer": "U32"
+                },
+                "id": 1460
+              }
+            ],
+            "output_type": {
+              "Integer": "U32"
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "c",
+                        "id": 1464
+                      }
+                    },
+                    "type_": {
+                      "Integer": "U32"
+                    },
+                    "value": {
+                      "Binary": {
+                        "left": {
+                          "Path": {
+                            "user_program": null,
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "a",
+                              "id": 1466
+                            },
+                            "target": "Unresolved",
+                            "id": 1467
+                          }
+                        },
+                        "right": {
+                          "Path": {
+                            "user_program": null,
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "b",
+                              "id": 1469
+                            },
+                            "target": "Unresolved",
+                            "id": 1470
+                          }
+                        },
+                        "op": "Add",
+                        "id": 1465
+                      }
+                    },
+                    "id": 1463
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "user_program": null,
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "c",
+                          "id": 1474
+                        },
+                        "target": "Unresolved",
+                        "id": 1475
+                      }
+                    },
+                    "id": 1473
+                  }
+                }
+              ],
+              "id": 1461
+            },
+            "id": 1454
+          }
+        ],
+        [
+          "nested",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "nested",
+              "id": 1490
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 1492
+                },
+                "mode": "Public",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1493
+                      },
+                      "target": "Unresolved",
+                      "id": 1494
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1491
+              }
+            ],
+            "output": [
+              {
+                "mode": "Public",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1495
+                      },
+                      "target": "Unresolved",
+                      "id": 1496
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1497
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "user_program": null,
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 1495
+                  },
+                  "target": "Unresolved",
+                  "id": 1496
+                },
+                "const_arguments": []
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "resulta",
+                        "id": 1501
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 1502
+                          },
+                          "target": "Unresolved",
+                          "id": 1503
+                        },
+                        "const_arguments": []
+                      }
+                    },
+                    "value": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "A",
+                            "id": 1505
+                          },
+                          "target": "Unresolved",
+                          "id": 1506
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "number",
+                              "id": 1508
+                            },
+                            "expression": {
+                              "Literal": {
+                                "id": 1509,
+                                "variant": {
+                                  "Integer": [
+                                    "U64",
+                                    "1"
+                                  ]
+                                }
+                              }
+                            },
+                            "id": 1507
+                          }
+                        ],
+                        "id": 1504
+                      }
+                    },
+                    "id": 1500
+                  }
+                },
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "resultb",
+                        "id": 1512
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 1513
+                          },
+                          "target": "Unresolved",
+                          "id": 1514
+                        },
+                        "const_arguments": []
+                      }
+                    },
+                    "value": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "B",
+                            "id": 1516
+                          },
+                          "target": "Unresolved",
+                          "id": 1517
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "number",
+                              "id": 1519
+                            },
+                            "expression": {
+                              "Literal": {
+                                "id": 1520,
+                                "variant": {
+                                  "Integer": [
+                                    "U32",
+                                    "2"
+                                  ]
+                                }
+                              }
+                            },
+                            "id": 1518
+                          },
+                          {
+                            "identifier": {
+                              "name": "a",
+                              "id": 1522
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "resulta",
+                                  "id": 1523
+                                },
+                                "target": "Unresolved",
+                                "id": 1524
+                              }
+                            },
+                            "id": 1521
+                          }
+                        ],
+                        "id": 1515
+                      }
+                    },
+                    "id": 1511
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "user_program": null,
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "resultb",
+                          "id": 1528
+                        },
+                        "target": "Unresolved",
+                        "id": 1529
+                      }
+                    },
+                    "id": 1527
+                  }
+                }
+              ],
+              "id": 1498
+            },
+            "id": 1489
+          }
+        ],
+        [
+          "store_nested",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "store_nested",
+              "id": 1532
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "b",
+                  "id": 1534
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1535
+                      },
+                      "target": "Unresolved",
+                      "id": 1536
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1533
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 1538
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1537
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 1539
+              }
+            ],
+            "output_type": {
+              "Future": {
+                "inputs": [],
+                "location": null,
+                "is_explicit": false
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Async": {
+                        "block": {
+                          "statements": [
+                            {
+                              "Expression": {
+                                "expression": {
+                                  "Intrinsic": {
+                                    "name": "_mapping_set",
+                                    "type_parameters": [],
+                                    "arguments": [
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "bs",
+                                            "id": 1551
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1552
+                                        }
+                                      },
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "id",
+                                            "id": 1554
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1555
+                                        }
+                                      },
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "b",
+                                            "id": 1557
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1558
+                                        }
+                                      }
+                                    ],
+                                    "id": 1547
+                                  }
+                                },
+                                "id": 1546
+                              }
+                            }
+                          ],
+                          "id": 1544
+                        },
+                        "id": 1543
+                      }
+                    },
+                    "id": 1542
+                  }
+                }
+              ],
+              "id": 1540
+            },
+            "id": 1531
+          }
+        ],
+        [
+          "nested_array",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "nested_array",
+              "id": 1561
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "a",
+                  "id": 1563
+                },
+                "mode": "None",
+                "type_": {
+                  "Array": {
+                    "element_type": {
+                      "Array": {
+                        "element_type": {
+                          "Integer": "U8"
+                        },
+                        "length": {
+                          "Literal": {
+                            "id": 1564,
+                            "variant": {
+                              "Integer": [
+                                "U8",
+                                "5"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 1565,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 1562
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Array": {
+                    "element_type": {
+                      "Array": {
+                        "element_type": {
+                          "Integer": "U8"
+                        },
+                        "length": {
+                          "Literal": {
+                            "id": 1566,
+                            "variant": {
+                              "Integer": [
+                                "U8",
+                                "5"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 1567,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "id": 1568
+              }
+            ],
+            "output_type": {
+              "Array": {
+                "element_type": {
+                  "Array": {
+                    "element_type": {
+                      "Integer": "U8"
+                    },
+                    "length": {
+                      "Literal": {
+                        "id": 1566,
+                        "variant": {
+                          "Integer": [
+                            "U8",
+                            "5"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "length": {
+                  "Literal": {
+                    "id": 1567,
+                    "variant": {
+                      "Integer": [
+                        "U8",
+                        "5"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Array": {
+                        "elements": [
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 1574,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1575,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1576,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1577,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1578,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 1573
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 1580,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1581,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1582,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1583,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1584,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 1579
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 1586,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1587,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1588,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1589,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1590,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 1585
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 1592,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1593,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1594,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1595,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1596,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 1591
+                            }
+                          },
+                          {
+                            "Array": {
+                              "elements": [
+                                {
+                                  "Literal": {
+                                    "id": 1598,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1599,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1600,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1601,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "Literal": {
+                                    "id": 1602,
+                                    "variant": {
+                                      "Integer": [
+                                        "U8",
+                                        "0"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "id": 1597
+                            }
+                          }
+                        ],
+                        "id": 1572
+                      }
+                    },
+                    "id": 1571
+                  }
+                }
+              ],
+              "id": 1569
+            },
+            "id": 1560
+          }
+        ],
+        [
+          "create_user",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "create_user",
+              "id": 1620
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "owner",
+                  "id": 1622
+                },
+                "mode": "None",
+                "type_": "Address",
+                "id": 1621
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 1624
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1623
+              },
+              {
+                "identifier": {
+                  "name": "balance",
+                  "id": 1626
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1625
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 1627
+                      },
+                      "target": "Unresolved",
+                      "id": 1628
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1629
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "user_program": null,
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "User",
+                    "id": 1627
+                  },
+                  "target": "Unresolved",
+                  "id": 1628
+                },
+                "const_arguments": []
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "user",
+                        "id": 1633
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 1634
+                          },
+                          "target": "Unresolved",
+                          "id": 1635
+                        },
+                        "const_arguments": []
+                      }
+                    },
+                    "value": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 1637
+                          },
+                          "target": "Unresolved",
+                          "id": 1638
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 1640
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "owner",
+                                  "id": 1641
+                                },
+                                "target": "Unresolved",
+                                "id": 1642
+                              }
+                            },
+                            "id": 1639
+                          },
+                          {
+                            "identifier": {
+                              "name": "id",
+                              "id": 1645
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 1646
+                                },
+                                "target": "Unresolved",
+                                "id": 1647
+                              }
+                            },
+                            "id": 1644
+                          },
+                          {
+                            "identifier": {
+                              "name": "balance",
+                              "id": 1650
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 1651
+                                },
+                                "target": "Unresolved",
+                                "id": 1652
+                              }
+                            },
+                            "id": 1649
+                          }
+                        ],
+                        "id": 1636
+                      }
+                    },
+                    "id": 1632
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "user_program": null,
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "user",
+                          "id": 1656
+                        },
+                        "target": "Unresolved",
+                        "id": 1657
+                      }
+                    },
+                    "id": 1655
+                  }
+                }
+              ],
+              "id": 1630
+            },
+            "id": 1619
+          }
+        ],
+        [
+          "consume_user",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "consume_user",
+              "id": 1660
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "user",
+                  "id": 1662
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 1663
+                      },
+                      "target": "Unresolved",
+                      "id": 1664
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1661
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1665
+              }
+            ],
+            "output_type": {
+              "Integer": "U64"
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "MemberAccess": {
+                        "inner": {
+                          "Path": {
+                            "user_program": null,
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "user",
+                              "id": 1670
+                            },
+                            "target": "Unresolved",
+                            "id": 1671
+                          }
+                        },
+                        "name": {
+                          "name": "balance",
+                          "id": 1673
+                        },
+                        "id": 1669
+                      }
+                    },
+                    "id": 1668
+                  }
+                }
+              ],
+              "id": 1666
+            },
+            "id": 1659
+          }
+        ],
+        [
+          "create_container",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "create_container",
+              "id": 1675
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "owner",
+                  "id": 1677
+                },
+                "mode": "None",
+                "type_": "Address",
+                "id": 1676
+              },
+              {
+                "identifier": {
+                  "name": "data",
+                  "id": 1679
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1680
+                      },
+                      "target": "Unresolved",
+                      "id": 1681
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1678
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Container",
+                        "id": 1682
+                      },
+                      "target": "Unresolved",
+                      "id": 1683
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1684
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "user_program": null,
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "Container",
+                    "id": 1682
+                  },
+                  "target": "Unresolved",
+                  "id": 1683
+                },
+                "const_arguments": []
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "container",
+                        "id": 1688
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Container",
+                            "id": 1689
+                          },
+                          "target": "Unresolved",
+                          "id": 1690
+                        },
+                        "const_arguments": []
+                      }
+                    },
+                    "value": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "Container",
+                            "id": 1692
+                          },
+                          "target": "Unresolved",
+                          "id": 1693
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 1695
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "owner",
+                                  "id": 1696
+                                },
+                                "target": "Unresolved",
+                                "id": 1697
+                              }
+                            },
+                            "id": 1694
+                          },
+                          {
+                            "identifier": {
+                              "name": "data",
+                              "id": 1700
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "data",
+                                  "id": 1701
+                                },
+                                "target": "Unresolved",
+                                "id": 1702
+                              }
+                            },
+                            "id": 1699
+                          }
+                        ],
+                        "id": 1691
+                      }
+                    },
+                    "id": 1687
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Path": {
+                        "user_program": null,
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "container",
+                          "id": 1706
+                        },
+                        "target": "Unresolved",
+                        "id": 1707
+                      }
+                    },
+                    "id": 1705
+                  }
+                }
+              ],
+              "id": 1685
+            },
+            "id": 1674
+          }
+        ],
+        [
+          "consume_container",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "consume_container",
+              "id": 1710
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "container",
+                  "id": 1712
+                },
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "Container",
+                        "id": 1713
+                      },
+                      "target": "Unresolved",
+                      "id": 1714
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1711
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "B",
+                        "id": 1715
+                      },
+                      "target": "Unresolved",
+                      "id": 1716
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1717
+              }
+            ],
+            "output_type": {
+              "Composite": {
+                "path": {
+                  "user_program": null,
+                  "qualifier": [],
+                  "identifier": {
+                    "name": "B",
+                    "id": 1715
+                  },
+                  "target": "Unresolved",
+                  "id": 1716
+                },
+                "const_arguments": []
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "MemberAccess": {
+                        "inner": {
+                          "Path": {
+                            "user_program": null,
+                            "qualifier": [],
+                            "identifier": {
+                              "name": "container",
+                              "id": 1722
+                            },
+                            "target": "Unresolved",
+                            "id": 1723
+                          }
+                        },
+                        "name": {
+                          "name": "data",
+                          "id": 1725
+                        },
+                        "id": 1721
+                      }
+                    },
+                    "id": 1720
+                  }
+                }
+              ],
+              "id": 1718
+            },
+            "id": 1709
+          }
+        ],
+        [
+          "asynchronous",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "asynchronous",
+              "id": 1727
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "balance",
+                  "id": 1729
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1728
+              },
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 1731
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1730
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Composite": {
+                    "path": {
+                      "user_program": null,
+                      "qualifier": [],
+                      "identifier": {
+                        "name": "User",
+                        "id": 1732
+                      },
+                      "target": "Unresolved",
+                      "id": 1733
+                    },
+                    "const_arguments": []
+                  }
+                },
+                "id": 1734
+              },
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 1735
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  {
+                    "Composite": {
+                      "path": {
+                        "user_program": null,
+                        "qualifier": [],
+                        "identifier": {
+                          "name": "User",
+                          "id": 1732
+                        },
+                        "target": "Unresolved",
+                        "id": 1733
+                      },
+                      "const_arguments": []
+                    }
+                  },
+                  {
+                    "Future": {
+                      "inputs": [],
+                      "location": null,
+                      "is_explicit": false
+                    }
+                  }
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Definition": {
+                    "place": {
+                      "Single": {
+                        "name": "user",
+                        "id": 1739
+                      }
+                    },
+                    "type_": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 1740
+                          },
+                          "target": "Unresolved",
+                          "id": 1741
+                        },
+                        "const_arguments": []
+                      }
+                    },
+                    "value": {
+                      "Composite": {
+                        "path": {
+                          "user_program": null,
+                          "qualifier": [],
+                          "identifier": {
+                            "name": "User",
+                            "id": 1743
+                          },
+                          "target": "Unresolved",
+                          "id": 1744
+                        },
+                        "const_arguments": [],
+                        "members": [
+                          {
+                            "identifier": {
+                              "name": "owner",
+                              "id": 1746
+                            },
+                            "expression": {
+                              "Intrinsic": {
+                                "name": "_self_caller",
+                                "type_parameters": [],
+                                "arguments": [],
+                                "id": 1750
+                              }
+                            },
+                            "id": 1745
+                          },
+                          {
+                            "identifier": {
+                              "name": "id",
+                              "id": 1752
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "id",
+                                  "id": 1753
+                                },
+                                "target": "Unresolved",
+                                "id": 1754
+                              }
+                            },
+                            "id": 1751
+                          },
+                          {
+                            "identifier": {
+                              "name": "balance",
+                              "id": 1757
+                            },
+                            "expression": {
+                              "Path": {
+                                "user_program": null,
+                                "qualifier": [],
+                                "identifier": {
+                                  "name": "balance",
+                                  "id": 1758
+                                },
+                                "target": "Unresolved",
+                                "id": 1759
+                              }
+                            },
+                            "id": 1756
+                          }
+                        ],
+                        "id": 1742
+                      }
+                    },
+                    "id": 1738
+                  }
+                },
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "user_program": null,
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "user",
+                                "id": 1764
+                              },
+                              "target": "Unresolved",
+                              "id": 1765
+                            }
+                          },
+                          {
+                            "Async": {
+                              "block": {
+                                "statements": [
+                                  {
+                                    "Expression": {
+                                      "expression": {
+                                        "Intrinsic": {
+                                          "name": "_mapping_set",
+                                          "type_parameters": [],
+                                          "arguments": [
+                                            {
+                                              "Path": {
+                                                "user_program": null,
+                                                "qualifier": [],
+                                                "identifier": {
+                                                  "name": "balances",
+                                                  "id": 1775
+                                                },
+                                                "target": "Unresolved",
+                                                "id": 1776
+                                              }
+                                            },
+                                            {
+                                              "Path": {
+                                                "user_program": null,
+                                                "qualifier": [],
+                                                "identifier": {
+                                                  "name": "id",
+                                                  "id": 1778
+                                                },
+                                                "target": "Unresolved",
+                                                "id": 1779
+                                              }
+                                            },
+                                            {
+                                              "Path": {
+                                                "user_program": null,
+                                                "qualifier": [],
+                                                "identifier": {
+                                                  "name": "balance",
+                                                  "id": 1781
+                                                },
+                                                "target": "Unresolved",
+                                                "id": 1782
+                                              }
+                                            }
+                                          ],
+                                          "id": 1771
+                                        }
+                                      },
+                                      "id": 1770
+                                    }
+                                  }
+                                ],
+                                "id": 1768
+                              },
+                              "id": 1767
+                            }
+                          }
+                        ],
+                        "id": 1763
+                      }
+                    },
+                    "id": 1762
+                  }
+                }
+              ],
+              "id": 1736
+            },
+            "id": 1726
+          }
+        ],
+        [
+          "test_all_types",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "test_all_types",
+              "id": 1785
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "f",
+                  "id": 1787
+                },
+                "mode": "None",
+                "type_": "Field",
+                "id": 1786
+              },
+              {
+                "identifier": {
+                  "name": "s",
+                  "id": 1789
+                },
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 1788
+              },
+              {
+                "identifier": {
+                  "name": "g",
+                  "id": 1791
+                },
+                "mode": "None",
+                "type_": "Group",
+                "id": 1790
+              },
+              {
+                "identifier": {
+                  "name": "flag",
+                  "id": 1793
+                },
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 1792
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": "Field",
+                "id": 1794
+              },
+              {
+                "mode": "None",
+                "type_": "Scalar",
+                "id": 1795
+              },
+              {
+                "mode": "None",
+                "type_": "Group",
+                "id": 1796
+              },
+              {
+                "mode": "None",
+                "type_": "Boolean",
+                "id": 1797
+              }
+            ],
+            "output_type": {
+              "Tuple": {
+                "elements": [
+                  "Field",
+                  "Scalar",
+                  "Group",
+                  "Boolean"
+                ]
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Tuple": {
+                        "elements": [
+                          {
+                            "Path": {
+                              "user_program": null,
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "f",
+                                "id": 1802
+                              },
+                              "target": "Unresolved",
+                              "id": 1803
+                            }
+                          },
+                          {
+                            "Path": {
+                              "user_program": null,
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "s",
+                                "id": 1805
+                              },
+                              "target": "Unresolved",
+                              "id": 1806
+                            }
+                          },
+                          {
+                            "Path": {
+                              "user_program": null,
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "g",
+                                "id": 1808
+                              },
+                              "target": "Unresolved",
+                              "id": 1809
+                            }
+                          },
+                          {
+                            "Path": {
+                              "user_program": null,
+                              "qualifier": [],
+                              "identifier": {
+                                "name": "flag",
+                                "id": 1811
+                              },
+                              "target": "Unresolved",
+                              "id": 1812
+                            }
+                          }
+                        ],
+                        "id": 1801
+                      }
+                    },
+                    "id": 1800
+                  }
+                }
+              ],
+              "id": 1798
+            },
+            "id": 1784
+          }
+        ],
+        [
+          "store_block_info",
+          {
+            "annotations": [],
+            "variant": "EntryPoint",
+            "identifier": {
+              "name": "store_block_info",
+              "id": 1815
+            },
+            "const_parameters": [],
+            "input": [
+              {
+                "identifier": {
+                  "name": "id",
+                  "id": 1817
+                },
+                "mode": "None",
+                "type_": {
+                  "Integer": "U64"
+                },
+                "id": 1816
+              }
+            ],
+            "output": [
+              {
+                "mode": "None",
+                "type_": {
+                  "Future": {
+                    "inputs": [],
+                    "location": null,
+                    "is_explicit": false
+                  }
+                },
+                "id": 1818
+              }
+            ],
+            "output_type": {
+              "Future": {
+                "inputs": [],
+                "location": null,
+                "is_explicit": false
+              }
+            },
+            "block": {
+              "statements": [
+                {
+                  "Return": {
+                    "expression": {
+                      "Async": {
+                        "block": {
+                          "statements": [
+                            {
+                              "Expression": {
+                                "expression": {
+                                  "Intrinsic": {
+                                    "name": "_mapping_set",
+                                    "type_parameters": [],
+                                    "arguments": [
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "block_heights",
+                                            "id": 1830
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1831
+                                        }
+                                      },
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "id",
+                                            "id": 1833
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1834
+                                        }
+                                      },
+                                      {
+                                        "Intrinsic": {
+                                          "name": "_block_height",
+                                          "type_parameters": [],
+                                          "arguments": [],
+                                          "id": 1839
+                                        }
+                                      }
+                                    ],
+                                    "id": 1826
+                                  }
+                                },
+                                "id": 1825
+                              }
+                            },
+                            {
+                              "Expression": {
+                                "expression": {
+                                  "Intrinsic": {
+                                    "name": "_mapping_set",
+                                    "type_parameters": [],
+                                    "arguments": [
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "block_timestamps",
+                                            "id": 1846
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1847
+                                        }
+                                      },
+                                      {
+                                        "Path": {
+                                          "user_program": null,
+                                          "qualifier": [],
+                                          "identifier": {
+                                            "name": "id",
+                                            "id": 1849
+                                          },
+                                          "target": "Unresolved",
+                                          "id": 1850
+                                        }
+                                      },
+                                      {
+                                        "Intrinsic": {
+                                          "name": "_block_timestamp",
+                                          "type_parameters": [],
+                                          "arguments": [],
+                                          "id": 1855
+                                        }
+                                      }
+                                    ],
+                                    "id": 1842
+                                  }
+                                },
+                                "id": 1841
+                              }
+                            }
+                          ],
+                          "id": 1823
+                        },
+                        "id": 1822
+                      }
+                    },
+                    "id": 1821
+                  }
+                }
+              ],
+              "id": 1819
+            },
+            "id": 1814
+          }
+        ]
+      ],
+      "interfaces": [],
+      "constructor": {
+        "annotations": [
+          {
+            "identifier": {
+              "name": "noupgrade",
+              "id": 1442
+            },
+            "map": {},
+            "id": 1441
+          }
+        ],
+        "block": {
+          "statements": [],
+          "id": 1443
+        },
+        "id": 1440
+      }
+    }
+  }
+}

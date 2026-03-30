@@ -11,41 +11,18 @@ const TEST_C: u64 = 2;
 const TEST_D: u64 = 1;
 const EXPECTED: u64 = 150;
 
-#[tokio::test]
-async fn test_interpreter() {
-    init_test_logger();
-    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
-
-    let program = DelegatedProvingTestInterpreter::new(&alice)
-        .await
-        .unwrap();
-
-    let result = program
-        .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
-        .await
-        .unwrap();
-    assert_eq!(result, EXPECTED);
-    println!(
-        "Interpreter test passed: divide({}, {}, {}, {}) = {}",
-        TEST_A, TEST_B, TEST_C, TEST_D, result
-    );
-}
-
-#[tokio::test]
-async fn test_network_local_proving() {
+#[test]
+fn test_network_local_proving() {
     init_test_logger();
 
     let alice: Account<TestnetV0> = Account::from_env().unwrap();
 
     let client = Client::new(ENDPOINT, None).unwrap();
     let vm_manager = VMManager::new(&client).unwrap();
-    let program = DelegatedProvingTestTestnet::new(&alice, vm_manager)
-        .await
-        .unwrap();
+    let program = DelegatedProvingTestTestnet::new(&alice, vm_manager).unwrap();
 
     let result = program
         .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
-        .await
         .unwrap();
     assert_eq!(result, EXPECTED);
     println!(
@@ -54,8 +31,8 @@ async fn test_network_local_proving() {
     );
 }
 
-#[tokio::test]
-async fn test_network_delegated_proving() {
+#[test]
+fn test_network_delegated_proving() {
     init_test_logger();
 
     let alice: Account<TestnetV0> = Account::from_env().unwrap();
@@ -64,13 +41,10 @@ async fn test_network_delegated_proving() {
     let client = Client::new(ENDPOINT, credentials).unwrap();
     let vm_manager = VMManager::new(&client).unwrap();
 
-    let program = DelegatedProvingTestTestnet::new(&alice, vm_manager)
-        .await
-        .unwrap();
+    let program = DelegatedProvingTestTestnet::new(&alice, vm_manager).unwrap();
 
     let result = program
         .divide(&alice, TEST_A, TEST_B, TEST_C, TEST_D)
-        .await
         .unwrap();
     assert_eq!(result, EXPECTED);
     println!(

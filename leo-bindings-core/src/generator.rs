@@ -1,5 +1,3 @@
-use crate::generator_interpreter::generate_interpreter_impl;
-use crate::interpreter_cheats::generate_interpreter_cheats_from_simplified;
 use crate::signature::{FunctionBinding, SimplifiedBindings};
 use crate::types::get_rust_type;
 use convert_case::{Case::Pascal, Casing};
@@ -32,9 +30,8 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
         &program_struct,
     );
 
-    let interpreter_impl =
-        generate_interpreter_impl(simplified, &function_types, &mapping_types, &program_trait);
-    let cheats_module = generate_interpreter_cheats_from_simplified(simplified);
+    let interpreter_impl = quote! {};
+    let cheats_module = quote! {};
 
     let type_imports = generate_type_imports(&simplified.imports);
 
@@ -89,7 +86,7 @@ fn generate_trait(
             let name = &types.name;
             let input_params = &types.input_params;
             let return_type = &types.return_type;
-            quote! { async fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
+            quote! { fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
         })
         .collect();
 
@@ -99,14 +96,13 @@ fn generate_trait(
             let getter_name = &types.getter_name;
             let key_type = &types.key_type;
             let value_type = &types.value_type;
-            quote! { async fn #getter_name(&self, key: #key_type) -> Option<#value_type>; }
+            quote! { fn #getter_name(&self, key: #key_type) -> Option<#value_type>; }
         })
         .collect();
 
     quote! {
-        /// Program trait with network and interpreter implementations.
-        #[leo_bindings::async_trait::async_trait]
-        pub trait #program_trait<N: snarkvm::prelude::Network>: Send + Sync {
+        /// Program trait with network implementation.
+        pub trait #program_trait<N: snarkvm::prelude::Network> {
             #(#function_signatures)*
             #(#mapping_signatures)*
         }
@@ -133,7 +129,7 @@ fn generate_network_impl(
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
             let deployment = quote! {
-                let _ = #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, vm_manager.clone()).await?;
+                let _ = #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, vm_manager.clone())?;
             };
             let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
             let id = Literal::string(&format!("{}.aleo", import));
@@ -176,7 +172,6 @@ fn generate_network_impl(
             #new_implementation
         }
 
-        #[leo_bindings::async_trait::async_trait]
         impl<N: Network> #program_trait<N> for #program_struct<N> {
             #(#function_implementations)*
 
@@ -559,7 +554,8 @@ fn generate_new(
     dependency_ids: &[TokenStream],
 ) -> TokenStream {
     quote! {
-        pub async fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+        pub fn new(deployer: &Account<N>, vm_manager: VMManager<N>) -> Result<Self, anyhow::Error> {
+            use leo_bindings::leo_bindings_sdk::block_on;
             #(#trait_imports)*
 
             #(#deployment_calls)*
@@ -577,7 +573,7 @@ fn generate_new(
             })?;
 
             let program_id = ProgramID::<N>::from_str(Self::PROGRAM_ID)?;
-            let program_exists = vm_manager.client().program_exists::<N>(&program_id.to_string()).await?;
+            let program_exists = block_on(vm_manager.client().program_exists::<N>(&program_id.to_string()))?;
 
             if program_exists {
                 log::info!("✅ Found '{}', skipping deployment", program_id);
@@ -586,7 +582,7 @@ fn generate_new(
 
                 let bytecode = create_session_if_not_set_then(|_| {
                     let program_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
-                    let target_program = package.programs.iter()
+                    let target_program = package.compilation_units.iter()
                         .find(|p| p.name == program_symbol)
                         .ok_or_else(|| anyhow!("Program not found in package"))?;
 
@@ -602,7 +598,7 @@ fn generate_new(
                 let program: Program<N> = bytecode.parse()?;
 
                 let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
-                vm_manager.deploy_and_broadcast(deployer, &program, &dependencies).await?;
+                block_on(vm_manager.deploy_and_broadcast(deployer, &program, &dependencies))?;
             }
 
             Ok(Self {
@@ -624,19 +620,20 @@ fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> T
     } = types;
 
     quote! {
-        async fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
+        fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
+            use leo_bindings::leo_bindings_sdk::block_on;
             let program_id_str = Self::PROGRAM_ID;
             let function_name = stringify!(#name);
             let function_args: Vec<Value<N>> = vec![#input_conversions];
             let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
 
-            let function_outputs = self.vm_manager.execute_and_broadcast(
+            let function_outputs = block_on(self.vm_manager.execute_and_broadcast(
                 account,
                 program_id_str,
                 function_name,
                 function_args,
                 &dependencies,
-            ).await?;
+            ))?;
 
             #return_conversions
         }
@@ -652,11 +649,11 @@ fn generate_mapping(types: &MappingTypes) -> TokenStream {
     } = types;
 
     quote! {
-        async fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-
+        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
+            use leo_bindings::leo_bindings_sdk::block_on;
             let key_value: Value<N> = key.to_value();
 
-            match self.vm_manager.client().mapping::<N>(Self::PROGRAM_ID, #mapping_name, &key_value).await {
+            match block_on(self.vm_manager.client().mapping::<N>(Self::PROGRAM_ID, #mapping_name, &key_value)) {
                 Ok(Some(val)) => Some(<#value_type>::from_value(val)),
                 Ok(None) => None,
                 Err(e) => {
@@ -672,10 +669,6 @@ fn generate_network_aliases(program_id_pascal: &str, program_struct: &Ident) -> 
     let testnet_struct = Ident::new(&format!("{}Testnet", program_id_pascal), Span::call_site());
     let mainnet_struct = Ident::new(&format!("{}Mainnet", program_id_pascal), Span::call_site());
     let canary_struct = Ident::new(&format!("{}Canary", program_id_pascal), Span::call_site());
-    let interpreter_struct = Ident::new(
-        &format!("{}Interpreter", program_id_pascal),
-        Span::call_site(),
-    );
 
     quote! {
         pub type #testnet_struct = network::#program_struct<snarkvm::prelude::TestnetV0>;
@@ -683,8 +676,6 @@ fn generate_network_aliases(program_id_pascal: &str, program_struct: &Ident) -> 
         pub type #mainnet_struct = network::#program_struct<snarkvm::prelude::MainnetV0>;
 
         pub type #canary_struct = network::#program_struct<snarkvm::prelude::CanaryV0>;
-
-        pub type #interpreter_struct = interpreter::#interpreter_struct<snarkvm::prelude::TestnetV0>;
     }
 }
 

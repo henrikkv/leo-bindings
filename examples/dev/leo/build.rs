@@ -3,7 +3,7 @@ fn main() {
     let manifest_path = std::path::Path::new(&manifest_dir);
     let src_main_leo = manifest_path.join("src/main.leo");
     let build_main_aleo = manifest_path.join("build/main.aleo");
-    let initial_json = manifest_path.join("outputs/dev.initial.json");
+    let initial_json = manifest_path.join("outputs/dev.aleo.initial.json");
     let signatures_json = manifest_path.join("signatures.json");
 
     println!("cargo:rerun-if-changed=signatures.json");
@@ -17,7 +17,7 @@ fn main() {
     }
 
     if initial_json.exists() {
-        println!("cargo:rerun-if-changed=outputs/dev.initial.json");
+        println!("cargo:rerun-if-changed=outputs/dev.aleo.initial.json");
     }
 
     if src_main_leo.exists() {

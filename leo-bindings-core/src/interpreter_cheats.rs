@@ -20,9 +20,11 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
         quote! {
             /// Setter for a mapping in the interpreter.
             pub fn #setter_name(key: #key_type, value: #value_type) -> Result<()> {
-                with_shared_interpreter(|state| {
-                    let key_value = leo_ast::interpreter_value::Value::from(key.to_value());
-                    let value_value = leo_ast::interpreter_value::Value::from(value.to_value());
+                let svm_key = ToValue::<TestnetV0>::to_value(&key);
+                let svm_value = ToValue::<TestnetV0>::to_value(&value);
+                with_interpreter_blocking(move |state| {
+                    let key_value = leo_ast::interpreter_value::Value::from(svm_key);
+                    let value_value = leo_ast::interpreter_value::Value::from(svm_value);
                     let mut interpreter = state.interpreter.borrow_mut();
                     let mapping_id = leo_ast::Location::new(
                         Symbol::intern(#program_id),
@@ -31,9 +33,8 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
                     interpreter.cursor.mappings.get_mut(&mapping_id)
                         .ok_or_else(|| anyhow!("Mapping '{}' not found", #mapping_name)).unwrap()
                         .insert(key_value, value_value);
-                    Ok(())
                 })
-                .ok_or_else(|| anyhow!("Shared interpreter not initialized")).unwrap()
+                .ok_or_else(|| anyhow!("Shared interpreter not initialized"))
             }
         }
     });
@@ -42,7 +43,7 @@ pub(crate) fn generate_interpreter_cheats_from_simplified(
         /// Cheats for testing with the interpreter bindings.
         pub mod #cheats_module_name {
             use super::*;
-            use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_shared_interpreter, ToValue};
+            use leo_bindings::{anyhow, leo_ast, leo_span, shared_interpreter::with_interpreter_blocking, ToValue};
             use anyhow::{anyhow, Result};
             use leo_span::Symbol;
             use snarkvm::prelude::TestnetV0;

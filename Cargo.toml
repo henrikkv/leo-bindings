@@ -24,7 +24,7 @@ leo-bindings-core = { path = "leo-bindings-core" }
 leo-bindings-macro = { path = "leo-bindings-macro" }
 leo-bindings-sdk = { path = "leo-bindings-sdk" }
 credits_bindings = { path = "leo-bindings-credits" }
-snarkvm = "4.4.0"
+snarkvm = "4.6.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
@@ -47,19 +47,16 @@ regex = "1.10"
 log = "0.4"
 dotenvy = "0.15"
 env_logger = "0.11"
-leo-span = { git = "https://github.com/henrikkv/leo", package = "leo-span" }
-leo-package = { git = "https://github.com/henrikkv/leo", package = "leo-package" }
-leo-ast = { git = "https://github.com/henrikkv/leo", package = "leo-ast" }
-leo-interpreter = { git = "https://github.com/henrikkv/leo", package = "leo-interpreter" }
-leo-parser = { git = "https://github.com/henrikkv/leo", package = "leo-parser" }
-leo-errors = { git = "https://github.com/henrikkv/leo", package = "leo-errors" }
+leo-span = { git = "https://github.com/ProvableHQ/leo", package = "leo-span" }
+leo-package = { git = "https://github.com/ProvableHQ/leo", package = "leo-package" }
+leo-ast = { git = "https://github.com/ProvableHQ/leo", package = "leo-ast" }
+leo-parser = { git = "https://github.com/ProvableHQ/leo", package = "leo-parser" }
+leo-errors = { git = "https://github.com/ProvableHQ/leo", package = "leo-errors" }
 reqwest = { version = "0.12", default-features = false }
 reqwest-middleware = "0.3"
 reqwest-retry = "0.6"
 tokio = "1"
 thiserror = "1.0"
-async-trait = "0.1"
-futures = "0.3"
 
 [package]
 name = "leo-bindings"
@@ -89,7 +86,6 @@ indexmap.workspace = true
 leo-span.workspace = true
 leo-package.workspace = true
 leo-ast.workspace = true
-leo-interpreter.workspace = true
 leo-parser.workspace = true
 leo-errors.workspace = true
 aleo-std.workspace = true
@@ -104,5 +100,3 @@ rand_chacha.workspace = true
 dotenvy.workspace = true
 env_logger.workspace = true
 log.workspace = true
-async-trait.workspace = true
-futures.workspace = true

@@ -9,7 +9,7 @@ struct InitialJson {
 
 #[derive(Debug, Deserialize)]
 struct ProgramScope {
-    structs: Vec<(String, StructDef)>,
+    composites: Vec<(String, StructDef)>,
     mappings: Vec<(String, MappingDef)>,
     functions: Vec<(String, FunctionDef)>,
 }
@@ -187,10 +187,11 @@ pub fn get_signatures(input: String) -> String {
         .map(|imports_map| imports_map.keys().cloned().collect())
         .unwrap_or_default();
 
-    let (program_id, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();
+    let (raw_program_id, program_scope) = initial_json.program_scopes.into_iter().next().unwrap();
+    let program_id = raw_program_id.strip_suffix(".aleo").unwrap_or(&raw_program_id).to_string();
 
     let (records, structs): (Vec<StructBinding>, Vec<StructBinding>) = program_scope
-        .structs
+        .composites
         .into_iter()
         .map(|(_, struct_def)| {
             let members = struct_def
@@ -215,7 +216,10 @@ pub fn get_signatures(input: String) -> String {
         .functions
         .into_iter()
         .filter_map(|(_, func_def)| {
-            if func_def.variant == "Transition" || func_def.variant == "AsyncTransition" {
+            if func_def.variant == "Transition"
+                || func_def.variant == "AsyncTransition"
+                || func_def.variant == "EntryPoint"
+            {
                 let inputs = func_def
                     .input
                     .into_iter()
@@ -235,17 +239,8 @@ pub fn get_signatures(input: String) -> String {
                     })
                     .collect();
 
-                let is_async = func_def.variant == "AsyncTransition";
-
-                if is_async {
-                    if outputs.is_empty() {
-                        panic!("Async function '{}' must have at least a Future output", func_def.identifier.name);
-                    }
-                    let last_output = &outputs[outputs.len() - 1];
-                    if last_output.type_name != "Future" {
-                        panic!("Async function '{}' must have Future as the last output, but found '{}'", func_def.identifier.name, last_output.type_name);
-                    }
-                }
+                let is_async = func_def.variant == "AsyncTransition"
+                    || outputs.last().map(|o| o.type_name == "Future").unwrap_or(false);
 
                 Some(FunctionBinding {
                     name: func_def.identifier.name,

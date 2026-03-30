@@ -11,7 +11,7 @@ use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
 use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
 
-pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V12;
+pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V14;
 
 #[derive(Clone)]
 pub struct VMManager<N: Network> {

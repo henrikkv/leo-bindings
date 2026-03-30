@@ -7,7 +7,7 @@ use leo_parser;
 use leo_span::source_map::FileName;
 use leo_span::{SESSION_GLOBALS, SessionGlobals, Symbol, with_session_globals};
 use snarkvm::prelude::{Program, TestnetV0};
-use std::{cell::RefCell, collections::HashMap, fs, path::Path, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, fs, path::Path, rc::Rc, sync::OnceLock};
 
 pub struct SharedInterpreterState {
     pub interpreter: RefCell<Interpreter>,
@@ -18,19 +18,64 @@ thread_local! {
     static SHARED_INTERPRETER: RefCell<Option<Rc<SharedInterpreterState>>> = const { RefCell::new(None) };
 }
 
-pub fn initialize_shared_interpreter(interpreter: Interpreter, session: SessionGlobals) -> bool {
-    SHARED_INTERPRETER.with(|shared| {
-        let mut state = shared.borrow_mut();
-        if state.is_none() {
-            *state = Some(Rc::new(SharedInterpreterState {
-                interpreter: RefCell::new(interpreter),
-                session,
-            }));
-            true
-        } else {
-            false
-        }
-    })
+type WorkFn = Box<dyn FnOnce() + Send>;
+
+static INTERPRETER_WORK_TX: OnceLock<std::sync::mpsc::SyncSender<WorkFn>> = OnceLock::new();
+
+pub fn is_interpreter_initialized() -> bool {
+    INTERPRETER_WORK_TX.get().is_some()
+}
+
+pub fn initialize_interpreter_thread<F>(factory: F)
+where
+    F: FnOnce() -> (Interpreter, SessionGlobals) + Send + 'static,
+{
+    if INTERPRETER_WORK_TX.get().is_some() {
+        return;
+    }
+
+    let (work_tx, work_rx) = std::sync::mpsc::sync_channel::<WorkFn>(256);
+    let (init_tx, init_rx) = std::sync::mpsc::sync_channel::<()>(0);
+
+    std::thread::Builder::new()
+        .name("leo-interpreter".into())
+        .spawn(move || {
+            let (interpreter, session) = factory();
+
+            SHARED_INTERPRETER.with(|cell| {
+                *cell.borrow_mut() = Some(Rc::new(SharedInterpreterState {
+                    interpreter: RefCell::new(interpreter),
+                    session,
+                }));
+            });
+
+            let _ = init_tx.send(());
+
+            while let Ok(work) = work_rx.recv() {
+                work();
+            }
+        })
+        .expect("Failed to spawn interpreter thread");
+
+    let _ = init_rx.recv();
+    let _ = INTERPRETER_WORK_TX.set(work_tx);
+}
+
+pub fn with_interpreter_blocking<T, F>(f: F) -> Option<T>
+where
+    F: FnOnce(&SharedInterpreterState) -> T + Send + 'static,
+    T: Send + 'static,
+{
+    let tx = INTERPRETER_WORK_TX.get()?;
+    let (result_tx, result_rx) = std::sync::mpsc::channel::<Option<T>>();
+
+    let work: WorkFn = Box::new(move || {
+        let result = with_shared_interpreter(f);
+        let _ = result_tx.send(result);
+    });
+
+    tx.send(work).ok()?;
+    result_rx.recv().ok().flatten()
 }
 
 pub fn with_shared_interpreter<T, F>(f: F) -> Option<T>
@@ -135,7 +180,7 @@ impl InterpreterExtensions for Interpreter {
                     .map(|(id, type_)| {
                         (
                             leo_ast::Identifier::from(id).name,
-                            leo_ast::Type::from_snarkvm(type_, None),
+                            leo_ast::Type::from_snarkvm(type_, Some(program)),
                         )
                     })
                     .collect(),
@@ -156,7 +201,7 @@ impl InterpreterExtensions for Interpreter {
                 };
                 members.insert(
                     leo_ast::Identifier::from(id).name,
-                    leo_ast::Type::from_snarkvm(inner_type, None),
+                    leo_ast::Type::from_snarkvm(inner_type, Some(program)),
                 );
             }
 

@@ -9,4 +9,3 @@ leo-bindings.workspace = true
 snarkvm.workspace = true
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
