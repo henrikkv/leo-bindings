@@ -1,39 +1,40 @@
-use crate::signature::{FunctionBinding, SimplifiedBindings};
-use crate::types::get_rust_type;
+use crate::types::{
+    get_rust_type, get_rust_type_from_function_input, get_rust_type_from_function_output,
+};
 use convert_case::{Case::Pascal, Casing};
 use itertools::Itertools;
+use leo_abi_types::{Mode, Program, Record};
 use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::quote;
 
-pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
-    let program_id_pascal = simplified.program_id.to_case(Pascal);
+pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream {
+    let program_id = abi.program.trim_end_matches(".aleo");
+    let program_id_pascal = program_id.to_case(Pascal);
 
-    let program_module = Ident::new(&simplified.program_id, Span::call_site());
+    let program_module = Ident::new(program_id, Span::call_site());
     let program_trait = Ident::new(&format!("{}Aleo", program_id_pascal), Span::call_site());
     let program_struct = Ident::new(&format!("{}Network", program_id_pascal), Span::call_site());
 
     let network_aliases = generate_network_aliases(&program_id_pascal, &program_struct);
 
-    let records = generate_records(&simplified.records);
-    let structs = generate_structs(&simplified.structs);
+    let records = generate_records(&abi.records);
+    let structs = generate_structs(&abi.structs);
 
-    let function_types = generate_function_types(&simplified.functions);
-    let mapping_types = generate_mapping_types(&simplified.mappings);
+    let function_types = generate_function_types(&abi.functions);
+    let mapping_types = generate_mapping_types(&abi.mappings);
 
     let trait_definition = generate_trait(&function_types, &mapping_types, &program_trait);
 
     let network_impl = generate_network_impl(
-        simplified,
+        imports,
         &function_types,
         &mapping_types,
         &program_trait,
         &program_struct,
+        &Literal::string(abi.program.as_str()),
     );
 
-    let interpreter_impl = quote! {};
-    let cheats_module = quote! {};
-
-    let type_imports = generate_type_imports(&simplified.imports);
+    let type_imports = generate_type_imports(imports);
 
     quote! {
         pub mod #program_module {
@@ -67,9 +68,6 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
             ///
             /// The interpreter state resets after the session.
             pub mod interpreter {
-                #interpreter_impl
-
-                #cheats_module
             }
         }
     }
@@ -110,16 +108,14 @@ fn generate_trait(
 }
 
 fn generate_network_impl(
-    simplified: &SimplifiedBindings,
+    imports: &[String],
     function_types: &[FunctionTypes],
     mapping_types: &[MappingTypes],
     program_trait: &Ident,
     program_struct: &Ident,
+    program_id: &Literal,
 ) -> TokenStream {
-    let program_id = Literal::string(&format!("{}.aleo", &simplified.program_id));
-
-    let (deployment_calls, trait_imports, dependency_ids): (Vec<TokenStream>, Vec<TokenStream>, Vec<TokenStream>) = simplified
-        .imports
+    let (deployment_calls, trait_imports, dependency_ids): (Vec<TokenStream>, Vec<TokenStream>, Vec<TokenStream>) = imports
         .iter()
         .map(|import| {
             let import_pascal = import.to_case(Pascal);
@@ -180,209 +176,190 @@ fn generate_network_impl(
     }
 }
 
-pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<TokenStream> {
-    records.iter().map(|record| {
-        let record_name = Ident::new(&record.name.to_case(Pascal), Span::call_site());
-        let member_definitions = record.members.iter().map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-            if member.name == "owner" {
-                quote! { #member_name: Owner<N, Plaintext<N>> }
-            } else {
-                let member_type = get_rust_type(&member.type_name);
-                quote! { #member_name: #member_type }
-            }
-        });
-        let extra_record_fields = quote! { __nonce: Group<N>, __version: U8<N> };
-
-        let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-            let mode = &member.mode;
-
-            let entry_creation = match mode.to_lowercase().as_str() {
-                "public" => quote! { Entry::Public(plaintext_value) },
-                "private" | "none" => quote! { Entry::Private(plaintext_value) },
-                _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
-            };
-
-            quote! {
-                (
-                    Identifier::try_from(stringify!(#member_name)).unwrap(),
-                    {
-                        let plaintext_value = match self.#member_name.to_value() {
-                            Value::Plaintext(p) => p,
-                            _ => panic!("Expected plaintext value from record member"),
-                        };
-                        #entry_creation
-                    }
-                )
-            }
-        });
-
-        let (member_extractions, struct_member_extractions): (Vec<_>, Vec<_>) = record.members
-            .iter()
-            .map(|member| {
-                let member_name = Ident::new(&member.name, Span::call_site());
-                let member_type = get_rust_type(&member.type_name);
-                let field_name = &member.name;
-
-                let record_extraction = if field_name == "owner" {
-                    quote! {
-                        let #member_name = record.owner().clone();
-                    }
-                } else {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let entry = record.data().get(member_id)
-                                .expect(&format!("Field '{}' not found in record data", #field_name));
-                            let plaintext = match entry {
-                                Entry::Public(p) | Entry::Private(p) | Entry::Constant(p) => p,
-                            };
-                            let value = Value::Plaintext(plaintext.clone());
-                            <#member_type>::from_value(value)
-                        };
-                    }
-                };
-
-                // Needed for interpreter compatibility
-                let struct_extraction = if field_name == "owner" {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let plaintext = struct_members.get(member_id)
-                                .expect("Owner field not found in record struct");
-                            match plaintext {
-                                Plaintext::Literal(Literal::Address(addr), _) => Owner::Public(*addr),
-                                _ => panic!("Expected address for owner field"),
-                            }
-                        };
-                    }
-                } else {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let plaintext = struct_members.get(member_id)
-                                .expect(&format!("Field '{}' not found in record data", #field_name));
-                            <#member_type>::from_value(Value::Plaintext(plaintext.clone()))
-                        };
-                    }
-                };
-
-                (record_extraction, struct_extraction)
-            })
-            .unzip();
-
-        let member_names: Vec<_> = record.members.iter().map(|member| {
-            Ident::new(&member.name, Span::call_site())
-        }).collect();
-        let extra_member_inits = quote! { __nonce: record.nonce().clone(), __version: record.version().clone() };
-
-        let getter_methods = record.members.iter().map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-
-            if member.name == "owner" {
-                quote! {
-                    pub fn #member_name(&self) -> Address<N> {
-                        match &self.#member_name {
-                            Owner::Public(addr) => *addr,
-                            Owner::Private(plaintext) => {
-                                match plaintext {
-                                    Plaintext::Literal(Literal::Address(addr), _) => *addr,
-                                    _ => panic!("Expected address in private owner field"),
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                let member_type = get_rust_type(&member.type_name);
-                quote! {
-                    pub fn #member_name(&self) -> &#member_type {
-                        &self.#member_name
-                    }
-                }
-            }
-        });
-
-        quote! {
-            /// Record from Leo.
-            #[derive(Debug, Clone)]
-            pub struct #record_name<N: Network> {
-                #(#member_definitions),*,
-                #extra_record_fields
-            }
-
-            /// Convert to a SnarkVM Value.
-            impl<N: Network> ToValue<N> for #record_name<N> {
-                fn to_value(&self) -> Value<N> {
-                    match self.to_record() {
-                        Ok(rec) => Value::Record(rec),
-                        Err(e) => panic!("Failed to convert to Record: {}", e),
-                    }
-                }
-            }
-
-            /// Create from a SnarkVM Value
-            impl<N: Network> FromValue<N> for #record_name<N> {
-                fn from_value(value: Value<N>) -> Self {
-                    match value {
-                        Value::Record(record) => {
-                            #(#member_extractions)*
-                            Self {
-                                #(#member_names),*,
-                                #extra_member_inits
-                            }
-                        },
-                        // Interpreter compatibility: records represented as structs
-                        Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
-                            #(#struct_member_extractions)*
-
-                            Self {
-                                #(#member_names),*,
-                                __nonce: Group::zero(),
-                                __version: U8::new(0)
-                            }
-                        },
-                        _ => panic!("Expected record or struct value"),
-                    }
-                }
-            }
-
-            impl<N: Network> #record_name<N> {
-                /// Convert to a SnarkVM Record.
-                pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
-                    let data = IndexMap::from([
-                        #(#member_conversions),*
-                    ]);
-                    let owner = self.owner.clone();
-                    let nonce = self.__nonce.clone();
-                    let version = self.__version.clone();
-
-                    Ok(Record::<N, Plaintext<N>>::from_plaintext(
-                        owner,
-                        data,
-                        nonce,
-                        version
-                    )?)
-                }
-
-                #(#getter_methods)*
-            }
-        }
-    }).collect()
-}
-
-pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<TokenStream> {
-    structs
+pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
+    records
         .iter()
-        .map(|struct_def| {
-            let struct_name = Ident::new(&struct_def.name.to_case(Pascal), Span::call_site());
-            let (definitions, extractions, names, constructor_definitions, conversions): (Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) = struct_def
-                .members
+        .map(|record| {
+            let (n, _module_path) = record.path.split_last().unwrap();
+            let record_name = Ident::new(&n.to_case(Pascal), Span::call_site());
+
+            let member_definitions: Vec<TokenStream> = record
+                .fields
                 .iter()
                 .map(|member| {
                     let member_name = Ident::new(&member.name, Span::call_site());
-                    let member_type = get_rust_type(&member.type_name);
+                    let member_type = get_rust_type(&member.ty);
+                    quote! { #member_name: #member_type }
+                })
+                .collect();
+
+            let extra_record_fields = quote! { __nonce: Group<N>, __version: U8<N> };
+
+            let member_conversions = record.fields.iter().filter(|m| m.name != "owner").map(|member| {
+                let member_name = Ident::new(&member.name, Span::call_site());
+
+                let entry_creation = match member.mode {
+                    Mode::Public => quote! { Entry::Public(plaintext_value) },
+                    Mode::Constant => quote! { Entry::Constant(plaintext_value) },
+                    Mode::Private | Mode::None => quote! { Entry::Private(plaintext_value) },
+                };
+
+                quote! {
+                    (
+                        Identifier::try_from(stringify!(#member_name)).unwrap(),
+                        {
+                            let plaintext_value = match self.#member_name.to_value() {
+                                Value::Plaintext(p) => p,
+                                _ => panic!("Expected plaintext value from record member"),
+                            };
+                            #entry_creation
+                        }
+                    )
+                }
+            });
+
+            let member_extractions: Vec<TokenStream> = record
+                .fields
+                .iter()
+                .map(|member| {
+                    let member_name = Ident::new(&member.name, Span::call_site());
+                    let member_type = get_rust_type(&member.ty);
+                    let field_name = &member.name;
+
+                    if member.name == "owner" {
+                        quote! {
+                            let #member_name = match record.owner() {
+                                Owner::Public(addr) => *addr,
+                                Owner::Private(plaintext) => {
+                                    <Address<N> as FromValue<N>>::from_value(Value::Plaintext(plaintext.clone()))
+                                }
+                            };
+                        }
+                    } else {
+                        quote! {
+                            let #member_name = {
+                                let member_id = &Identifier::try_from(#field_name).unwrap();
+                                let entry = record.data().get(member_id)
+                                    .expect(&format!("Field '{}' not found in record data", #field_name));
+                                let plaintext = match entry {
+                                    Entry::Public(p) | Entry::Private(p) | Entry::Constant(p) => p,
+                                };
+                                <#member_type>::from_value(Value::Plaintext(plaintext.clone()))
+                            };
+                        }
+                    }
+                })
+                .collect();
+
+            let record_owner = match record.fields.iter().find(|f| f.name == "owner") {
+                Some(f) => match f.mode {
+                    Mode::Public => quote! { Owner::Public(self.owner) },
+                    Mode::Private | Mode::None | Mode::Constant => quote! {
+                        Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                    },
+                },
+                None => quote! {
+                    Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                },
+            };
+
+            let member_names: Vec<Ident> = record
+                .fields
+                .iter()
+                .map(|member| Ident::new(&member.name, Span::call_site()))
+                .collect();
+            let extra_member_inits =
+                quote! { __nonce: record.nonce().clone(), __version: record.version().clone() };
+
+            let getter_methods: Vec<TokenStream> = record
+                .fields
+                .iter()
+                .map(|member| {
+                    let member_name = Ident::new(&member.name, Span::call_site());
+                    let member_type = get_rust_type(&member.ty);
+                    quote! {
+                        pub fn #member_name(&self) -> &#member_type {
+                            &self.#member_name
+                        }
+                    }
+                })
+                .collect();
+
+            quote! {
+                /// Record from Leo.
+                #[derive(Debug, Clone)]
+                pub struct #record_name<N: Network> {
+                    #(#member_definitions),*,
+                    #extra_record_fields
+                }
+
+                /// Convert to a SnarkVM Value.
+                impl<N: Network> ToValue<N> for #record_name<N> {
+                    fn to_value(&self) -> Value<N> {
+                        match self.to_record() {
+                            Ok(rec) => Value::Record(rec),
+                            Err(e) => panic!("Failed to convert to Record: {}", e),
+                        }
+                    }
+                }
+
+                /// Create from a SnarkVM Value
+                impl<N: Network> FromValue<N> for #record_name<N> {
+                    fn from_value(value: Value<N>) -> Self {
+                        match value {
+                            Value::Record(record) => {
+                                #(#member_extractions)*
+                                Self {
+                                    #(#member_names),*,
+                                    #extra_member_inits
+                                }
+                            }
+                            _ => panic!("Expected record value"),
+                        }
+                    }
+                }
+
+                impl<N: Network> #record_name<N> {
+                    /// Convert to a SnarkVM Record.
+                    pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
+                        let data = IndexMap::from([
+                            #(#member_conversions),*
+                        ]);
+                        let owner = #record_owner;
+                        let nonce = self.__nonce.clone();
+                        let version = self.__version.clone();
+
+                        Ok(Record::<N, Plaintext<N>>::from_plaintext(
+                            owner,
+                            data,
+                            nonce,
+                            version
+                        )?)
+                    }
+
+                    #(#getter_methods)*
+                }
+            }
+        })
+        .collect()
+}
+
+pub fn generate_structs(structs: &[leo_abi_types::Struct]) -> Vec<TokenStream> {
+    structs
+        .iter()
+        .map(|struct_def| {
+            let last = struct_def
+                .path
+                .last()
+                .expect("Struct.path should have at least one segment");
+            let struct_name = Ident::new(&last.to_case(Pascal), Span::call_site());
+
+            let (definitions, extractions, names, constructor_definitions, conversions): (Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) = struct_def
+                .fields
+                .iter()
+                .map(|field| {
+                    let member_name = Ident::new(&field.name, Span::call_site());
+                    let member_type = get_rust_type(&field.ty);
 
                     let definition = quote! { pub #member_name: #member_type, };
 
@@ -414,7 +391,7 @@ pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<Toke
 
             quote! {
                 /// Struct from Leo.
-                #[derive(Debug, Clone, Copy)]
+                #[derive(Debug, Clone, Copy, Default)]
                 pub struct #struct_name<N: Network> {
                     #(#definitions)*
                     _network: std::marker::PhantomData<N>
@@ -474,13 +451,13 @@ pub(crate) struct MappingTypes {
     pub(crate) value_type: TokenStream,
 }
 
-fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> {
+fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<FunctionTypes> {
     functions.iter().map(|function| {
         let name = Ident::new(&function.name, Span::call_site());
 
         let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().map(|input| {
             let param_name = Ident::new(&input.name, Span::call_site());
-            let param_type = get_rust_type(&input.type_name);
+            let param_type = get_rust_type_from_function_input(&input.ty);
             let param = quote! { #param_name: #param_type };
             let conversion = quote! { (#param_name).to_value() };
             (param, conversion)
@@ -494,7 +471,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 quote! { Ok(()) }
             ),
             1 => {
-                let output_type = get_rust_type(&function.outputs[0].type_name);
+                let output_type = get_rust_type_from_function_output(&function.outputs[0].ty);
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -510,7 +487,7 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 let (output_types, output_conversions): (Vec<_>, Vec<_>) = function.outputs.iter()
                     .enumerate()
                     .map(|(i, output)| {
-                        let output_type = get_rust_type(&output.type_name);
+                        let output_type = get_rust_type_from_function_output(&output.ty);
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -536,14 +513,14 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
     }).collect()
 }
 
-fn generate_mapping_types(mappings: &[crate::signature::MappingBinding]) -> Vec<MappingTypes> {
+fn generate_mapping_types(mappings: &[leo_abi_types::Mapping]) -> Vec<MappingTypes> {
     mappings
         .iter()
         .map(|mapping| MappingTypes {
             getter_name: Ident::new(&format!("get_{}", mapping.name), Span::call_site()),
             mapping_name: mapping.name.clone(),
-            key_type: get_rust_type(&mapping.key_type),
-            value_type: get_rust_type(&mapping.value_type),
+            key_type: get_rust_type(&mapping.key),
+            value_type: get_rust_type(&mapping.value),
         })
         .collect()
 }

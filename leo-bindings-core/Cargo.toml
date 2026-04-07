@@ -22,6 +22,7 @@ leo-package = { workspace = true }
 leo-ast = { workspace = true }
 leo-parser = { workspace = true }
 leo-errors = { workspace = true }
+leo-abi-types = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
 dotenvy = { workspace = true }

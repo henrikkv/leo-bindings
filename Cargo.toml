@@ -52,6 +52,7 @@ leo-package = { git = "https://github.com/ProvableHQ/leo", package = "leo-packag
 leo-ast = { git = "https://github.com/ProvableHQ/leo", package = "leo-ast" }
 leo-parser = { git = "https://github.com/ProvableHQ/leo", package = "leo-parser" }
 leo-errors = { git = "https://github.com/ProvableHQ/leo", package = "leo-errors" }
+leo-abi-types = { git = "https://github.com/ProvableHQ/leo", package = "leo-abi-types" }
 reqwest = { version = "0.12", default-features = false }
 reqwest-middleware = "0.3"
 reqwest-retry = "0.6"
@@ -100,3 +101,4 @@ rand_chacha.workspace = true
 dotenvy.workspace = true
 env_logger.workspace = true
 log.workspace = true
+leo-abi-types.workspace = true

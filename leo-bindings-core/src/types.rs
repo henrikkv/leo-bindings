@@ -1,52 +1,85 @@
 use convert_case::{Case, Casing};
+use indexmap::IndexMap;
+use leo_abi_types as abi;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use snarkvm::prelude::*;
+use std::sync::OnceLock;
 
-pub fn get_rust_type(type_name: &str) -> TokenStream {
-    get_rust_type_with_network(type_name, "N")
+pub fn get_rust_type(ty: &abi::Plaintext) -> TokenStream {
+    match ty {
+        abi::Plaintext::Primitive(p) => match p {
+            abi::Primitive::Address => quote! { Address<N> },
+            abi::Primitive::Boolean => quote! { bool },
+            abi::Primitive::Field => quote! { Field<N> },
+            abi::Primitive::Group => quote! { Group<N> },
+            abi::Primitive::Scalar => quote! { Scalar<N> },
+            abi::Primitive::Signature => quote! { Signature<N> },
+            abi::Primitive::Identifier => quote! { IdentifierLiteral<N> },
+            abi::Primitive::Int(i) => match i {
+                abi::Int::I8 => quote! { i8 },
+                abi::Int::I16 => quote! { i16 },
+                abi::Int::I32 => quote! { i32 },
+                abi::Int::I64 => quote! { i64 },
+                abi::Int::I128 => quote! { i128 },
+            },
+            abi::Primitive::UInt(u) => match u {
+                abi::UInt::U8 => quote! { u8 },
+                abi::UInt::U16 => quote! { u16 },
+                abi::UInt::U32 => quote! { u32 },
+                abi::UInt::U64 => quote! { u64 },
+                abi::UInt::U128 => quote! { u128 },
+            },
+        },
+        abi::Plaintext::Array(array) => {
+            let element_type = get_rust_type(array.element.as_ref());
+            let size: usize = array.length as usize;
+            quote! { [#element_type; #size] }
+        }
+        abi::Plaintext::Struct(sref) => {
+            let last = sref
+                .path
+                .last()
+                .expect("StructRef.path should have at least one segment");
+            let struct_ident = syn::Ident::new(&last.to_case(Case::Pascal), Span::call_site());
+            quote! { #struct_ident<N> }
+        }
+        abi::Plaintext::Optional(opt) => {
+            let inner_type = get_rust_type(opt.0.as_ref());
+            quote! { Option<#inner_type> }
+        }
+    }
 }
 
-pub fn get_rust_type_with_network(type_name: &str, network_param: &str) -> TokenStream {
-    let network = syn::Ident::new(network_param, Span::call_site());
+/// Rust type for a record reference in the ABI
+pub fn get_rust_type_from_record_ref(r: &abi::RecordRef) -> TokenStream {
+    let last = r
+        .path
+        .last()
+        .expect("RecordRef.path should have at least one segment");
+    let record_ident = syn::Ident::new(&last.to_case(Case::Pascal), Span::call_site());
+    quote! { #record_ident<N> }
+}
 
-    if let Some(array_info) = parse_array_type(type_name) {
-        let inner_type = get_rust_type_with_network(&array_info.element_type, network_param);
-        let size = array_info.size;
-        return quote! { [#inner_type; #size] };
+/// Rust parameter type for a function input from `abi.json`.
+pub fn get_rust_type_from_function_input(ty: &abi::FunctionInput) -> TokenStream {
+    match ty {
+        abi::FunctionInput::Plaintext(p) => get_rust_type(p),
+        abi::FunctionInput::Record(r) => get_rust_type_from_record_ref(r),
+        abi::FunctionInput::DynamicRecord => {
+            quote! { Record<N, Plaintext<N>> }
+        }
     }
+}
 
-    match type_name {
-        "u8" => quote! { u8 },
-        "u16" => quote! { u16 },
-        "u32" => quote! { u32 },
-        "u64" => quote! { u64 },
-        "u128" => quote! { u128 },
-        "i8" => quote! { i8 },
-        "i16" => quote! { i16 },
-        "i32" => quote! { i32 },
-        "i64" => quote! { i64 },
-        "i128" => quote! { i128 },
-        "address" => quote! { Address<#network> },
-        "Address" => quote! { Address<#network> },
-        "field" => quote! { Field<#network> },
-        "Field" => quote! { Field<#network> },
-        "group" => quote! { Group<#network> },
-        "Group" => quote! { Group<#network> },
-        "scalar" => quote! { Scalar<#network> },
-        "Scalar" => quote! { Scalar<#network> },
-        "signature" => quote! { Signature<#network> },
-        "Signature" => quote! { Signature<#network> },
-        "string" => quote! { StringType<#network> },
-        "String" => quote! { StringType<#network> },
-        "bool" => quote! { bool },
-        "boolean" => quote! { bool },
-        "Boolean" => quote! { bool },
-        "Future" => quote! { Future<#network> },
-        "Ciphertext" => quote! { Ciphertext<#network> },
-        other => {
-            let type_ident = syn::Ident::new(&other.to_case(Case::Pascal), Span::call_site());
-            quote! { #type_ident<#network> }
+/// Rust return type for a function output from `abi.json`.
+pub fn get_rust_type_from_function_output(ty: &abi::FunctionOutput) -> TokenStream {
+    match ty {
+        abi::FunctionOutput::Plaintext(p) => get_rust_type(p),
+        abi::FunctionOutput::Record(r) => get_rust_type_from_record_ref(r),
+        abi::FunctionOutput::Final => quote! { Future<N> },
+        abi::FunctionOutput::DynamicRecord => {
+            quote! { Record<N, Plaintext<N>> }
         }
     }
 }
@@ -83,6 +116,69 @@ pub trait ToValue<N: Network> {
 /// Converts SnarkVM types to Rust types.
 pub trait FromValue<N: Network> {
     fn from_value(value: Value<N>) -> Self;
+}
+
+impl<N: Network, T> ToValue<N> for Option<T>
+where
+    T: ToValue<N> + Default,
+{
+    fn to_value(&self) -> Value<N> {
+        let is_some_bool = self.is_some();
+
+        let is_some_plaintext = match ToValue::<N>::to_value(&is_some_bool) {
+            Value::Plaintext(p) => p,
+            _ => panic!("Expected plaintext boolean for lowered optional `is_some`."),
+        };
+
+        let val_plaintext = match self {
+            Some(v) => match ToValue::<N>::to_value(v) {
+                Value::Plaintext(p) => p,
+                _ => panic!("Expected plaintext value for lowered optional `val`."),
+            },
+            None => match ToValue::<N>::to_value(&T::default()) {
+                Value::Plaintext(p) => p,
+                _ => panic!("Expected plaintext value for lowered optional `val` (default)."),
+            },
+        };
+
+        let members = IndexMap::from([
+            (Identifier::try_from("is_some").unwrap(), is_some_plaintext),
+            (Identifier::try_from("val").unwrap(), val_plaintext),
+        ]);
+
+        Value::Plaintext(Plaintext::Struct(members, OnceLock::new()))
+    }
+}
+
+impl<N: Network, T> FromValue<N> for Option<T>
+where
+    T: FromValue<N>,
+{
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
+                let is_some_id = Identifier::try_from("is_some").unwrap();
+                let val_id = Identifier::try_from("val").unwrap();
+
+                let is_some_plaintext = struct_members
+                    .get(&is_some_id)
+                    .expect("Lowered optional missing `is_some` field");
+
+                let is_some = bool::from_value(Value::Plaintext(is_some_plaintext.clone()));
+
+                if !is_some {
+                    return None;
+                }
+
+                let val_plaintext = struct_members
+                    .get(&val_id)
+                    .expect("Lowered optional missing `val` field");
+
+                Some(T::from_value(Value::Plaintext(val_plaintext.clone())))
+            }
+            _ => panic!("Expected lowered optional as a plaintext struct"),
+        }
+    }
 }
 
 impl<N: Network> ToValue<N> for u8 {
@@ -436,6 +532,27 @@ impl<N: Network> FromValue<N> for StringType<N> {
     }
 }
 
+impl<N: Network> ToValue<N> for IdentifierLiteral<N> {
+    fn to_value(&self) -> Value<N> {
+        Value::Plaintext(Plaintext::from(Literal::Identifier(Box::new(*self))))
+    }
+}
+
+impl<N: Network> FromValue<N> for IdentifierLiteral<N> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::Plaintext(plaintext) => match plaintext {
+                Plaintext::Literal(literal, _) => match literal {
+                    Literal::Identifier(identifier_val) => *identifier_val,
+                    _ => panic!("Expected identifier type"),
+                },
+                _ => panic!("Expected literal plaintext"),
+            },
+            _ => panic!("Expected plaintext value"),
+        }
+    }
+}
+
 impl<N: Network> ToValue<N> for Ciphertext<N> {
     fn to_value(&self) -> Value<N> {
         panic!("Ciphertext can not be converted")
@@ -536,20 +653,3 @@ impl<N: Network, T: FromValue<N>, const SIZE: usize> FromValue<N> for [T; SIZE] 
         }
     }
 }
-
-// impl ToValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
-//     fn to_value(&self) -> Value<snarkvm::prelude::TestnetV0> {
-//         use leo_ast::interpreter_value::ValueVariants;
-//
-//         match &self.contents {
-//             ValueVariants::Svm(svm_value) => svm_value.clone(),
-//             _ => panic!("Only SVM values can be converted via ToValue."),
-//         }
-//     }
-// }
-//
-// impl FromValue<snarkvm::prelude::TestnetV0> for leo_ast::interpreter_value::Value {
-//     fn from_value(value: Value<snarkvm::prelude::TestnetV0>) -> Self {
-//         value.into()
-//     }
-// }
