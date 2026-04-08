@@ -4,8 +4,6 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-serde = { workspace = true }
-serde_json = { workspace = true }
 indexmap = { workspace = true }
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
@@ -17,11 +15,6 @@ convert_case = { workspace = true }
 http = { workspace = true }
 colored = { workspace = true }
 num-format = { workspace = true }
-leo-span = { workspace = true }
-leo-package = { workspace = true }
-leo-ast = { workspace = true }
-leo-parser = { workspace = true }
-leo-errors = { workspace = true }
 leo-abi-types = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }

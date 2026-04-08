@@ -1,6 +1,4 @@
-use crate::types::{
-    get_rust_type, get_rust_type_from_function_input, get_rust_type_from_function_output,
-};
+use crate::types::ToRustType;
 use convert_case::{Case::Pascal, Casing};
 use itertools::Itertools;
 use leo_abi_types::{Mode, Program, Record};
@@ -62,12 +60,6 @@ pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream
             pub mod network {
                 use super::*;
                 #network_impl
-            }
-
-            /// Faster bindings for testing Leo code locally.
-            ///
-            /// The interpreter state resets after the session.
-            pub mod interpreter {
             }
         }
     }
@@ -146,19 +138,14 @@ fn generate_network_impl(
     let new_implementation = generate_new(&deployment_calls, &trait_imports, &dependency_ids);
 
     quote! {
-        use leo_bindings::leo_bindings_sdk::{Client, VMManager};
-        use leo_bindings::{leo_package, leo_ast, leo_span, log};
+        use leo_bindings::{log, leo_bindings_sdk::{Client, VMManager}};
         use snarkvm::console::program::{Record, Plaintext};
-        use leo_package::Package;
-        use leo_ast::NetworkName;
-        use leo_span::create_session_if_not_set_then;
         use std::path::Path;
         use std::str::FromStr;
 
         #[derive(Debug, Clone)]
         pub struct #program_struct<N: Network> {
             pub vm_manager: VMManager<N>,
-            pub package: Package,
             _network: std::marker::PhantomData<N>,
         }
 
@@ -188,7 +175,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                 .iter()
                 .map(|member| {
                     let member_name = Ident::new(&member.name, Span::call_site());
-                    let member_type = get_rust_type(&member.ty);
+                    let member_type = member.ty.to_rust_type();
                     quote! { #member_name: #member_type }
                 })
                 .collect();
@@ -223,7 +210,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                 .iter()
                 .map(|member| {
                     let member_name = Ident::new(&member.name, Span::call_site());
-                    let member_type = get_rust_type(&member.ty);
+                    let member_type = member.ty.to_rust_type();
                     let field_name = &member.name;
 
                     if member.name == "owner" {
@@ -276,7 +263,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                 .iter()
                 .map(|member| {
                     let member_name = Ident::new(&member.name, Span::call_site());
-                    let member_type = get_rust_type(&member.ty);
+                    let member_type = member.ty.to_rust_type();
                     quote! {
                         pub fn #member_name(&self) -> &#member_type {
                             &self.#member_name
@@ -359,7 +346,7 @@ pub fn generate_structs(structs: &[leo_abi_types::Struct]) -> Vec<TokenStream> {
                 .iter()
                 .map(|field| {
                     let member_name = Ident::new(&field.name, Span::call_site());
-                    let member_type = get_rust_type(&field.ty);
+                    let member_type = field.ty.to_rust_type();
 
                     let definition = quote! { pub #member_name: #member_type, };
 
@@ -391,7 +378,7 @@ pub fn generate_structs(structs: &[leo_abi_types::Struct]) -> Vec<TokenStream> {
 
             quote! {
                 /// Struct from Leo.
-                #[derive(Debug, Clone, Copy, Default)]
+                #[derive(Debug, Clone, Copy)]
                 pub struct #struct_name<N: Network> {
                     #(#definitions)*
                     _network: std::marker::PhantomData<N>
@@ -457,7 +444,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
 
         let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().map(|input| {
             let param_name = Ident::new(&input.name, Span::call_site());
-            let param_type = get_rust_type_from_function_input(&input.ty);
+            let param_type = input.ty.to_rust_type();
             let param = quote! { #param_name: #param_type };
             let conversion = quote! { (#param_name).to_value() };
             (param, conversion)
@@ -471,7 +458,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
                 quote! { Ok(()) }
             ),
             1 => {
-                let output_type = get_rust_type_from_function_output(&function.outputs[0].ty);
+                let output_type = function.outputs[0].ty.to_rust_type();
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -487,7 +474,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
                 let (output_types, output_conversions): (Vec<_>, Vec<_>) = function.outputs.iter()
                     .enumerate()
                     .map(|(i, output)| {
-                        let output_type = get_rust_type_from_function_output(&output.ty);
+                        let output_type = output.ty.to_rust_type();
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -519,8 +506,8 @@ fn generate_mapping_types(mappings: &[leo_abi_types::Mapping]) -> Vec<MappingTyp
         .map(|mapping| MappingTypes {
             getter_name: Ident::new(&format!("get_{}", mapping.name), Span::call_site()),
             mapping_name: mapping.name.clone(),
-            key_type: get_rust_type(&mapping.key),
-            value_type: get_rust_type(&mapping.value),
+            key_type: mapping.key.to_rust_type(),
+            value_type: mapping.value.to_rust_type(),
         })
         .collect()
 }
@@ -537,18 +524,6 @@ fn generate_new(
 
             #(#deployment_calls)*
 
-            let package = create_session_if_not_set_then(|_| {
-                let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-                Package::from_directory(
-                    crate_dir,
-                    crate_dir,
-                    false,
-                    false,
-                    Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
-                    Some(vm_manager.client().endpoint()),
-                )
-            })?;
-
             let program_id = ProgramID::<N>::from_str(Self::PROGRAM_ID)?;
             let program_exists = block_on(vm_manager.client().program_exists::<N>(&program_id.to_string()))?;
 
@@ -557,20 +532,23 @@ fn generate_new(
             } else {
                 log::info!("📦 Deploying '{}'", program_id);
 
-                let bytecode = create_session_if_not_set_then(|_| {
-                    let program_symbol = leo_span::Symbol::intern(Self::PROGRAM_ID);
-                    let target_program = package.compilation_units.iter()
-                        .find(|p| p.name == program_symbol)
-                        .ok_or_else(|| anyhow!("Program not found in package"))?;
-
-                    match &target_program.data {
-                        leo_package::ProgramData::Bytecode(bytecode) => Ok(bytecode.clone()),
-                        leo_package::ProgramData::SourcePath { directory, source: _ } => {
-                            let aleo_path = directory.join("build").join("main.aleo");
-                            std::fs::read_to_string(&aleo_path).map_err(anyhow::Error::from)
-                        }
-                    }
-                })?;
+                let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+                let bytecode = {
+                    let src_main = crate_dir.join("src/main.aleo");
+                    let build_main = crate_dir.join("build/main.aleo");
+                    let path = if src_main.exists() {
+                        src_main
+                    } else if build_main.exists() {
+                        build_main
+                    } else {
+                        return Err(anyhow!(
+                            "Bytecode not found: expected {} or {}",
+                            src_main.display(),
+                            build_main.display(),
+                        ));
+                    };
+                    std::fs::read_to_string(&path).map_err(|e| anyhow!("failed to read {}: {e}", path.display()))?
+                };
 
                 let program: Program<N> = bytecode.parse()?;
 
@@ -580,7 +558,6 @@ fn generate_new(
 
             Ok(Self {
                 vm_manager,
-                package,
                 _network: std::marker::PhantomData,
             })
         }

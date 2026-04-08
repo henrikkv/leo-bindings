@@ -498,7 +498,13 @@ impl<N: Network> VMManager<N> {
     }
 
     fn create_query(endpoint: &str) -> Result<Query<N, BlockMemory<N>>> {
-        let uri: Uri = endpoint
+        let base = endpoint.trim_end_matches('/');
+        let rest_base = if base.ends_with("/v2") {
+            base.to_string()
+        } else {
+            format!("{base}/v2")
+        };
+        let uri: Uri = rest_base
             .parse()
             .map_err(|e| Error::Config(format!("Invalid endpoint URI: {}", e)))?;
         Ok(Query::<N, BlockMemory<N>>::from(uri))

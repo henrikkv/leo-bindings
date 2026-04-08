@@ -6,9 +6,52 @@ use quote::quote;
 use snarkvm::prelude::*;
 use std::sync::OnceLock;
 
-pub fn get_rust_type(ty: &abi::Plaintext) -> TokenStream {
-    match ty {
-        abi::Plaintext::Primitive(p) => match p {
+fn pascal_ident_from_path(path: &abi::Path) -> syn::Ident {
+    let last = path
+        .last()
+        .expect("Type path should have at least one segment");
+    syn::Ident::new(&last.to_case(Case::Pascal), Span::call_site())
+}
+
+fn record_rust_type(path: &abi::Path) -> TokenStream {
+    let id = pascal_ident_from_path(path);
+    quote! { #id<N> }
+}
+
+pub trait ToRustType {
+    fn to_rust_type(&self) -> TokenStream;
+}
+
+impl ToRustType for abi::Plaintext {
+    fn to_rust_type(&self) -> TokenStream {
+        rust_type_plaintext(self)
+    }
+}
+
+impl ToRustType for abi::FunctionInput {
+    fn to_rust_type(&self) -> TokenStream {
+        match self {
+            abi::FunctionInput::Plaintext(p) => rust_type_plaintext(p),
+            abi::FunctionInput::Record(rec) => record_rust_type(&rec.path),
+            abi::FunctionInput::DynamicRecord => quote! { Record<N, Plaintext<N>> },
+        }
+    }
+}
+
+impl ToRustType for abi::FunctionOutput {
+    fn to_rust_type(&self) -> TokenStream {
+        match self {
+            abi::FunctionOutput::Plaintext(p) => rust_type_plaintext(p),
+            abi::FunctionOutput::Record(rec) => record_rust_type(&rec.path),
+            abi::FunctionOutput::Final => quote! { Future<N> },
+            abi::FunctionOutput::DynamicRecord => quote! { Record<N, Plaintext<N>> },
+        }
+    }
+}
+
+fn rust_type_plaintext(p: &abi::Plaintext) -> TokenStream {
+    match p {
+        abi::Plaintext::Primitive(prim) => match prim {
             abi::Primitive::Address => quote! { Address<N> },
             abi::Primitive::Boolean => quote! { bool },
             abi::Primitive::Field => quote! { Field<N> },
@@ -32,54 +75,14 @@ pub fn get_rust_type(ty: &abi::Plaintext) -> TokenStream {
             },
         },
         abi::Plaintext::Array(array) => {
-            let element_type = get_rust_type(array.element.as_ref());
+            let element_type = rust_type_plaintext(array.element.as_ref());
             let size: usize = array.length as usize;
             quote! { [#element_type; #size] }
         }
-        abi::Plaintext::Struct(sref) => {
-            let last = sref
-                .path
-                .last()
-                .expect("StructRef.path should have at least one segment");
-            let struct_ident = syn::Ident::new(&last.to_case(Case::Pascal), Span::call_site());
-            quote! { #struct_ident<N> }
-        }
+        abi::Plaintext::Struct(sref) => record_rust_type(&sref.path),
         abi::Plaintext::Optional(opt) => {
-            let inner_type = get_rust_type(opt.0.as_ref());
+            let inner_type = rust_type_plaintext(opt.0.as_ref());
             quote! { Option<#inner_type> }
-        }
-    }
-}
-
-/// Rust type for a record reference in the ABI
-pub fn get_rust_type_from_record_ref(r: &abi::RecordRef) -> TokenStream {
-    let last = r
-        .path
-        .last()
-        .expect("RecordRef.path should have at least one segment");
-    let record_ident = syn::Ident::new(&last.to_case(Case::Pascal), Span::call_site());
-    quote! { #record_ident<N> }
-}
-
-/// Rust parameter type for a function input from `abi.json`.
-pub fn get_rust_type_from_function_input(ty: &abi::FunctionInput) -> TokenStream {
-    match ty {
-        abi::FunctionInput::Plaintext(p) => get_rust_type(p),
-        abi::FunctionInput::Record(r) => get_rust_type_from_record_ref(r),
-        abi::FunctionInput::DynamicRecord => {
-            quote! { Record<N, Plaintext<N>> }
-        }
-    }
-}
-
-/// Rust return type for a function output from `abi.json`.
-pub fn get_rust_type_from_function_output(ty: &abi::FunctionOutput) -> TokenStream {
-    match ty {
-        abi::FunctionOutput::Plaintext(p) => get_rust_type(p),
-        abi::FunctionOutput::Record(r) => get_rust_type_from_record_ref(r),
-        abi::FunctionOutput::Final => quote! { Future<N> },
-        abi::FunctionOutput::DynamicRecord => {
-            quote! { Record<N, Plaintext<N>> }
         }
     }
 }

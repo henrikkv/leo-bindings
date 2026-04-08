@@ -1,4 +1,5 @@
 [workspace]
+resolver = "3"
 members = [
     ".",
     "leo-bindings-core",
@@ -9,7 +10,6 @@ members = [
     "examples/dev",
     "examples/token/leo",
     "examples/token",
-    "examples/external",
     "examples/delegated",
     "examples/delegated/leo"
 ]
@@ -47,12 +47,12 @@ regex = "1.10"
 log = "0.4"
 dotenvy = "0.15"
 env_logger = "0.11"
-leo-span = { git = "https://github.com/ProvableHQ/leo", package = "leo-span" }
-leo-package = { git = "https://github.com/ProvableHQ/leo", package = "leo-package" }
-leo-ast = { git = "https://github.com/ProvableHQ/leo", package = "leo-ast" }
-leo-parser = { git = "https://github.com/ProvableHQ/leo", package = "leo-parser" }
-leo-errors = { git = "https://github.com/ProvableHQ/leo", package = "leo-errors" }
-leo-abi-types = { git = "https://github.com/ProvableHQ/leo", package = "leo-abi-types" }
+leo-span = "4.0"
+leo-package = "4.0"
+leo-ast = "4.0"
+leo-parser = "4.0"
+leo-errors = "4.0"
+leo-abi-types = "4.0"
 reqwest = { version = "0.12", default-features = false }
 reqwest-middleware = "0.3"
 reqwest-retry = "0.6"
@@ -63,11 +63,6 @@ thiserror = "1.0"
 name = "leo-bindings"
 version.workspace = true
 edition.workspace = true
-
-
-[[bin]]
-name = "get-signatures"
-path = "src/bin/get-signatures.rs"
 
 [[bin]]
 name = "leo-bindings"
