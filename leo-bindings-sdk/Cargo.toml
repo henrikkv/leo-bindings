@@ -23,10 +23,6 @@ colored.workspace = true
 num-format.workspace = true
 log.workspace = true
 
-[[bin]]
-name = "generate_local_chain"
-path = "src/bin/generate_local_chain.rs"
-
 [dev-dependencies]
 anyhow.workspace = true
 aleo-std.workspace = true
