@@ -1,19 +1,32 @@
+use credits_bindings::credits::*;
+use leo_bindings::leo_bindings_sdk::{Account, Client, LocalVM, NetworkVm, VMManager};
+use snarkvm::prelude::TestnetV0;
+use token_bindings::token::*;
+
+const ENDPOINT: &str = "http://localhost:3030";
+
 #[test]
-fn token() {
+fn token_net() {
     leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let client = Client::new(ENDPOINT, None).unwrap();
+    let vm_manager = NetworkVm::new(&client).unwrap();
+    run_token_tests(vm_manager, &alice);
+}
 
-    use credits_bindings::credits::*;
-    use leo_bindings::leo_bindings_sdk::{Account, Client, VMManager};
-    use token_bindings::token::*;
+#[test]
+fn token_sim() {
+    leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let sim_vm = LocalVM::new().unwrap();
+    run_token_tests(sim_vm, &alice);
+}
 
-    const ENDPOINT: &str = "http://localhost:3030";
+fn run_token_tests<V: VMManager<TestnetV0> + Clone>(vm: V, alice: &Account<TestnetV0>) {
     let rng = &mut rand::thread_rng();
-    let alice = Account::dev_account(0).unwrap();
     let bob = Account::new(rng).unwrap();
 
-    let client = Client::new(ENDPOINT, None).unwrap();
-    let vm_manager = VMManager::new(&client).unwrap();
-    let credits = CreditsTestnet::new(&alice, vm_manager.clone()).unwrap();
+    let credits = CreditsAleo::new(alice, vm.clone()).unwrap();
     let account0 = Account::dev_account(0).unwrap();
     let account1 = Account::dev_account(1).unwrap();
     let account2 = Account::dev_account(2).unwrap();
@@ -28,14 +41,14 @@ fn token() {
     let balance_before = credits.get_account(alice.address()).unwrap();
     dbg!(balance_before);
     credits
-        .transfer_public(&alice, bob.address(), 1_000_000_000_000)
+        .transfer_public(alice, bob.address(), 1_000_000_000_000)
         .unwrap();
     let balance_after = credits.get_account(alice.address()).unwrap();
     dbg!(balance_after);
 
-    let token = TokenTestnet::new(&alice, vm_manager).unwrap();
+    let token = TokenAleo::new(alice, vm).unwrap();
 
-    let rec = token.mint_private(&alice, bob.address(), 100).unwrap();
+    let rec = token.mint_private(alice, bob.address(), 100).unwrap();
     dbg!(&rec);
     let (rec1, rec2) = token
         .transfer_private(&bob, rec, bob.address(), 10)

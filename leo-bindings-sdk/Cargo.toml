@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 anyhow.workspace = true
+indexmap.workspace = true
 snarkvm.workspace = true
 reqwest = { workspace = true, features = ["json", "rustls-tls"] }
 reqwest-middleware.workspace = true
@@ -22,10 +23,12 @@ colored.workspace = true
 num-format.workspace = true
 log.workspace = true
 
+[[bin]]
+name = "generate_local_chain"
+path = "src/bin/generate_local_chain.rs"
+
 [dev-dependencies]
-tokio-test = "0.4"
 anyhow.workspace = true
 aleo-std.workspace = true
 http.workspace = true
 rand.workspace = true
-

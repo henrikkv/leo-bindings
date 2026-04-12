@@ -1,21 +1,29 @@
-use dev_bindings::dev::*;
-use leo_bindings::leo_bindings_sdk::{Account, Client, VMManager};
-use snarkvm::prelude::{Network, TestnetV0};
+use dev_bindings::dev::{A, B, DevAleo};
+use leo_bindings::leo_bindings_sdk::{Account, Client, LocalVM, NetworkVm, VMManager};
+use snarkvm::prelude::TestnetV0;
 use std::str::FromStr;
 
 const ENDPOINT: &str = "http://localhost:3030";
 
 #[test]
-fn dev_testnet() {
+fn test_dev_net() {
     leo_bindings::utils::init_test_logger();
     let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
     let client = Client::new(ENDPOINT, None).unwrap();
-    let vm_manager = VMManager::new(&client).unwrap();
-    let dev = DevTestnet::new(&alice, vm_manager).unwrap();
-    run_dev_tests(&dev, &alice);
+    let net_vm = NetworkVm::new(&client).unwrap();
+    run_dev_tests(net_vm, &alice);
 }
 
-fn run_dev_tests<N: Network, P: DevAleo<N>>(dev: &P, alice: &Account<N>) {
+#[test]
+fn test_dev_sim() {
+    leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let sim_vm = LocalVM::new().unwrap();
+    run_dev_tests(sim_vm, &alice);
+}
+
+fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
+    let dev = DevAleo::new(alice, vm).unwrap();
     let user = dev.create_user(alice, alice.address(), 0, 0).unwrap();
     dbg!(&user);
     let balance = dev.consume_user(alice, user).unwrap();
@@ -26,7 +34,7 @@ fn run_dev_tests<N: Network, P: DevAleo<N>>(dev: &P, alice: &Account<N>) {
     let container = dev.create_container(alice, alice.address(), b).unwrap();
     dbg!(&container);
     let extracted_b = dev.consume_container(alice, container).unwrap();
-    dbg!(&extracted_b);
+    dbg!(extracted_b);
 
     let balance_before = dev.get_balances(0);
     dbg!(&balance_before);

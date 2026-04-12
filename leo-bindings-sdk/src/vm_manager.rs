@@ -13,21 +13,48 @@ use snarkvm::synthesizer::VM;
 
 pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V14;
 
+pub trait VMManager<N: Network>: Send + Sync + Clone {
+    fn program_exists(&self, program_id: &str) -> Result<bool>;
+
+    fn mapping_value(
+        &self,
+        program_id: &str,
+        mapping_name: &str,
+        key: &Value<N>,
+    ) -> Result<Option<Value<N>>>;
+
+    fn deploy_and_broadcast(
+        &self,
+        deployer: &Account<N>,
+        program: &Program<N>,
+        dependencies: &[&str],
+    ) -> Result<()>;
+
+    fn execute_and_broadcast(
+        &self,
+        account: &Account<N>,
+        program_id: &str,
+        function_name: &str,
+        inputs: Vec<Value<N>>,
+        dependencies: &[&str],
+    ) -> Result<Vec<Value<N>>>;
+}
+
 #[derive(Clone)]
-pub struct VMManager<N: Network> {
+pub struct NetworkVm<N: Network> {
     vm: VM<N, ConsensusMemory<N>>,
     client: Client,
 }
 
-impl<N: Network> std::fmt::Debug for VMManager<N> {
+impl<N: Network> std::fmt::Debug for NetworkVm<N> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("VMManager")
+        f.debug_struct("NetworkVm")
             .field("client", &self.client)
             .finish_non_exhaustive()
     }
 }
 
-impl<N: Network> VMManager<N> {
+impl<N: Network> NetworkVm<N> {
     pub fn new(client: &Client) -> Result<Self> {
         let store = ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)
             .map_err(|e| Error::Internal(format!("Failed to create consensus store: {}", e)))?;
@@ -49,9 +76,9 @@ impl<N: Network> VMManager<N> {
         &self.vm
     }
 
-    pub async fn add_program(&self, program: &Program<N>) -> Result<()> {
+    pub fn add_program(&self, program: &Program<N>) -> Result<()> {
         let program_id = program.id().to_string();
-        let edition = self.client.program_edition::<N>(&program_id).await?;
+        let edition = crate::block_on(self.client.program_edition::<N>(&program_id))?;
         self.vm
             .process()
             .write()
@@ -63,40 +90,28 @@ impl<N: Network> VMManager<N> {
         self.vm.process().read().contains_program(program_id)
     }
 
-    pub async fn deploy(
+    pub fn deploy(
         &self,
         private_key: &PrivateKey<N>,
         program: &Program<N>,
         priority_fee: u64,
         fee_record: Option<Record<N, Plaintext<N>>>,
     ) -> Result<Transaction<N>> {
-        let vm = self.vm.clone();
-        let endpoint = self.client.endpoint.clone();
-        let private_key = *private_key;
-        let program = program.clone();
-
-        tokio::task::spawn_blocking(move || {
-            let query = Self::create_query(&endpoint)?;
-            let rng = &mut rand::thread_rng();
-            let transaction = vm
-                .deploy(
-                    &private_key,
-                    &program,
-                    fee_record,
-                    priority_fee,
-                    Some(&query),
-                    rng,
-                )
-                .map_err(|e| {
-                    Error::VmError(format!("Failed to create deployment transaction: {}", e))
-                })?;
-            Ok(transaction)
-        })
-        .await
-        .map_err(|e| Error::Internal(e.to_string()))?
+        let query = Self::create_query(&self.client.endpoint)?;
+        let rng = &mut rand::thread_rng();
+        self.vm
+            .deploy(
+                private_key,
+                program,
+                fee_record,
+                priority_fee,
+                Some(&query),
+                rng,
+            )
+            .map_err(|e| Error::VmError(format!("Failed to create deployment transaction: {e}")))
     }
 
-    pub async fn execute(
+    pub fn execute(
         &self,
         private_key: &PrivateKey<N>,
         program_id: &str,
@@ -105,60 +120,39 @@ impl<N: Network> VMManager<N> {
         fee_record: Option<Record<N, Plaintext<N>>>,
         priority_fee: u64,
     ) -> Result<(Transaction<N>, Vec<Value<N>>)> {
-        let vm = self.vm.clone();
-        let endpoint = self.client.endpoint.clone();
-        let private_key = *private_key;
+        let query = Self::create_query(&self.client.endpoint)?;
+        let rng = &mut rand::thread_rng();
         let program_id: ProgramID<N> = program_id.parse()?;
         let function_name: Identifier<N> = function_name.parse()?;
-
-        tokio::task::spawn_blocking(move || {
-            let query = Self::create_query(&endpoint)?;
-            let rng = &mut rand::thread_rng();
-            let (transaction, response) = vm
-                .execute_with_response(
-                    &private_key,
-                    (program_id, function_name),
-                    inputs.iter(),
-                    fee_record,
-                    priority_fee,
-                    Some(&query),
-                    rng,
-                )
-                .map_err(|e| {
-                    Error::VmError(format!("Failed to create execution transaction: {}", e))
-                })?;
-
-            let outputs = response.outputs().to_vec();
-
-            Ok((transaction, outputs))
-        })
-        .await
-        .map_err(|e| Error::Internal(e.to_string()))?
+        let (transaction, response) = self
+            .vm
+            .execute_with_response(
+                private_key,
+                (program_id, function_name),
+                inputs.iter(),
+                fee_record,
+                priority_fee,
+                Some(&query),
+                rng,
+            )
+            .map_err(|e| Error::VmError(format!("Failed to create execution transaction: {e}")))?;
+        let outputs = response.outputs().to_vec();
+        Ok((transaction, outputs))
     }
 
-    pub async fn authorize(
+    pub fn authorize(
         &self,
         private_key: &PrivateKey<N>,
         program_id: &str,
         function_name: &str,
         inputs: Vec<Value<N>>,
     ) -> Result<Authorization<N>> {
-        let vm = self.vm.clone();
-        let private_key = *private_key;
-
+        let rng = &mut rand::thread_rng();
         let program_id: ProgramID<N> = program_id.parse()?;
         let function_name: Identifier<N> = function_name.parse()?;
-
-        tokio::task::spawn_blocking(move || {
-            let rng = &mut rand::thread_rng();
-            let authorization = vm
-                .authorize(&private_key, program_id, function_name, inputs.iter(), rng)
-                .map_err(|e| Error::VmError(format!("Failed to create authorization: {}", e)))?;
-
-            Ok(authorization)
-        })
-        .await
-        .map_err(|e| Error::Internal(e.to_string()))?
+        self.vm
+            .authorize(private_key, program_id, function_name, inputs.iter(), rng)
+            .map_err(|e| Error::VmError(format!("Failed to create authorization: {e}")))
     }
 
     pub fn extract_outputs(
@@ -245,11 +239,27 @@ impl<N: Network> VMManager<N> {
             .map_err(|e| Error::VmError(format!("Failed to calculate execution cost: {}", e)))
     }
 
-    pub async fn ensure_program_loaded(
-        &self,
-        program_id: &str,
-        dependencies: &[&str],
-    ) -> Result<()> {
+    fn load_missing_dependencies(&self, dependencies: &[&str]) -> Result<()> {
+        for dep_id in dependencies {
+            let dep_program_id: ProgramID<N> = dep_id.parse().map_err(|e| {
+                Error::Internal(format!("Invalid dependency ID '{}': {}", dep_id, e))
+            })?;
+            if self.contains_program(&dep_program_id) {
+                continue;
+            }
+            crate::block_on(self.client.wait_for_program::<N>(dep_id))?;
+            let bytecode = crate::block_on(self.client.program::<N>(dep_id))?;
+            let dep_program: Program<N> = bytecode.parse().map_err(|e| {
+                Error::Internal(format!("Failed to parse dependency '{}': {}", dep_id, e))
+            })?;
+            self.add_program(&dep_program).map_err(|e| {
+                Error::Internal(format!("Failed to add dependency '{}': {}", dep_id, e))
+            })?;
+        }
+        Ok(())
+    }
+
+    pub fn ensure_program_loaded(&self, program_id: &str, dependencies: &[&str]) -> Result<()> {
         let program_id_parsed: ProgramID<N> = program_id
             .parse()
             .map_err(|e| Error::Internal(format!("Invalid program ID '{}': {}", program_id, e)))?;
@@ -258,56 +268,21 @@ impl<N: Network> VMManager<N> {
             return Ok(());
         }
 
-        for dep_id in dependencies {
-            let dep_program_id: ProgramID<N> = dep_id.parse().map_err(|e| {
-                Error::Internal(format!("Invalid dependency ID '{}': {}", dep_id, e))
-            })?;
+        self.load_missing_dependencies(dependencies)?;
 
-            if !self.contains_program(&dep_program_id) {
-                self.client
-                    .wait_for_program::<N>(dep_id)
-                    .await
-                    .map_err(|e| {
-                        Error::Internal(format!(
-                            "Failed waiting for dependency '{}': {}",
-                            dep_id, e
-                        ))
-                    })?;
-                let bytecode = self.client.program::<N>(dep_id).await.map_err(|e| {
-                    Error::Internal(format!("Failed to fetch dependency '{}': {}", dep_id, e))
-                })?;
-                let dep_program: Program<N> = bytecode.parse().map_err(|e| {
-                    Error::Internal(format!("Failed to parse dependency '{}': {}", dep_id, e))
-                })?;
-                self.add_program(&dep_program).await.map_err(|e| {
-                    Error::Internal(format!("Failed to add dependency '{}': {}", dep_id, e))
-                })?;
-            }
-        }
-
-        self.client
-            .wait_for_program::<N>(program_id)
-            .await
-            .map_err(|e| {
-                Error::Internal(format!(
-                    "Failed waiting for program '{}': {}",
-                    program_id, e
-                ))
-            })?;
-        let bytecode = self.client.program::<N>(program_id).await.map_err(|e| {
-            Error::Internal(format!("Failed to fetch program '{}': {}", program_id, e))
-        })?;
+        crate::block_on(self.client.wait_for_program::<N>(program_id))?;
+        let bytecode = crate::block_on(self.client.program::<N>(program_id))?;
         let program: Program<N> = bytecode.parse().map_err(|e| {
             Error::Internal(format!("Failed to parse program '{}': {}", program_id, e))
         })?;
-        self.add_program(&program).await.map_err(|e| {
+        self.add_program(&program).map_err(|e| {
             Error::Internal(format!("Failed to add program '{}': {}", program_id, e))
         })?;
 
         Ok(())
     }
 
-    pub async fn execute_and_broadcast(
+    pub fn execute_and_broadcast(
         &self,
         account: &Account<N>,
         program_id: &str,
@@ -317,137 +292,70 @@ impl<N: Network> VMManager<N> {
     ) -> Result<Vec<Value<N>>> {
         log::info!("Creating tx: {}.{}", program_id, function_name);
 
-        self.ensure_program_loaded(program_id, dependencies).await?;
+        self.ensure_program_loaded(program_id, dependencies)?;
 
-        let balance = self
-            .client
-            .public_balance::<N>(&account.address())
-            .await
+        let balance = crate::block_on(self.client.public_balance::<N>(&account.address()))
             .map_err(|e| Error::Internal(format!("Failed to get balance: {}", e)))?;
 
-        let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = if self
-            .client
-            .has_credentials()
-        {
-            let auth = self
-                .authorize(
-                    account.private_key(),
-                    program_id,
-                    function_name,
-                    inputs.clone(),
-                )
-                .await
-                .map_err(|e| Error::Internal(format!("Failed to create authorization: {}", e)))?;
-
+        let (transaction, function_outputs) = if self.client.has_credentials() {
+            let auth = self.authorize(
+                account.private_key(),
+                program_id,
+                function_name,
+                inputs.clone(),
+            )?;
             let outputs = self
                 .extract_outputs(&auth, account.view_key())
                 .map_err(|e| Error::Internal(format!("Failed to extract outputs: {}", e)))?;
-
-            let tx = self
-                .client
-                .prove(&auth)
-                .await
+            let tx = crate::block_on(self.client.prove(&auth))
                 .map_err(|e| Error::Internal(format!("Delegated proving failed: {}", e)))?;
-
-            if let Some(execution) = tx.execution() {
-                print_execution_stats(self.vm(), program_id, execution, None, CONSENSUS_VERSION)
-                    .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
-            }
-
-            let (total_cost, _) = self
-                .calculate_cost(&tx)
-                .map_err(|e| Error::Internal(format!("Failed to calculate cost: {}", e)))?;
-            if balance < total_cost {
-                return Err(Error::Internal(format!(
-                    "Insufficient balance {} for total cost {} on `{}.{}`",
-                    balance, total_cost, program_id, function_name
-                )));
-            }
-
             log::info!("✅ Received proved transaction: {}", tx.id());
             (tx, outputs)
         } else {
-            let (tx, outputs) = self
-                .execute(
-                    account.private_key(),
-                    program_id,
-                    function_name,
-                    inputs.clone(),
-                    None,
-                    0,
-                )
-                .await
-                .map_err(|e| {
-                    Error::Internal(format!("Failed to execute '{}': {}", function_name, e))
-                })?;
-
-            if let Some(execution) = tx.execution() {
-                print_execution_stats(self.vm(), program_id, execution, None, CONSENSUS_VERSION)
-                    .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
-            }
-
-            let (total_cost, _) = self
-                .calculate_cost(&tx)
-                .map_err(|e| Error::Internal(format!("Failed to calculate cost: {}", e)))?;
-            if balance < total_cost {
-                return Err(Error::Internal(format!(
-                    "Insufficient balance {} for total cost {} on `{}.{}`",
-                    balance, total_cost, program_id, function_name
-                )));
-            }
-
-            (tx, outputs)
+            self.execute(
+                account.private_key(),
+                program_id,
+                function_name,
+                inputs.clone(),
+                None,
+                0,
+            )
+            .map_err(|e| Error::Internal(format!("Failed to execute '{function_name}': {e}")))?
         };
 
+        if let Some(execution) = transaction.execution() {
+            print_execution_stats(self.vm(), program_id, execution, None, CONSENSUS_VERSION)
+                .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
+        }
+        let (total_cost, _) = self
+            .calculate_cost(&transaction)
+            .map_err(|e| Error::Internal(format!("Failed to calculate cost: {}", e)))?;
+        if balance < total_cost {
+            return Err(Error::Internal(format!(
+                "Insufficient balance {balance} for total cost {total_cost} on `{program_id}.{function_name}`"
+            )));
+        }
+
         log::info!("📡 Broadcasting tx: {}", transaction.id());
-        self.client
-            .broadcast_wait(&transaction)
-            .await
+        crate::block_on(self.client.broadcast_wait(&transaction))
             .map_err(|e| Error::Internal(format!("Failed to broadcast transaction: {}", e)))?;
 
         Ok(function_outputs)
     }
 
-    pub async fn deploy_and_broadcast(
+    pub fn deploy_and_broadcast(
         &self,
         deployer: &Account<N>,
         program: &Program<N>,
         dependencies: &[&str],
     ) -> Result<()> {
         let program_id = program.id().to_string();
-
-        for dep_id in dependencies {
-            let dep_program_id: ProgramID<N> = dep_id.parse().map_err(|e| {
-                Error::Internal(format!("Invalid dependency ID '{}': {}", dep_id, e))
-            })?;
-
-            if !self.contains_program(&dep_program_id) {
-                self.client
-                    .wait_for_program::<N>(dep_id)
-                    .await
-                    .map_err(|e| {
-                        Error::Internal(format!(
-                            "Failed waiting for dependency '{}': {}",
-                            dep_id, e
-                        ))
-                    })?;
-                let bytecode = self.client.program::<N>(dep_id).await.map_err(|e| {
-                    Error::Internal(format!("Failed to fetch dependency '{}': {}", dep_id, e))
-                })?;
-                let dep_program: Program<N> = bytecode.parse().map_err(|e| {
-                    Error::Internal(format!("Failed to parse dependency '{}': {}", dep_id, e))
-                })?;
-                self.add_program(&dep_program).await.map_err(|e| {
-                    Error::Internal(format!("Failed to add dependency '{}': {}", dep_id, e))
-                })?;
-            }
-        }
+        self.load_missing_dependencies(dependencies)?;
 
         log::info!("📦 Creating deployment tx for '{}'...", program_id);
 
         let transaction = self
             .deploy(deployer.private_key(), program, 0, None)
-            .await
             .map_err(|e| {
                 Error::Internal(format!("Failed to create deployment transaction: {}", e))
             })?;
@@ -457,10 +365,7 @@ impl<N: Network> VMManager<N> {
                 .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
         }
 
-        let balance = self
-            .client
-            .public_balance::<N>(&deployer.address())
-            .await
+        let balance = crate::block_on(self.client.public_balance::<N>(&deployer.address()))
             .map_err(|e| Error::Internal(format!("Failed to get balance: {}", e)))?;
         let fee = transaction
             .fee_amount()
@@ -478,20 +383,12 @@ impl<N: Network> VMManager<N> {
             self.client.endpoint()
         );
 
-        self.client
-            .broadcast_wait(&transaction)
-            .await
+        crate::block_on(self.client.broadcast_wait(&transaction))
             .map_err(|e| Error::Internal(format!("Failed to broadcast deployment: {}", e)))?;
 
-        self.client
-            .wait_for_program::<N>(&program_id)
-            .await
-            .map_err(|e| {
-                Error::Internal(format!("Failed waiting for program availability: {}", e))
-            })?;
+        crate::block_on(self.client.wait_for_program::<N>(&program_id))?;
 
         self.add_program(program)
-            .await
             .map_err(|e| Error::Internal(format!("Failed to add deployed program to VM: {}", e)))?;
 
         Ok(())
@@ -508,5 +405,233 @@ impl<N: Network> VMManager<N> {
             .parse()
             .map_err(|e| Error::Config(format!("Invalid endpoint URI: {}", e)))?;
         Ok(Query::<N, BlockMemory<N>>::from(uri))
+    }
+}
+
+impl<N: Network> VMManager<N> for NetworkVm<N> {
+    fn program_exists(&self, program_id: &str) -> Result<bool> {
+        crate::block_on(self.client.program_exists::<N>(program_id))
+    }
+
+    fn mapping_value(
+        &self,
+        program_id: &str,
+        mapping_name: &str,
+        key: &Value<N>,
+    ) -> Result<Option<Value<N>>> {
+        crate::block_on(self.client.mapping::<N>(program_id, mapping_name, key))
+    }
+
+    fn deploy_and_broadcast(
+        &self,
+        deployer: &Account<N>,
+        program: &Program<N>,
+        dependencies: &[&str],
+    ) -> Result<()> {
+        NetworkVm::deploy_and_broadcast(self, deployer, program, dependencies)
+    }
+
+    fn execute_and_broadcast(
+        &self,
+        account: &Account<N>,
+        program_id: &str,
+        function_name: &str,
+        inputs: Vec<Value<N>>,
+        dependencies: &[&str],
+    ) -> Result<Vec<Value<N>>> {
+        NetworkVm::execute_and_broadcast(
+            self,
+            account,
+            program_id,
+            function_name,
+            inputs,
+            dependencies,
+        )
+    }
+}
+
+#[derive(Clone)]
+pub struct LocalVM {
+    vm: VM<TestnetV0, ConsensusMemory<TestnetV0>>,
+}
+
+impl std::fmt::Debug for LocalVM {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LocalVM").finish_non_exhaustive()
+    }
+}
+
+impl LocalVM {
+    pub fn new() -> Result<Self> {
+        let bytes = crate::local_chain::load_or_create_local_chain_bytes()?;
+        let blocks = crate::local_chain::parse_local_chain_blocks(&bytes)?;
+        let vm = crate::local_chain::vm_from_local_chain_blocks(&blocks)?;
+        Ok(Self { vm })
+    }
+
+    pub fn vm(&self) -> &VM<TestnetV0, ConsensusMemory<TestnetV0>> {
+        &self.vm
+    }
+
+    fn contains_program(&self, program_id: &ProgramID<TestnetV0>) -> bool {
+        self.vm.process().read().contains_program(program_id)
+    }
+
+    fn ensure_program_loaded(&self, program_id: &str, dependencies: &[&str]) -> Result<()> {
+        let program_id_parsed: ProgramID<TestnetV0> = program_id
+            .parse()
+            .map_err(|e| Error::Internal(format!("Invalid program ID '{program_id}': {e}")))?;
+
+        if self.contains_program(&program_id_parsed) {
+            return Ok(());
+        }
+
+        for dep_id in dependencies {
+            let dep_program_id: ProgramID<TestnetV0> = dep_id
+                .parse()
+                .map_err(|e| Error::Internal(format!("Invalid dependency ID '{dep_id}': {e}")))?;
+            if !self.contains_program(&dep_program_id) {
+                return Err(Error::Internal(format!(
+                    "LocalVM: dependency '{dep_id}' not on ledger; deploy it first (missing program '{program_id}')"
+                )));
+            }
+        }
+
+        Err(Error::Internal(format!(
+            "LocalVM: program '{program_id}' not loaded; deploy via bindings::new first"
+        )))
+    }
+
+    pub fn deploy_and_broadcast(
+        &self,
+        deployer: &Account<TestnetV0>,
+        program: &Program<TestnetV0>,
+        dependencies: &[&str],
+    ) -> Result<()> {
+        let program_id = program.id().to_string();
+
+        for dep_id in dependencies {
+            let dep_program_id: ProgramID<TestnetV0> = dep_id
+                .parse()
+                .map_err(|e| Error::Internal(format!("Invalid dependency ID '{dep_id}': {e}")))?;
+            if !self.contains_program(&dep_program_id) {
+                return Err(Error::Internal(format!(
+                    "LocalVM: missing dependency '{dep_id}' before deploying '{program_id}'"
+                )));
+            }
+        }
+
+        log::info!("📦 Deploy: creating proofless deployment tx for '{program_id}'");
+
+        let mut rng = rand::thread_rng();
+        let transaction = self
+            .vm
+            .deploy_local_proofless(deployer.private_key(), program, None, 0, None, &mut rng)
+            .map_err(|e| Error::VmError(format!("deploy_local_proofless: {e}")))?;
+
+        let beacon_account = Account::dev_account(0).map_err(|e| Error::Internal(e.to_string()))?;
+        let beacon_key = *beacon_account.private_key();
+        crate::local_chain::commit_transaction(&self.vm, &beacon_key, &transaction, &mut rng)?;
+
+        Ok(())
+    }
+
+    pub fn execute_and_broadcast(
+        &self,
+        account: &Account<TestnetV0>,
+        program_id: &str,
+        function_name: &str,
+        inputs: Vec<Value<TestnetV0>>,
+        dependencies: &[&str],
+    ) -> Result<Vec<Value<TestnetV0>>> {
+        log::info!("Creating local tx: {program_id}.{function_name}");
+
+        self.ensure_program_loaded(program_id, dependencies)?;
+
+        let program_id_parsed: ProgramID<TestnetV0> = program_id
+            .parse()
+            .map_err(|e| Error::Internal(format!("Invalid program ID: {e}")))?;
+        let function_name_parsed: Identifier<TestnetV0> = function_name
+            .parse()
+            .map_err(|e| Error::Internal(format!("Invalid function name: {e}")))?;
+
+        let mut rng = rand::thread_rng();
+
+        let (transaction, response) = self
+            .vm
+            .execute_with_response_local_proofless(
+                account.private_key(),
+                (program_id_parsed, function_name_parsed),
+                inputs.into_iter(),
+                None,
+                0,
+                None,
+                &mut rng,
+            )
+            .map_err(|e| Error::VmError(format!("execute_with_response_local_proofless: {e}")))?;
+
+        let beacon_account = Account::dev_account(0).map_err(|e| Error::Internal(e.to_string()))?;
+        let beacon_key = *beacon_account.private_key();
+        crate::local_chain::commit_transaction(&self.vm, &beacon_key, &transaction, &mut rng)?;
+
+        Ok(response.outputs().to_vec())
+    }
+}
+
+impl VMManager<TestnetV0> for LocalVM {
+    fn program_exists(&self, program_id: &str) -> Result<bool> {
+        let id: ProgramID<TestnetV0> = program_id
+            .parse()
+            .map_err(|e| Error::Internal(format!("Invalid program id: {e}")))?;
+        Ok(self.contains_program(&id))
+    }
+
+    fn mapping_value(
+        &self,
+        program_id: &str,
+        mapping_name: &str,
+        key: &Value<TestnetV0>,
+    ) -> Result<Option<Value<TestnetV0>>> {
+        let pid = ProgramID::from_str(program_id).map_err(|e| Error::Internal(e.to_string()))?;
+        let mid = Identifier::from_str(mapping_name).map_err(|e| Error::Internal(e.to_string()))?;
+        let key_plain = match key {
+            Value::Plaintext(p) => p.clone(),
+            _ => {
+                return Err(Error::Internal(
+                    "LocalVM mapping keys must be plaintext values".to_string(),
+                ));
+            }
+        };
+        self.vm
+            .finalize_store()
+            .get_value_confirmed(pid, mid, &key_plain)
+            .map_err(|e| Error::Internal(format!("Mapping lookup failed: {e}")))
+    }
+
+    fn deploy_and_broadcast(
+        &self,
+        deployer: &Account<TestnetV0>,
+        program: &Program<TestnetV0>,
+        dependencies: &[&str],
+    ) -> Result<()> {
+        LocalVM::deploy_and_broadcast(self, deployer, program, dependencies)
+    }
+
+    fn execute_and_broadcast(
+        &self,
+        account: &Account<TestnetV0>,
+        program_id: &str,
+        function_name: &str,
+        inputs: Vec<Value<TestnetV0>>,
+        dependencies: &[&str],
+    ) -> Result<Vec<Value<TestnetV0>>> {
+        LocalVM::execute_and_broadcast(
+            self,
+            account,
+            program_id,
+            function_name,
+            inputs,
+            dependencies,
+        )
     }
 }
