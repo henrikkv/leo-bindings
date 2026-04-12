@@ -1,0 +1,626 @@
+{
+  "program": "dev.aleo",
+  "structs": [
+    {
+      "path": [
+        "A"
+      ],
+      "fields": [
+        {
+          "name": "number",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": [
+        "B"
+      ],
+      "fields": [
+        {
+          "name": "number",
+          "ty": {
+            "Primitive": {
+              "UInt": "U32"
+            }
+          }
+        },
+        {
+          "name": "a",
+          "ty": {
+            "Struct": {
+              "path": [
+                "A"
+              ],
+              "program": "dev.aleo"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "path": [
+        "User"
+      ],
+      "fields": [
+        {
+          "name": "owner",
+          "ty": {
+            "Primitive": "Address"
+          },
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "balance",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          },
+          "mode": "Public"
+        }
+      ]
+    },
+    {
+      "path": [
+        "Container"
+      ],
+      "fields": [
+        {
+          "name": "owner",
+          "ty": {
+            "Primitive": "Address"
+          },
+          "mode": "None"
+        },
+        {
+          "name": "data",
+          "ty": {
+            "Struct": {
+              "path": [
+                "B"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "name": "balances",
+      "key": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      }
+    },
+    {
+      "name": "bs",
+      "key": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      },
+      "value": {
+        "Struct": {
+          "path": [
+            "B"
+          ],
+          "program": "dev.aleo"
+        }
+      }
+    },
+    {
+      "name": "block_heights",
+      "key": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U32"
+        }
+      }
+    },
+    {
+      "name": "block_timestamps",
+      "key": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      },
+      "value": {
+        "Primitive": {
+          "Int": "I64"
+        }
+      }
+    }
+  ],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "main",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ]
+    },
+    {
+      "name": "nested",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Struct": {
+                "path": [
+                  "B"
+                ],
+                "program": "dev.aleo"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Struct": {
+                "path": [
+                  "B"
+                ],
+                "program": "dev.aleo"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ]
+    },
+    {
+      "name": "store_nested",
+      "is_final": true,
+      "inputs": [
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Struct": {
+                "path": [
+                  "B"
+                ],
+                "program": "dev.aleo"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": "Final",
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "nested_array",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Array": {
+                "element": {
+                  "Array": {
+                    "element": {
+                      "Primitive": {
+                        "UInt": "U8"
+                      }
+                    },
+                    "length": 5
+                  }
+                },
+                "length": 5
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Array": {
+                "element": {
+                  "Array": {
+                    "element": {
+                      "Primitive": {
+                        "UInt": "U8"
+                      }
+                    },
+                    "length": 5
+                  }
+                },
+                "length": 5
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "create_user",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "owner",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Address"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "balance",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Record": {
+              "path": [
+                "User"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "consume_user",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "user",
+          "ty": {
+            "Record": {
+              "path": [
+                "User"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "create_container",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "owner",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Address"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "data",
+          "ty": {
+            "Plaintext": {
+              "Struct": {
+                "path": [
+                  "B"
+                ],
+                "program": "dev.aleo"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Record": {
+              "path": [
+                "Container"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "consume_container",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "container",
+          "ty": {
+            "Record": {
+              "path": [
+                "Container"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Struct": {
+                "path": [
+                  "B"
+                ],
+                "program": "dev.aleo"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "asynchronous",
+      "is_final": true,
+      "inputs": [
+        {
+          "name": "balance",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "id",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Record": {
+              "path": [
+                "User"
+              ],
+              "program": "dev.aleo"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": "Final",
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "test_all_types",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "f",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Field"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "s",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Scalar"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "g",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Group"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "flag",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Boolean"
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Field"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Scalar"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Group"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Boolean"
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "store_block_info",
+      "is_final": true,
+      "inputs": [
+        {
+          "name": "id",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": "Final",
+          "mode": "None"
+        }
+      ]
+    }
+  ]
+}

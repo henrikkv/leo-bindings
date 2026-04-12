@@ -11,17 +11,20 @@ pub enum TransactionStatus {
     Pending,
 }
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Broadcast a transaction and wait for confirmation
     ///
     /// POST /{network}/transaction/broadcast
     ///
-    pub async fn broadcast_wait(&self, transaction: &Transaction<N>) -> Result<N::TransactionID> {
+    pub async fn broadcast_wait<N: Network>(
+        &self,
+        transaction: &Transaction<N>,
+    ) -> Result<N::TransactionID> {
         self.broadcast(transaction).await?;
 
         let tx_id = transaction.id();
 
-        self.wait_for_transaction(&tx_id).await?;
+        self.wait_for_transaction::<N>(&tx_id).await?;
 
         Ok(tx_id)
     }
@@ -30,11 +33,11 @@ impl<N: Network> Client<N> {
     ///
     /// POST /{network}/transaction/broadcast
     ///
-    pub async fn broadcast(&self, transaction: &Transaction<N>) -> Result<()> {
+    pub async fn broadcast<N: Network>(&self, transaction: &Transaction<N>) -> Result<()> {
         let url = format!(
             "{}/v2/{}/transaction/broadcast",
             self.endpoint,
-            self.network_name()
+            N::SHORT_NAME
         );
 
         let response = self
@@ -67,11 +70,14 @@ impl<N: Network> Client<N> {
     ///
     /// GET /{network}/transaction/confirmed/{id}
     ///
-    pub async fn transaction_status(&self, tx_id: &N::TransactionID) -> Result<TransactionStatus> {
+    pub async fn transaction_status<N: Network>(
+        &self,
+        tx_id: &N::TransactionID,
+    ) -> Result<TransactionStatus> {
         let url = format!(
             "{}/v2/{}/transaction/confirmed/{}",
             self.endpoint,
-            self.network_name(),
+            N::SHORT_NAME,
             tx_id
         );
 
@@ -110,7 +116,7 @@ impl<N: Network> Client<N> {
         }
     }
 
-    pub async fn wait_for_transaction(&self, tx_id: &N::TransactionID) -> Result<()> {
+    pub async fn wait_for_transaction<N: Network>(&self, tx_id: &N::TransactionID) -> Result<()> {
         let tx_id_owned = tx_id.to_string();
 
         poll_until(
@@ -119,7 +125,7 @@ impl<N: Network> Client<N> {
                 let url = format!(
                     "{}/v2/{}/transaction/confirmed/{}",
                     self.endpoint,
-                    self.network_name(),
+                    N::SHORT_NAME,
                     tx_id_str
                 );
                 let client = self.client.clone();

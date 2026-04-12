@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+anyhow.workspace = true
+indexmap.workspace = true
 snarkvm.workspace = true
 reqwest = { workspace = true, features = ["json", "rustls-tls"] }
 reqwest-middleware.workspace = true
@@ -12,14 +14,21 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-leo-bindings.workspace = true
+rand.workspace = true
 rand_chacha.workspace = true
 dotenvy.workspace = true
+aleo-std.workspace = true
+http.workspace = true
+colored.workspace = true
+num-format.workspace = true
+log.workspace = true
+
+[[bin]]
+name = "generate_local_chain"
+path = "src/bin/generate_local_chain.rs"
 
 [dev-dependencies]
-tokio-test = "0.4"
 anyhow.workspace = true
 aleo-std.workspace = true
 http.workspace = true
 rand.workspace = true
-

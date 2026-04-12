@@ -2,16 +2,16 @@ use crate::config::Client;
 use crate::error::{Error, Result};
 use snarkvm::prelude::Network;
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Get the latest block height
     ///
     /// GET /{network}/block/height/latest
     ///
-    pub async fn height(&self) -> Result<u32> {
+    pub async fn height<N: Network>(&self) -> Result<u32> {
         let url = format!(
             "{}/v2/{}/block/height/latest",
             self.endpoint,
-            self.network_name()
+            N::SHORT_NAME
         );
 
         let response = self.client.get(&url).send().await?;
@@ -36,11 +36,11 @@ impl<N: Network> Client<N> {
     ///
     /// GET /{network}/block/{height}
     ///
-    pub async fn block(&self, height: u32) -> Result<String> {
+    pub async fn block<N: Network>(&self, height: u32) -> Result<String> {
         let url = format!(
             "{}/v2/{}/block/{}",
             self.endpoint,
-            self.network_name(),
+            N::SHORT_NAME,
             height
         );
 

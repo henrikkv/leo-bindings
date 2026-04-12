@@ -16,10 +16,10 @@ struct ProvingResponse {
     transaction: serde_json::Value,
 }
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Submit an authorization for delegated proving
     ///
-    pub async fn prove(&self, authorization: &Authorization<N>) -> Result<Transaction<N>> {
+    pub async fn prove<N: Network>(&self, authorization: &Authorization<N>) -> Result<Transaction<N>> {
         let jwt_token = self.get_valid_jwt_token().await?;
 
         let authorization_json = serde_json::to_value(authorization)
@@ -33,7 +33,7 @@ impl<N: Network> Client<N> {
 
         let url = format!(
             "https://api.provable.com/prove/{}/prove",
-            self.network_name()
+            N::SHORT_NAME
         );
 
         let request_body = serde_json::to_string(&proving_request)

@@ -8,8 +8,7 @@ use snarkvm::{
     },
 };
 
-/// Pretty‑print deployment statistics without a table, using the same UI
-/// conventions as `print_deployment_plan`.
+/// Pretty-print deployment statistics.
 pub fn print_deployment_stats<N: Network>(
     vm: &VM<N, ConsensusMemory<N>>,
     program_id: &str,
@@ -17,7 +16,6 @@ pub fn print_deployment_stats<N: Network>(
     priority_fee: Option<u64>,
     consensus_version: ConsensusVersion,
 ) -> Result<()> {
-    // ── Collect statistics ────────────────────────────────────────────────
     let variables = deployment.num_combined_variables()?;
     let constraints = deployment.num_combined_constraints()?;
     let (base_fee, (storage_cost, synthesis_cost, constructor_cost, namespace_cost)) =
@@ -27,7 +25,6 @@ pub fn print_deployment_stats<N: Network>(
     let prio_fee_cr = priority_fee.unwrap_or(0) as f64 / 1_000_000.0;
     let total_fee_cr = base_fee_cr + prio_fee_cr;
 
-    // ── Header ────────────────────────────────────────────────────────────
     log::info!(
         "\n{} {}",
         "📊 Deployment Summary for".bold(),
@@ -38,7 +35,6 @@ pub fn print_deployment_stats<N: Network>(
         "──────────────────────────────────────────────".dimmed()
     );
 
-    // ── High‑level metrics ────────────────────────────────────────────────
     log::info!(
         "  {:22}{}",
         "Total Variables:".cyan(),
@@ -64,12 +60,11 @@ pub fn print_deployment_stats<N: Network>(
             .green()
     );
 
-    // ── Cost breakdown ────────────────────────────────────────────────────
     log::info!("\n{}", "💰 Cost Breakdown (credits)".bold());
     log::info!(
         "  {:22}{}{:.6}",
         "Transaction Storage:".cyan(),
-        "".yellow(), // spacer for alignment
+        "".yellow(),
         storage_cost as f64 / 1_000_000.0
     );
     log::info!(
@@ -103,13 +98,11 @@ pub fn print_deployment_stats<N: Network>(
         total_fee_cr
     );
 
-    // ── Footer rule ───────────────────────────────────────────────────────
     log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
 
-    // ── Validation checks ─────────────────────────────────────────────────
     if variables > N::MAX_DEPLOYMENT_VARIABLES {
         return Err(snarkvm::prelude::Error::msg(format!(
             "Deployment exceeds maximum variables: {} > {}",
@@ -129,18 +122,14 @@ pub fn print_deployment_stats<N: Network>(
     Ok(())
 }
 
-/// Pretty‑print execution statistics without a table, using the same UI
-/// conventions as `print_deployment_plan`.
+/// Pretty-print execution statistics.
 pub fn print_execution_stats<N: Network>(
     vm: &VM<N, ConsensusMemory<N>>,
-    program_id: &str,
+    program_name: &str,
     execution: &Execution<N>,
     priority_fee: Option<u64>,
     consensus_version: ConsensusVersion,
 ) -> Result<()> {
-    use colored::*;
-
-    // ── Gather cost components ────────────────────────────────────────────
     let (base_fee, (storage_cost, execution_cost)) =
         execution_cost(&vm.process().read(), execution, consensus_version)?;
 
@@ -148,18 +137,16 @@ pub fn print_execution_stats<N: Network>(
     let prio_cr = priority_fee.unwrap_or(0) as f64 / 1_000_000.0;
     let total_cr = base_cr + prio_cr;
 
-    // ── Header ────────────────────────────────────────────────────────────
     log::info!(
         "\n{} {}",
         "📊 Execution Summary for".bold(),
-        program_id.bold()
+        program_name.bold()
     );
     log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()
     );
 
-    // ── Cost breakdown ────────────────────────────────────────────────────
     log::info!("{}", "💰 Cost Breakdown (credits)".bold());
     log::info!(
         "  {:22}{}{:.6}",
@@ -169,7 +156,7 @@ pub fn print_execution_stats<N: Network>(
     );
     log::info!(
         "  {:22}{}{:.6}",
-        "On‑chain Execution:".cyan(),
+        "On-chain Execution:".cyan(),
         "".yellow(),
         execution_cost as f64 / 1_000_000.0
     );
@@ -181,7 +168,6 @@ pub fn print_execution_stats<N: Network>(
     );
     log::info!("  {:22}{}{:.6}", "Total Fee:".cyan(), "".yellow(), total_cr);
 
-    // ── Footer rule ───────────────────────────────────────────────────────
     log::info!(
         "{}",
         "──────────────────────────────────────────────".dimmed()

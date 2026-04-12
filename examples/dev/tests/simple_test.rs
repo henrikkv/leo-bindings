@@ -1,33 +1,29 @@
-use dev_bindings::dev::*;
-use leo_bindings::utils::*;
-use snarkvm::prelude::Network;
+use dev_bindings::dev::{A, B, DevAleo};
+use leo_bindings::leo_bindings_sdk::{Account, Client, LocalVM, NetworkVm, VMManager};
+use snarkvm::prelude::TestnetV0;
 use std::str::FromStr;
 
 const ENDPOINT: &str = "http://localhost:3030";
 
 #[test]
-fn dev_testnet() {
+fn test_dev_net() {
     leo_bindings::utils::init_test_logger();
-    let alice = get_dev_account(0).unwrap();
-    run_dev_tests(&DevTestnet::new(&alice, ENDPOINT).unwrap(), &alice);
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let client = Client::new(ENDPOINT, None).unwrap();
+    let net_vm = NetworkVm::new(&client).unwrap();
+    run_dev_tests(net_vm, &alice);
 }
 
 #[test]
-fn dev_interpreter() {
+fn test_dev_sim() {
     leo_bindings::utils::init_test_logger();
-    let alice = get_dev_account(0).unwrap();
-    let dev = DevInterpreter::new(&alice, ENDPOINT).unwrap();
-    run_dev_tests(&dev, &alice);
-
-    leo_bindings::interpreter_cheats::set_block_height(1000);
-    leo_bindings::interpreter_cheats::set_block_timestamp(1234567890);
-
-    dev.store_block_info(&alice, 0).unwrap();
-    assert_eq!(dev.get_block_heights(0), Some(1000u32));
-    assert_eq!(dev.get_block_timestamps(0), Some(1234567890i64));
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let sim_vm = LocalVM::new().unwrap();
+    run_dev_tests(sim_vm, &alice);
 }
 
-fn run_dev_tests<N: Network, P: DevAleo<N>>(dev: &P, alice: &Account<N>) {
+fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
+    let dev = DevAleo::new(alice, vm).unwrap();
     let user = dev.create_user(alice, alice.address(), 0, 0).unwrap();
     dbg!(&user);
     let balance = dev.consume_user(alice, user).unwrap();
@@ -38,7 +34,7 @@ fn run_dev_tests<N: Network, P: DevAleo<N>>(dev: &P, alice: &Account<N>) {
     let container = dev.create_container(alice, alice.address(), b).unwrap();
     dbg!(&container);
     let extracted_b = dev.consume_container(alice, container).unwrap();
-    dbg!(&extracted_b);
+    dbg!(extracted_b);
 
     let balance_before = dev.get_balances(0);
     dbg!(&balance_before);

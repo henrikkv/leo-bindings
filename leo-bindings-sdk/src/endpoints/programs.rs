@@ -4,16 +4,16 @@ use crate::utils::poll_until;
 use snarkvm::prelude::Network;
 use std::time::Duration;
 
-impl<N: Network> Client<N> {
+impl Client {
     /// Fetch a program's bytecode from the network
     ///
     /// GET /{network}/program/{id}
     ///
-    pub async fn program(&self, program_id: &str) -> Result<String> {
+    pub async fn program<N: Network>(&self, program_id: &str) -> Result<String> {
         let url = format!(
             "{}/v2/{}/program/{}",
             self.endpoint,
-            self.network_name(),
+            N::SHORT_NAME,
             program_id
         );
 
@@ -32,7 +32,11 @@ impl<N: Network> Client<N> {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError { status, message })
+            if status == 500 && message.contains("Missing program") {
+                Err(Error::NotFound(format!("Program {} not found", program_id)))
+            } else {
+                Err(Error::ApiError { status, message })
+            }
         }
     }
 
@@ -40,15 +44,44 @@ impl<N: Network> Client<N> {
     ///
     /// GET /{network}/program/{id}
     ///
-    pub async fn program_exists(&self, program_id: &str) -> Result<bool> {
-        match self.program(program_id).await {
+    pub async fn program_exists<N: Network>(&self, program_id: &str) -> Result<bool> {
+        match self.program::<N>(program_id).await {
             Ok(_) => Ok(true),
             Err(Error::NotFound(_)) => Ok(false),
             Err(e) => Err(e),
         }
     }
 
-    pub async fn wait_for_program(&self, program_id: &str) -> Result<()> {
+    /// Fetch the latest edition number for a program
+    ///
+    /// GET /{network}/program/{id}/latest_edition
+    ///
+    pub async fn program_edition<N: Network>(&self, program_id: &str) -> Result<u16> {
+        let url = format!(
+            "{}/v2/{}/program/{}/latest_edition",
+            self.endpoint,
+            N::SHORT_NAME,
+            program_id
+        );
+
+        let response = self.client.get(&url).send().await?;
+
+        if response.status().is_success() {
+            let edition: u16 = response.json().await?;
+            Ok(edition)
+        } else if response.status() == 404 {
+            Err(Error::NotFound(format!("Program {} not found", program_id)))
+        } else {
+            let status = response.status().as_u16();
+            let message = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            Err(Error::ApiError { status, message })
+        }
+    }
+
+    pub async fn wait_for_program<N: Network>(&self, program_id: &str) -> Result<()> {
         let program_id_owned = program_id.to_string();
 
         poll_until(
@@ -57,7 +90,7 @@ impl<N: Network> Client<N> {
                 let url = format!(
                     "{}/v2/{}/program/{}",
                     self.endpoint,
-                    self.network_name(),
+                    N::SHORT_NAME,
                     program_id
                 );
                 let client = self.client.clone();
@@ -72,7 +105,11 @@ impl<N: Network> Client<N> {
                                 .text()
                                 .await
                                 .unwrap_or_else(|_| "Unknown error".to_string());
-                            Err(Error::ApiError { status, message })
+                            if status == 500 && message.contains("Missing program") {
+                                Ok(None)
+                            } else {
+                                Err(Error::ApiError { status, message })
+                            }
                         }
                         Err(e) => Err(Error::Middleware(e)),
                     }

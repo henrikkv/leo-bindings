@@ -33,15 +33,6 @@ pub enum Error {
     #[error("Program {0} not available within timeout")]
     ProgramTimeout(String),
 
-    #[error("JSON error: {0}")]
-    Json(#[from] serde_json::Error),
-
-    #[error("Invalid configuration: {0}")]
-    Config(String),
-
-    #[error("JWT credentials (consumer_id and api_key) required")]
-    JwtCredentialsRequired,
-
     #[error("Failed to fetch JWT token: {status} - {message}")]
     JwtFetchFailed { status: u16, message: String },
 
@@ -53,6 +44,27 @@ pub enum Error {
 
     #[error("API error {status}: {message}")]
     ApiError { status: u16, message: String },
+
+    #[error("{0}")]
+    AnyhowError(#[from] anyhow::Error),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("Invalid configuration: {0}")]
+    Config(String),
+
+    #[error("JWT credentials (consumer_id and api_key) required")]
+    JwtCredentialsRequired,
+
+    #[error("VM error: {0}")]
+    VmError(String),
+
+    #[error("Program {0} not found in VM")]
+    ProgramNotFound(String),
+
+    #[error("Failed to parse program: {0}")]
+    ProgramParse(String),
 
     #[error("Internal error: {0}")]
     Internal(String),

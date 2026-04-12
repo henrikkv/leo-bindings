@@ -1,5 +1,5 @@
 program delegated_proving_test.aleo {
-    transition divide(a: u64, b: u64, c: u64, d: u64) -> u64 {
+    fn divide(a: u64, b: u64, c: u64, d: u64) -> u64 {
         let result1: u64 = a / b;
         let result2: u64 = result1 / c;
         let result3: u64 = result2 / d;
@@ -10,5 +10,5 @@ program delegated_proving_test.aleo {
     }
 
     @noupgrade
-    async constructor() {}
+    constructor() {}
 }

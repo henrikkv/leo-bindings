@@ -1,8 +1,7 @@
 use crate::error::{Error, Result};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
-use snarkvm::prelude::Network;
-use std::marker::PhantomData;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::RwLock;
 
@@ -12,10 +11,11 @@ struct JwtToken {
     expires_at: u64,
 }
 
+#[derive(Clone, Debug)]
 pub struct Credentials {
     consumer_id: String,
     api_key: String,
-    jwt_token: RwLock<Option<JwtToken>>,
+    jwt_token: Arc<RwLock<Option<JwtToken>>>,
 }
 
 impl Credentials {
@@ -23,8 +23,19 @@ impl Credentials {
         Self {
             consumer_id: consumer_id.to_string(),
             api_key: api_key.to_string(),
-            jwt_token: RwLock::new(None),
+            jwt_token: Arc::new(RwLock::new(None)),
         }
+    }
+
+    pub fn from_env() -> Result<Self> {
+        dotenvy::dotenv().ok();
+        let consumer_id = std::env::var("PROVABLE_CONSUMER_ID").map_err(|_| {
+            Error::Config("PROVABLE_CONSUMER_ID environment variable not set".to_string())
+        })?;
+        let api_key = std::env::var("PROVABLE_API_KEY").map_err(|_| {
+            Error::Config("PROVABLE_API_KEY environment variable not set".to_string())
+        })?;
+        Ok(Self::new(&consumer_id, &api_key))
     }
 
     async fn fetch_jwt(&self, client: &ClientWithMiddleware) -> Result<JwtToken> {
@@ -104,14 +115,14 @@ impl Credentials {
     }
 }
 
-pub struct Client<N: Network> {
+#[derive(Clone, Debug)]
+pub struct Client {
     pub(crate) client: ClientWithMiddleware,
     pub(crate) endpoint: String,
     pub(crate) credentials: Option<Credentials>,
-    pub(crate) _network: PhantomData<N>,
 }
 
-impl<N: Network> Client<N> {
+impl Client {
     pub fn new(endpoint: &str, credentials: Option<Credentials>) -> Result<Self> {
         if endpoint.is_empty() {
             return Err(Error::Config("Endpoint is required".to_string()));
@@ -134,7 +145,6 @@ impl<N: Network> Client<N> {
             client,
             endpoint: endpoint.to_string(),
             credentials,
-            _network: PhantomData,
         })
     }
 
@@ -166,10 +176,6 @@ impl<N: Network> Client<N> {
 
     pub fn has_credentials(&self) -> bool {
         self.credentials.is_some()
-    }
-
-    pub(crate) fn network_name(&self) -> &str {
-        N::SHORT_NAME
     }
 
     pub(crate) async fn get_valid_jwt_token(&self) -> Result<String> {

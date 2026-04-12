@@ -5,5 +5,9 @@ Cargo.lock
 build/*
 !build/
 !build/main.aleo
+!build/abi.json
+!build/imports/
+build/imports/*
+!build/imports/*.abi.json
 
 outputs/

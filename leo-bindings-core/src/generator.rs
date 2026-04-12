@@ -1,43 +1,32 @@
-use crate::generator_interpreter::generate_interpreter_impl;
-use crate::signature::{FunctionBinding, SimplifiedBindings};
-use crate::types::get_rust_type;
+use crate::types::ToRustType;
 use convert_case::{Case::Pascal, Casing};
 use itertools::Itertools;
+use leo_abi_types::{Mode, Program, Record};
 use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::quote;
 
-pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
-    let program_name_pascal = simplified.program_name.to_case(Pascal);
+pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream {
+    let program_id = abi.program.trim_end_matches(".aleo");
+    let program_id_pascal = program_id.to_case(Pascal);
 
-    let program_module = Ident::new(&simplified.program_name, Span::call_site());
-    let program_trait = Ident::new(&format!("{}Aleo", program_name_pascal), Span::call_site());
-    let program_struct = Ident::new(
-        &format!("{}Network", program_name_pascal),
-        Span::call_site(),
-    );
+    let program_module = Ident::new(program_id, Span::call_site());
+    let program_struct = Ident::new(&format!("{program_id_pascal}Aleo"), Span::call_site());
 
-    let network_aliases = generate_network_aliases(&program_name_pascal, &program_struct);
+    let records = generate_records(&abi.records);
+    let structs = generate_structs(&abi.structs);
 
-    let records = generate_records(&simplified.records);
-    let structs = generate_structs(&simplified.structs);
+    let function_types = generate_function_types(&abi.functions);
+    let mapping_types = generate_mapping_types(&abi.mappings);
 
-    let function_types = generate_function_types(&simplified.functions);
-    let mapping_types = generate_mapping_types(&simplified.mappings);
-
-    let trait_definition = generate_trait(&function_types, &mapping_types, &program_trait);
-
-    let network_impl = generate_network_impl(
-        simplified,
+    let program_impl = generate_program_impl(
+        imports,
         &function_types,
         &mapping_types,
-        &program_trait,
         &program_struct,
+        &Literal::string(abi.program.as_str()),
     );
 
-    let interpreter_impl =
-        generate_interpreter_impl(simplified, &function_types, &mapping_types, &program_trait);
-
-    let type_imports = generate_type_imports(&simplified.imports);
+    let type_imports = generate_type_imports(imports);
 
     quote! {
         pub mod #program_module {
@@ -47,383 +36,262 @@ pub fn generate_program_module(simplified: &SimplifiedBindings) -> TokenStream {
             use snarkvm::prelude::Network;
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
-            use leo_bindings::utils::Account;
+            use leo_bindings::leo_bindings_sdk::{Account, VMManager};
 
             #type_imports
-
-            #network_aliases
 
             #(#structs)*
 
             #(#records)*
 
-            #trait_definition
-
-            /// Main bindings that connect to the Provable API or a local devnet.
-            ///
-            /// The network bindings can optionally use the Provable delegated proving service.
-            pub mod network {
-                use super::*;
-                #network_impl
-            }
-
-            #interpreter_impl
+            #program_impl
         }
     }
 }
 
-fn generate_trait(
+fn generate_program_impl(
+    imports: &[String],
     function_types: &[FunctionTypes],
     mapping_types: &[MappingTypes],
-    program_trait: &Ident,
-) -> TokenStream {
-    let function_signatures: Vec<TokenStream> = function_types
-        .iter()
-        .map(|types| {
-            let name = &types.name;
-            let input_params = &types.input_params;
-            let return_type = &types.return_type;
-            quote! { fn #name (&self, account: &Account<N>, #input_params) -> #return_type; }
-        })
-        .collect();
-
-    let mapping_signatures: Vec<TokenStream> = mapping_types
-        .iter()
-        .map(|types| {
-            let getter_name = &types.getter_name;
-            let key_type = &types.key_type;
-            let value_type = &types.value_type;
-            quote! { fn #getter_name(&self, key: #key_type) -> Option<#value_type>; }
-        })
-        .collect();
-
-    quote! {
-        /// Program trait with network and interpreter implementations.
-        pub trait #program_trait<N: snarkvm::prelude::Network> {
-            fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> where Self: Sized;
-            #(#function_signatures)*
-            #(#mapping_signatures)*
-        }
-    }
-}
-
-fn generate_network_impl(
-    simplified: &SimplifiedBindings,
-    function_types: &[FunctionTypes],
-    mapping_types: &[MappingTypes],
-    program_trait: &Ident,
     program_struct: &Ident,
+    program_id: &Literal,
 ) -> TokenStream {
-    let program_id = Literal::string(&format!("{}.aleo", &simplified.program_name));
-
-    let (deployment_calls, trait_imports, dependency_additions): (Vec<_>, Vec<_>, Vec<_>) = simplified
-        .imports
+    let (deployment_calls, dependency_ids): (Vec<TokenStream>, Vec<TokenStream>) = imports
         .iter()
         .map(|import| {
             let import_pascal = import.to_case(Pascal);
             let import_module = Ident::new(import, Span::call_site());
-            let import_struct = Ident::new(&format!("{}Network", import_pascal), Span::call_site());
-            let import_trait = Ident::new(&format!("{}Aleo", import_pascal), Span::call_site());
-            let dependency_id = format!("{}.aleo", import);
+            let import_struct = Ident::new(&import_pascal, Span::call_site());
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
-            let deployment = quote! { #import_crate_name::#import_module::network::#import_struct::<N>::new(deployer, endpoint)?; };
-            let trait_import = quote! { use #import_crate_name::#import_module::#import_trait; };
-            let dependency_addition = quote! {
-                let dependency_id = ProgramID::<N>::from_str(#dependency_id)?;
-                let api_endpoint = format!("{}/v2", endpoint);
-                wait_for_program_availability(&dependency_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                let dependency_program: Program<N> = {
-                    let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, dependency_id)).call().unwrap();
-                    let json_text = response.body_mut().read_to_string().unwrap();
-                    let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
-                    json_response.as_str().unwrap().to_string().parse().unwrap()
-                };
-                vm.process().write().add_program(&dependency_program)?;
+            let deployment = quote! {
+                let _ = #import_crate_name::#import_module::#import_struct::<N, M>::new(deployer, vm_manager.clone())?;
             };
-            (deployment, trait_import, dependency_addition)
+            let id = Literal::string(&format!("{}.aleo", import));
+            let dependency_id = quote! { #id };
+
+            (deployment, dependency_id)
         })
         .multiunzip();
-    let dependency_additions = quote! { #(#dependency_additions)* };
 
     let function_implementations: Vec<TokenStream> = function_types
         .iter()
-        .map(|types| generate_function(&dependency_additions, types, &program_id))
+        .map(|types| generate_function(&dependency_ids, types))
         .collect();
 
-    let mapping_implementations: Vec<TokenStream> = mapping_types
-        .iter()
-        .map(|types| generate_mapping(types, &program_id))
-        .collect();
+    let mapping_implementations: Vec<TokenStream> =
+        mapping_types.iter().map(generate_mapping).collect();
 
-    let new_implementation = generate_new(
-        &deployment_calls,
-        &dependency_additions,
-        &trait_imports,
-        &simplified.program_name,
-    );
+    let new_implementation = generate_new(&deployment_calls, &dependency_ids);
 
     quote! {
-        use leo_bindings::{serde_json, leo_package, leo_ast, leo_span, aleo_std, http, ureq, rand, print_execution_stats, print_deployment_stats};
-        use leo_bindings::utils::*;
-        use anyhow::ensure;
-        use snarkvm::ledger::query::*;
-        use snarkvm::ledger::store::helpers::memory::{ConsensusMemory, BlockMemory};
-        use snarkvm::ledger::store::ConsensusStore;
-        use snarkvm::ledger::block::Transaction;
+        use leo_bindings::log;
         use snarkvm::console::program::{Record, Plaintext};
-        use snarkvm::synthesizer::VM;
-        use snarkvm::synthesizer::process::execution_cost;
-        use snarkvm::prelude::ConsensusVersion;
-        use snarkvm::ledger::query::{QueryTrait, Query};
-        use leo_package::Package;
-        use leo_ast::NetworkName;
-        use leo_span::create_session_if_not_set_then;
-        use aleo_std::StorageMode;
+        use std::path::Path;
         use std::str::FromStr;
 
-        #[derive(Debug)]
-        pub struct #program_struct<N: Network> {
-            pub package: Package,
-            pub endpoint: String,
-            pub delegated_proving_config: Option<leo_bindings::DelegatedProvingConfig>,
+        #[derive(Debug, Clone)]
+        pub struct #program_struct<N: Network, M: VMManager<N> + Clone> {
+            pub vm_manager: M,
             _network: std::marker::PhantomData<N>,
         }
 
-        impl<N: Network> #program_trait<N> for #program_struct<N> {
+        impl<N: Network, M: VMManager<N> + Clone> #program_struct<N, M> {
+            const PROGRAM_ID: &str = #program_id;
+
             #new_implementation
 
             #(#function_implementations)*
 
             #(#mapping_implementations)*
         }
-
-        impl<N: Network> #program_struct<N> {
-            pub fn configure_delegation(mut self, config: leo_bindings::DelegatedProvingConfig) -> Self {
-                self.delegated_proving_config = Some(config);
-                self
-            }
-            pub fn enable_delegation(mut self) -> Self {
-                if let Some(config) = &mut self.delegated_proving_config {
-                    config.enabled = true;
-                    log::info!("✅ Delegated proving enabled");
-                }
-                self
-            }
-            pub fn disable_delegation(mut self) -> Self {
-                if let Some(config) = &mut self.delegated_proving_config {
-                    config.enabled = false;
-                    log::info!("ℹ️ Delegated proving disabled");
-                }
-                self
-            }
-        }
     }
 }
 
-pub fn generate_records(records: &[crate::signature::StructBinding]) -> Vec<TokenStream> {
-    records.iter().map(|record| {
-        let record_name = Ident::new(&record.name.to_case(Pascal), Span::call_site());
-        let member_definitions = record.members.iter().map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-            if member.name == "owner" {
-                quote! { #member_name: Owner<N, Plaintext<N>> }
-            } else {
-                let member_type = get_rust_type(&member.type_name);
-                quote! { #member_name: #member_type }
-            }
-        });
-        let extra_record_fields = quote! { __nonce: Group<N>, __version: U8<N> };
-
-        let member_conversions = record.members.iter().filter(|member| member.name != "owner").map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-            let mode = &member.mode;
-
-            let entry_creation = match mode.to_lowercase().as_str() {
-                "public" => quote! { Entry::Public(plaintext_value) },
-                "private" | "none" => quote! { Entry::Private(plaintext_value) },
-                _ => panic!("Unsupported mode '{}' for field '{}'. Only 'Private' and 'Public' modes are supported.", mode, member.name),
-            };
-
-            quote! {
-                (
-                    Identifier::try_from(stringify!(#member_name)).unwrap(),
-                    {
-                        let plaintext_value = match self.#member_name.to_value() {
-                            Value::Plaintext(p) => p,
-                            _ => panic!("Expected plaintext value from record member"),
-                        };
-                        #entry_creation
-                    }
-                )
-            }
-        });
-
-        let (member_extractions, struct_member_extractions): (Vec<_>, Vec<_>) = record.members
-            .iter()
-            .map(|member| {
-                let member_name = Ident::new(&member.name, Span::call_site());
-                let member_type = get_rust_type(&member.type_name);
-                let field_name = &member.name;
-
-                let record_extraction = if field_name == "owner" {
-                    quote! {
-                        let #member_name = record.owner().clone();
-                    }
-                } else {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let entry = record.data().get(member_id)
-                                .expect(&format!("Field '{}' not found in record data", #field_name));
-                            let plaintext = match entry {
-                                Entry::Public(p) | Entry::Private(p) | Entry::Constant(p) => p,
-                            };
-                            let value = Value::Plaintext(plaintext.clone());
-                            <#member_type>::from_value(value)
-                        };
-                    }
-                };
-
-                // Needed for interpreter compatibility
-                let struct_extraction = if field_name == "owner" {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let plaintext = struct_members.get(member_id)
-                                .expect("Owner field not found in record struct");
-                            match plaintext {
-                                Plaintext::Literal(Literal::Address(addr), _) => Owner::Public(*addr),
-                                _ => panic!("Expected address for owner field"),
-                            }
-                        };
-                    }
-                } else {
-                    quote! {
-                        let #member_name = {
-                            let member_id = &Identifier::try_from(#field_name).unwrap();
-                            let plaintext = struct_members.get(member_id)
-                                .expect(&format!("Field '{}' not found in record data", #field_name));
-                            <#member_type>::from_value(Value::Plaintext(plaintext.clone()))
-                        };
-                    }
-                };
-
-                (record_extraction, struct_extraction)
-            })
-            .unzip();
-
-        let member_names: Vec<_> = record.members.iter().map(|member| {
-            Ident::new(&member.name, Span::call_site())
-        }).collect();
-        let extra_member_inits = quote! { __nonce: record.nonce().clone(), __version: record.version().clone() };
-
-        let getter_methods = record.members.iter().map(|member| {
-            let member_name = Ident::new(&member.name, Span::call_site());
-
-            if member.name == "owner" {
-                quote! {
-                    pub fn #member_name(&self) -> Address<N> {
-                        match &self.#member_name {
-                            Owner::Public(addr) => *addr,
-                            Owner::Private(plaintext) => {
-                                match plaintext {
-                                    Plaintext::Literal(Literal::Address(addr), _) => *addr,
-                                    _ => panic!("Expected address in private owner field"),
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                let member_type = get_rust_type(&member.type_name);
-                quote! {
-                    pub fn #member_name(&self) -> &#member_type {
-                        &self.#member_name
-                    }
-                }
-            }
-        });
-
-        quote! {
-            /// Record from Leo.
-            #[derive(Debug, Clone)]
-            pub struct #record_name<N: Network> {
-                #(#member_definitions),*,
-                #extra_record_fields
-            }
-
-            /// Convert to a SnarkVM Value.
-            impl<N: Network> ToValue<N> for #record_name<N> {
-                fn to_value(&self) -> Value<N> {
-                    match self.to_record() {
-                        Ok(rec) => Value::Record(rec),
-                        Err(e) => panic!("Failed to convert to Record: {}", e),
-                    }
-                }
-            }
-
-            /// Create from a SnarkVM Value
-            impl<N: Network> FromValue<N> for #record_name<N> {
-                fn from_value(value: Value<N>) -> Self {
-                    match value {
-                        Value::Record(record) => {
-                            #(#member_extractions)*
-                            Self {
-                                #(#member_names),*,
-                                #extra_member_inits
-                            }
-                        },
-                        // Interpreter compatibility: records represented as structs
-                        Value::Plaintext(Plaintext::Struct(struct_members, _)) => {
-                            #(#struct_member_extractions)*
-
-                            Self {
-                                #(#member_names),*,
-                                __nonce: Group::zero(),
-                                __version: U8::new(0)
-                            }
-                        },
-                        _ => panic!("Expected record or struct value"),
-                    }
-                }
-            }
-
-            impl<N: Network> #record_name<N> {
-                /// Convert to a SnarkVM Record.
-                pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
-                    let data = IndexMap::from([
-                        #(#member_conversions),*
-                    ]);
-                    let owner = self.owner.clone();
-                    let nonce = self.__nonce.clone();
-                    let version = self.__version.clone();
-
-                    Record::<N, Plaintext<N>>::from_plaintext(
-                        owner,
-                        data,
-                        nonce,
-                        version
-                    ).map_err(|e| anyhow::anyhow!("Failed to create record: {}", e))
-                }
-
-                #(#getter_methods)*
-            }
-        }
-    }).collect()
-}
-
-pub fn generate_structs(structs: &[crate::signature::StructBinding]) -> Vec<TokenStream> {
-    structs
+pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
+    records
         .iter()
-        .map(|struct_def| {
-            let struct_name = Ident::new(&struct_def.name.to_case(Pascal), Span::call_site());
-            let (definitions, extractions, names, constructor_definitions, conversions): (Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) = struct_def
-                .members
+        .map(|record| {
+            let (n, _module_path) = record.path.split_last().unwrap();
+            let record_name = Ident::new(&n.to_case(Pascal), Span::call_site());
+
+            let member_definitions: Vec<TokenStream> = record
+                .fields
                 .iter()
                 .map(|member| {
                     let member_name = Ident::new(&member.name, Span::call_site());
-                    let member_type = get_rust_type(&member.type_name);
+                    let member_type = member.ty.to_rust_type();
+                    quote! { #member_name: #member_type }
+                })
+                .collect();
+
+            let extra_record_fields = quote! { __nonce: Group<N>, __version: U8<N> };
+
+            let member_conversions = record.fields.iter().filter(|m| m.name != "owner").map(|member| {
+                let member_name = Ident::new(&member.name, Span::call_site());
+
+                let entry_creation = match member.mode {
+                    Mode::Public => quote! { Entry::Public(plaintext_value) },
+                    Mode::Constant => quote! { Entry::Constant(plaintext_value) },
+                    Mode::Private | Mode::None => quote! { Entry::Private(plaintext_value) },
+                };
+
+                quote! {
+                    (
+                        Identifier::try_from(stringify!(#member_name)).unwrap(),
+                        {
+                            let plaintext_value = match self.#member_name.to_value() {
+                                Value::Plaintext(p) => p,
+                                _ => panic!("Expected plaintext value from record member"),
+                            };
+                            #entry_creation
+                        }
+                    )
+                }
+            });
+
+            let member_extractions: Vec<TokenStream> = record
+                .fields
+                .iter()
+                .map(|member| {
+                    let member_name = Ident::new(&member.name, Span::call_site());
+                    let member_type = member.ty.to_rust_type();
+                    let field_name = &member.name;
+
+                    if member.name == "owner" {
+                        quote! {
+                            let #member_name = match record.owner() {
+                                Owner::Public(addr) => *addr,
+                                Owner::Private(plaintext) => {
+                                    <Address<N> as FromValue<N>>::from_value(Value::Plaintext(plaintext.clone()))
+                                }
+                            };
+                        }
+                    } else {
+                        quote! {
+                            let #member_name = {
+                                let member_id = &Identifier::try_from(#field_name).unwrap();
+                                let entry = record.data().get(member_id)
+                                    .expect(&format!("Field '{}' not found in record data", #field_name));
+                                let plaintext = match entry {
+                                    Entry::Public(p) | Entry::Private(p) | Entry::Constant(p) => p,
+                                };
+                                <#member_type>::from_value(Value::Plaintext(plaintext.clone()))
+                            };
+                        }
+                    }
+                })
+                .collect();
+
+            let record_owner = match record.fields.iter().find(|f| f.name == "owner") {
+                Some(f) => match f.mode {
+                    Mode::Public => quote! { Owner::Public(self.owner) },
+                    Mode::Private | Mode::None | Mode::Constant => quote! {
+                        Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                    },
+                },
+                None => quote! {
+                    Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                },
+            };
+
+            let member_names: Vec<Ident> = record
+                .fields
+                .iter()
+                .map(|member| Ident::new(&member.name, Span::call_site()))
+                .collect();
+            let extra_member_inits =
+                quote! { __nonce: record.nonce().clone(), __version: record.version().clone() };
+
+            let getter_methods: Vec<TokenStream> = record
+                .fields
+                .iter()
+                .map(|member| {
+                    let member_name = Ident::new(&member.name, Span::call_site());
+                    let member_type = member.ty.to_rust_type();
+                    quote! {
+                        pub fn #member_name(&self) -> &#member_type {
+                            &self.#member_name
+                        }
+                    }
+                })
+                .collect();
+
+            quote! {
+                /// Record from Leo.
+                #[derive(Debug, Clone)]
+                pub struct #record_name<N: Network> {
+                    #(#member_definitions),*,
+                    #extra_record_fields
+                }
+
+                /// Convert to a SnarkVM Value.
+                impl<N: Network> ToValue<N> for #record_name<N> {
+                    fn to_value(&self) -> Value<N> {
+                        match self.to_record() {
+                            Ok(rec) => Value::Record(rec),
+                            Err(e) => panic!("Failed to convert to Record: {}", e),
+                        }
+                    }
+                }
+
+                /// Create from a SnarkVM Value
+                impl<N: Network> FromValue<N> for #record_name<N> {
+                    fn from_value(value: Value<N>) -> Self {
+                        match value {
+                            Value::Record(record) => {
+                                #(#member_extractions)*
+                                Self {
+                                    #(#member_names),*,
+                                    #extra_member_inits
+                                }
+                            }
+                            _ => panic!("Expected record value"),
+                        }
+                    }
+                }
+
+                impl<N: Network> #record_name<N> {
+                    /// Convert to a SnarkVM Record.
+                    pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
+                        let data = IndexMap::from([
+                            #(#member_conversions),*
+                        ]);
+                        let owner = #record_owner;
+                        let nonce = self.__nonce.clone();
+                        let version = self.__version.clone();
+
+                        Ok(Record::<N, Plaintext<N>>::from_plaintext(
+                            owner,
+                            data,
+                            nonce,
+                            version
+                        )?)
+                    }
+
+                    #(#getter_methods)*
+                }
+            }
+        })
+        .collect()
+}
+
+pub fn generate_structs(structs: &[leo_abi_types::Struct]) -> Vec<TokenStream> {
+    structs
+        .iter()
+        .map(|struct_def| {
+            let last = struct_def
+                .path
+                .last()
+                .expect("Struct.path should have at least one segment");
+            let struct_name = Ident::new(&last.to_case(Pascal), Span::call_site());
+
+            let (definitions, extractions, names, constructor_definitions, conversions): (Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) = struct_def
+                .fields
+                .iter()
+                .map(|field| {
+                    let member_name = Ident::new(&field.name, Span::call_site());
+                    let member_type = field.ty.to_rust_type();
 
                     let definition = quote! { pub #member_name: #member_type, };
 
@@ -510,18 +378,18 @@ pub(crate) struct FunctionTypes {
 
 pub(crate) struct MappingTypes {
     pub(crate) getter_name: Ident,
-    pub(crate) mapping_name_literal: String,
+    pub(crate) mapping_name: String,
     pub(crate) key_type: TokenStream,
     pub(crate) value_type: TokenStream,
 }
 
-fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> {
+fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<FunctionTypes> {
     functions.iter().map(|function| {
         let name = Ident::new(&function.name, Span::call_site());
 
         let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().map(|input| {
             let param_name = Ident::new(&input.name, Span::call_site());
-            let param_type = get_rust_type(&input.type_name);
+            let param_type = input.ty.to_rust_type();
             let param = quote! { #param_name: #param_type };
             let conversion = quote! { (#param_name).to_value() };
             (param, conversion)
@@ -535,11 +403,11 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 quote! { Ok(()) }
             ),
             1 => {
-                let output_type = get_rust_type(&function.outputs[0].type_name);
+                let output_type = function.outputs[0].ty.to_rust_type();
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                        None => return Err(anyhow!("Missing output at index 0")),
+                        None => return Err(anyhow!("Missing output")),
                     }
                 };
                 (
@@ -551,11 +419,11 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
                 let (output_types, output_conversions): (Vec<_>, Vec<_>) = function.outputs.iter()
                     .enumerate()
                     .map(|(i, output)| {
-                        let output_type = get_rust_type(&output.type_name);
+                        let output_type = output.ty.to_rust_type();
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
-                                None => return Err(anyhow!("Missing output at index {}", #i)),
+                                None => return Err(anyhow!("Missing output")),
                             }
                         };
                         (output_type, conversion)
@@ -577,138 +445,68 @@ fn generate_function_types(functions: &[FunctionBinding]) -> Vec<FunctionTypes> 
     }).collect()
 }
 
-fn generate_mapping_types(mappings: &[crate::signature::MappingBinding]) -> Vec<MappingTypes> {
+fn generate_mapping_types(mappings: &[leo_abi_types::Mapping]) -> Vec<MappingTypes> {
     mappings
         .iter()
-        .map(|mapping| {
-            let getter_name = Ident::new(&format!("get_{}", mapping.name), Span::call_site());
-            let mapping_name_literal = mapping.name.clone();
-            let key_type = get_rust_type(&mapping.key_type);
-            let value_type = get_rust_type(&mapping.value_type);
-
-            MappingTypes {
-                getter_name,
-                mapping_name_literal,
-                key_type,
-                value_type,
-            }
+        .map(|mapping| MappingTypes {
+            getter_name: Ident::new(&format!("get_{}", mapping.name), Span::call_site()),
+            mapping_name: mapping.name.clone(),
+            key_type: mapping.key.to_rust_type(),
+            value_type: mapping.value.to_rust_type(),
         })
         .collect()
 }
 
-fn generate_new(
-    deployment_calls: &[TokenStream],
-    dependency_additions: &TokenStream,
-    trait_imports: &[TokenStream],
-    program_name: &str,
-) -> TokenStream {
+fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]) -> TokenStream {
     quote! {
-        fn new(deployer: &Account<N>, endpoint: &str) -> Result<Self, anyhow::Error> {
-            use leo_package::Package;
-            use leo_span::create_session_if_not_set_then;
-            use std::path::Path;
-            #(#trait_imports)*
+        pub fn new(deployer: &Account<N>, vm_manager: M) -> Result<Self, anyhow::Error> {
+            #(#deployment_calls)*
 
-            let result = create_session_if_not_set_then(|_| {
+            let program_id = ProgramID::<N>::from_str(Self::PROGRAM_ID)?;
+            let program_exists = vm_manager
+                .program_exists(&program_id.to_string())
+                .map_err(|e| anyhow!("{}", e))?;
+
+            if program_exists {
+                log::info!("✅ Found '{}', skipping deployment", program_id);
+            } else {
+                log::info!("📦 Deploying '{}'", program_id);
+
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-
-                let package = Package::from_directory(
-                    crate_dir,
-                    crate_dir,
-                    false,
-                    false,
-                    Some(NetworkName::from_str(N::SHORT_NAME).unwrap()),
-                    Some(endpoint),
-                )?;
-
-                let program_id = ProgramID::<N>::from_str(concat!(#program_name, ".aleo"))?;
-                let api_endpoint = format!("{}/v2", endpoint);
-
-                #(#deployment_calls)*
-
-                let program_exists = {
-                    let check_response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
-                        .call();
-                    match check_response {
-                        Ok(_) => {
-                            log::info!("✅ Found '{}', skipping deployment", program_id);
-                            true
-                        },
-                        Err(_) => {
-                            log::info!("📦 Deploying '{}'", program_id);
-                            false
-                        }
-                    }
+                let bytecode = {
+                    let src_main = crate_dir.join("src/main.aleo");
+                    let build_main = crate_dir.join("build/main.aleo");
+                    let path = if src_main.exists() {
+                        src_main
+                    } else if build_main.exists() {
+                        build_main
+                    } else {
+                        return Err(anyhow!(
+                            "Bytecode not found: expected {} or {}",
+                            src_main.display(),
+                            build_main.display(),
+                        ));
+                    };
+                    std::fs::read_to_string(&path).map_err(|e| anyhow!("failed to read {}: {e}", path.display()))?
                 };
 
-                if !program_exists {
-                    let program_symbol = leo_span::Symbol::intern(#program_name);
-                    let target_program = package.programs.iter()
-                        .find(|p| p.name == program_symbol)
-                        .ok_or_else(|| anyhow!("Program '{}' not found in package", #program_name))?;
+                let program: Program<N> = bytecode.parse()?;
 
-                    let bytecode = match &target_program.data {
-                        leo_package::ProgramData::Bytecode(bytecode) => {
-                            bytecode.clone()
-                        },
-                        leo_package::ProgramData::SourcePath { directory, source: _ } => {
-                            let aleo_path = directory.join("build").join("main.aleo");
-                            std::fs::read_to_string(&aleo_path)
-                                .map_err(|e| anyhow!("Failed to read bytecode from {}: {}", aleo_path.display(), e))?
-                        }
-                    };
+                let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
+                vm_manager
+                    .deploy_and_broadcast(deployer, &program, &dependencies)
+                    .map_err(|e| anyhow!("{}", e))?;
+            }
 
-                    let program: Program<N> = bytecode.parse()
-                        .map_err(|e| anyhow!("Failed to parse program: {}", e))?;
-
-                    log::info!("📦 Creating deployment tx for '{}'...", program_id);
-                    let rng = &mut rand::thread_rng();
-                    let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
-                    let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
-
-                     #dependency_additions
-
-                    let transaction = vm.deploy(
-                        deployer.private_key(),
-                        &program,
-                        None,
-                        0,
-                        Some(&query),
-                        rng,
-                    ).map_err(|e| anyhow!("Failed to generate deployment transaction: {}", e))?;
-
-                    match &transaction {
-                        Transaction::Deploy(_, _, _, deployment, fee) => {
-                            print_deployment_stats(&vm, &program_id.to_string(), deployment, None, ConsensusVersion::V10)?;
-                        },
-                        _ => panic!("Expected a deployment transaction."),
-                    };
-
-                    log::info!("📡 Broadcasting deployment tx: {} to {}",transaction.id(), endpoint);
-
-                    broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
-
-                    wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 120)?;
-                    wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-                }
-
-                Ok(Self {
-                    package,
-                    endpoint: endpoint.to_string(),
-                    delegated_proving_config: None,
-                    _network: std::marker::PhantomData,
-                })
-            });
-            result
+            Ok(Self {
+                vm_manager,
+                _network: std::marker::PhantomData,
+            })
         }
     }
 }
 
-fn generate_function(
-    dependency_additions: &TokenStream,
-    types: &FunctionTypes,
-    program_id: &Literal,
-) -> TokenStream {
+fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> TokenStream {
     let FunctionTypes {
         name,
         input_params,
@@ -718,145 +516,52 @@ fn generate_function(
     } = types;
 
     quote! {
-        fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
-            let endpoint = &self.endpoint;
-            let api_endpoint = format!("{}/v2", endpoint);
-            let program_id = ProgramID::try_from(#program_id).unwrap();
-            let function_id = Identifier::try_from(stringify!(#name)).unwrap();
+        pub fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
+            let program_id_str = Self::PROGRAM_ID;
+            let function_name = stringify!(#name);
             let function_args: Vec<Value<N>> = vec![#input_conversions];
+            let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
 
-            let rng = &mut rand::thread_rng();
-            let locator = Locator::<N>::new(program_id, function_id);
-
-            log::info!("Creating tx: {}.{}({})", #program_id, stringify!(#name), stringify!(#input_params));
-            let vm = VM::from(ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)?)?;
-            let query = Query::<N, BlockMemory<N>>::from(endpoint.parse::<http::uri::Uri>()?);
-
-            wait_for_program_availability(&program_id.to_string(), &api_endpoint, N::SHORT_NAME, 60).map_err(|e| anyhow!(e.to_string()))?;
-            let program: Program<N> = {
-                let mut response = ureq::get(&format!("{}/{}/program/{}", api_endpoint, N::SHORT_NAME, program_id))
-                    .call().unwrap();
-                let json_text = response.body_mut().read_to_string().unwrap();
-                let json_response: serde_json::Value = serde_json::from_str(&json_text).unwrap();
-                json_response.as_str().unwrap().parse().unwrap()
-            };
-
-            #dependency_additions
-
-            vm.process().write().add_programs_with_editions(&vec![(program, 1u16)])
-                .map_err(|e| anyhow!("Failed to add program '{}' to VM: {}", program_id, e))?;
-
-            let delegated_result = self.delegated_proving_config.as_ref()
-                .filter(|config| config.enabled)
-                .and_then(|config| {
-                    let authorization = vm
-                        .authorize(account.private_key(), program_id, function_id, function_args.iter(), rng)
-                        .map_err(|e| log::warn!("Failed to create authorization: {}", e))
-                        .ok()?;
-
-                    let function_outputs = extract_outputs_from_authorization(&authorization, account.view_key())
-                        .map_err(|e| log::warn!("Failed to extract outputs: {}", e))
-                        .ok()?;
-
-                    let transaction = execute_with_delegated_proving(config, authorization).ok()?;
-
-                    Some((transaction, function_outputs))
-                });
-
-            let (transaction, function_outputs): (Transaction<N>, Vec<Value<N>>) = match delegated_result {
-                Some(result) => result,
-                None => {
-                    let (transaction, response) = vm.execute_with_response(
-                        account.private_key(),
-                        (program_id, function_id),
-                        function_args.iter(),
-                        None,
-                        0,
-                        Some(&query as &dyn QueryTrait<N>),
-                        rng,
-                    ).map_err(|e| anyhow!("Failed to execute function '{}' in program '{}': {}", function_id, program_id, e))?;
-                    (transaction, response.outputs().to_vec())
-                }
-            };
-
-            let public_balance = get_public_balance(&account.address(), &api_endpoint, N::SHORT_NAME);
-            let execution = transaction.execution().ok_or_else(|| anyhow!("Missing execution"))?;
-            let (total_cost, _) = execution_cost(&vm.process().read(), execution, ConsensusVersion::V10)?;
-
-            match &transaction {
-                Transaction::Execute(_, _, execution, fee) => {
-                    print_execution_stats(&vm, &program_id.to_string(), &execution, None, ConsensusVersion::V10)?;
-                },
-                _ => panic!("Expected an execution transaction."),
-            };
-
-            ensure!(public_balance >= total_cost,
-                "❌ Insufficient balance {} for total cost {} on `{}`", public_balance, total_cost, locator);
-
-            log::info!("📡 Broadcasting tx: {}",transaction.id());
-            broadcast_transaction(transaction.clone(), &api_endpoint, N::SHORT_NAME)?;
-            wait_for_transaction_confirmation::<N>(&transaction.id(), &api_endpoint, N::SHORT_NAME, 30)?;
+            let function_outputs = self
+                .vm_manager
+                .execute_and_broadcast(
+                    account,
+                    program_id_str,
+                    function_name,
+                    function_args,
+                    &dependencies,
+                )
+                .map_err(|e| anyhow!("{}", e))?;
 
             #return_conversions
         }
     }
 }
 
-fn generate_mapping(types: &MappingTypes, program_id: &Literal) -> TokenStream {
+fn generate_mapping(types: &MappingTypes) -> TokenStream {
     let MappingTypes {
         getter_name,
-        mapping_name_literal,
+        mapping_name,
         key_type,
         value_type,
     } = types;
 
     quote! {
-        fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
-            let program_id = #program_id;
-            let mapping_name = #mapping_name_literal;
-            let api_endpoint = format!("{}/v2", self.endpoint);
-
+        pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             let key_value: Value<N> = key.to_value();
-            let url = format!("{}/{}/program/{}/mapping/{}/{}",
-                &api_endpoint, N::SHORT_NAME, program_id, mapping_name,
-                key_value.to_string().replace("\"", ""));
 
-            match leo_bindings::utils::fetch_mapping_value(&url) {
-                Ok(Some(json_text)) => {
-                    let value: Option<Value<N>> = serde_json::from_str(&json_text)
-                        .expect("Failed to parse mapping value JSON");
-                    value.map(|val| <#value_type>::from_value(val))
-                }
+            match self
+                .vm_manager
+                .mapping_value(Self::PROGRAM_ID, #mapping_name, &key_value)
+            {
+                Ok(Some(val)) => Some(<#value_type>::from_value(val)),
                 Ok(None) => None,
-                Err(e) => panic!("Failed to fetch mapping value: {}", e),
+                Err(e) => {
+                    log::error!("Failed to fetch mapping value: {}", e);
+                    None
+                }
             }
         }
-    }
-}
-
-fn generate_network_aliases(program_name_pascal: &str, program_struct: &Ident) -> TokenStream {
-    let testnet_struct = Ident::new(
-        &format!("{}Testnet", program_name_pascal),
-        Span::call_site(),
-    );
-    let mainnet_struct = Ident::new(
-        &format!("{}Mainnet", program_name_pascal),
-        Span::call_site(),
-    );
-    let canary_struct = Ident::new(&format!("{}Canary", program_name_pascal), Span::call_site());
-    let interpreter_struct = Ident::new(
-        &format!("{}Interpreter", program_name_pascal),
-        Span::call_site(),
-    );
-
-    quote! {
-        pub type #testnet_struct = network::#program_struct<snarkvm::prelude::TestnetV0>;
-
-        pub type #mainnet_struct = network::#program_struct<snarkvm::prelude::MainnetV0>;
-
-        pub type #canary_struct = network::#program_struct<snarkvm::prelude::CanaryV0>;
-
-        pub type #interpreter_struct = interpreter::#interpreter_struct<snarkvm::prelude::TestnetV0>;
     }
 }
 

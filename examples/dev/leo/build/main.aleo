@@ -47,13 +47,13 @@ function nested:
 function store_nested:
     input r0 as B.private;
     input r1 as u64.private;
-    async store_nested r0 r1 into r2;
+    async store_nested r1 r0 into r2;
     output r2 as dev.aleo/store_nested.future;
 
 finalize store_nested:
-    input r0 as B.public;
-    input r1 as u64.public;
-    set r0 into bs[r1];
+    input r0 as u64.public;
+    input r1 as B.public;
+    set r1 into bs[r0];
 
 function nested_array:
     input r0 as [[u8; 5u32]; 5u32].private;
@@ -86,14 +86,14 @@ function asynchronous:
     input r0 as u64.private;
     input r1 as u64.private;
     cast self.caller r1 r0 into r2 as User.record;
-    async asynchronous r0 r1 into r3;
+    async asynchronous r1 r0 into r3;
     output r2 as User.record;
     output r3 as dev.aleo/asynchronous.future;
 
 finalize asynchronous:
     input r0 as u64.public;
     input r1 as u64.public;
-    set r0 into balances[r1];
+    set r1 into balances[r0];
 
 function test_all_types:
     input r0 as field.private;

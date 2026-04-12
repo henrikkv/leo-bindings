@@ -1,4 +1,5 @@
 [workspace]
+resolver = "3"
 members = [
     ".",
     "leo-bindings-core",
@@ -9,21 +10,21 @@ members = [
     "examples/dev",
     "examples/token/leo",
     "examples/token",
-    "examples/external",
     "examples/delegated",
     "examples/delegated/leo"
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [workspace.dependencies]
 leo-bindings = { path = "." }
 leo-bindings-core = { path = "leo-bindings-core" }
 leo-bindings-macro = { path = "leo-bindings-macro" }
+leo-bindings-sdk = { path = "leo-bindings-sdk" }
 credits_bindings = { path = "leo-bindings-credits" }
-snarkvm = "4.4.0"
+snarkvm = { git = "https://github.com/henrikkv/snarkVM", branch = "leo-bindings", features = ["test_consensus_heights"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
@@ -46,12 +47,12 @@ regex = "1.10"
 log = "0.4"
 dotenvy = "0.15"
 env_logger = "0.11"
-leo-span = { git = "https://github.com/henrikkv/leo", package = "leo-span" }
-leo-package = { git = "https://github.com/henrikkv/leo", package = "leo-package" }
-leo-ast = { git = "https://github.com/henrikkv/leo", package = "leo-ast" }
-leo-interpreter = { git = "https://github.com/henrikkv/leo", package = "leo-interpreter" }
-leo-parser = { git = "https://github.com/henrikkv/leo", package = "leo-parser" }
-leo-errors = { git = "https://github.com/henrikkv/leo", package = "leo-errors" }
+leo-span = "4.0"
+leo-package = "4.0"
+leo-ast = "4.0"
+leo-parser = "4.0"
+leo-errors = "4.0"
+leo-abi-types = "4.0"
 reqwest = { version = "0.12", default-features = false }
 reqwest-middleware = "0.3"
 reqwest-retry = "0.6"
@@ -63,11 +64,6 @@ name = "leo-bindings"
 version.workspace = true
 edition.workspace = true
 
-
-[[bin]]
-name = "get-signatures"
-path = "src/bin/get-signatures.rs"
-
 [[bin]]
 name = "leo-bindings"
 path = "src/bin/leo-bindings.rs"
@@ -75,6 +71,7 @@ path = "src/bin/leo-bindings.rs"
 [dependencies]
 leo-bindings-core.workspace = true
 leo-bindings-macro.workspace = true
+leo-bindings-sdk.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 clap.workspace = true
@@ -85,7 +82,6 @@ indexmap.workspace = true
 leo-span.workspace = true
 leo-package.workspace = true
 leo-ast.workspace = true
-leo-interpreter.workspace = true
 leo-parser.workspace = true
 leo-errors.workspace = true
 aleo-std.workspace = true
@@ -100,3 +96,4 @@ rand_chacha.workspace = true
 dotenvy.workspace = true
 env_logger.workspace = true
 log.workspace = true
+leo-abi-types.workspace = true
