@@ -1,0 +1,10 @@
+[package]
+name = "dyn_plugin_mul_bindings"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "dyn_plugin_mul_bindings"
+path = "lib.rs"
+
+[dependencies]
+leo-bindings.workspace = true

@@ -61,7 +61,7 @@ fn generate_program_impl(
         .map(|import| {
             let import_pascal = import.to_case(Pascal);
             let import_module = Ident::new(import, Span::call_site());
-            let import_struct = Ident::new(&import_pascal, Span::call_site());
+            let import_struct = Ident::new(&format!("{import_pascal}Aleo"), Span::call_site());
             let import_crate_name = Ident::new(&format!("{}_bindings", import), Span::call_site());
 
             let deployment = quote! {

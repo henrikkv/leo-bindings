@@ -14,7 +14,9 @@ pub fn generate_bindings(input: proc_macro::TokenStream) -> proc_macro::TokenStr
         Err(e) => e.to_compile_error().into(),
     }
 }
-fn generate_bindings_inner(_input: proc_macro::TokenStream) -> syn::Result<proc_macro::TokenStream> {
+fn generate_bindings_inner(
+    _input: proc_macro::TokenStream,
+) -> syn::Result<proc_macro::TokenStream> {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").map_err(|e| {
         Error::new(
             Span::call_site(),
@@ -26,10 +28,7 @@ fn generate_bindings_inner(_input: proc_macro::TokenStream) -> syn::Result<proc_
     let json = std::fs::read_to_string(&abi_path).map_err(|e| {
         Error::new(
             Span::call_site(),
-            format!(
-                "failed to read ABI at {}: {e}",
-                abi_path.display()
-            ),
+            format!("failed to read ABI at {}: {e}", abi_path.display()),
         )
     })?;
     let abi: Program = serde_json::from_str(&json).map_err(|e| Error::new(Span::call_site(), e))?;
@@ -60,7 +59,8 @@ fn generate_bindings_inner(_input: proc_macro::TokenStream) -> syn::Result<proc_
             let filename_os = f.file_name();
             let filename = filename_os.to_str().unwrap();
             if filename.ends_with(".abi.json") {
-                import_names.push(filename.trim_end_matches(".abi.json").to_string());
+                let import_name = filename.trim_end_matches(".aleo.abi.json");
+                import_names.push(import_name.to_string());
             }
         }
     }

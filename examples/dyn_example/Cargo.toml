@@ -1,0 +1,11 @@
+[package]
+name = "dyn-example"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dyn_example_bindings = { path = "leo" }
+leo-bindings.workspace = true
+snarkvm.workspace = true
+
+[dev-dependencies]

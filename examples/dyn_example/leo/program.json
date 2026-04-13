@@ -1,0 +1,28 @@
+{
+  "program": "dyn_example.aleo",
+  "version": "0.1.0",
+  "description": "Test for dynamic dispatch",
+  "license": "MIT",
+  "leo": "4.0.0",
+  "dependencies": [
+    {
+      "name": "dyn_plugin_add.aleo",
+      "location": "local",
+      "network": null,
+      "path": "imports/dyn_plugin_add"
+    },
+    {
+      "name": "dyn_plugin_mul.aleo",
+      "location": "local",
+      "network": null,
+      "path": "imports/dyn_plugin_mul"
+    },
+    {
+      "name": "dyn_token_plugin.aleo",
+      "location": "local",
+      "network": null,
+      "path": "imports/dyn_token_plugin"
+    }
+  ],
+  "dev_dependencies": null
+}

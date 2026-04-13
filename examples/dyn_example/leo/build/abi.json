@@ -1,0 +1,404 @@
+{
+  "program": "dyn_example.aleo",
+  "structs": [],
+  "records": [],
+  "mappings": [
+    {
+      "name": "local_counter",
+      "key": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U32"
+        }
+      }
+    }
+  ],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "main",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "static_import_two_combines",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "dynamic_combine_id_routing",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "add_prog",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Identifier"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "mul_prog",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Identifier"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "dynamic_combine_with_network",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "prog",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Identifier"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "net",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Identifier"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "dynamic_combine_field_target",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "program_name_as_field",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Field"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "aleo_generator",
+      "is_final": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Group"
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "dyn_record_mint_then_double",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "amount",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "token_program",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Identifier"
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "final_compose_import_and_local",
+      "is_final": true,
+      "inputs": [
+        {
+          "name": "target",
+          "ty": {
+            "Plaintext": {
+              "Primitive": "Field"
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "key",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            }
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "delta",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "Public"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": "Final",
+          "mode": "None"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "program": "dyn_plugin_mul.aleo",
+  "structs": [],
+  "records": [],
+  "mappings": [
+    {
+      "name": "counts",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U32"
+        }
+      }
+    }
+  ],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "combine",
+      "is_final": false,
+      "inputs": [
+        {
+          "name": "a",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "name": "b",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ]
+    },
+    {
+      "name": "increment",
+      "is_final": true,
+      "inputs": [
+        {
+          "name": "delta",
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        }
+      ],
+      "outputs": [
+        {
+          "ty": {
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U32"
+              }
+            }
+          },
+          "mode": "None"
+        },
+        {
+          "ty": "Final",
+          "mode": "None"
+        }
+      ]
+    }
+  ]
+}

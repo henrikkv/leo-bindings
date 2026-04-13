@@ -11,7 +11,12 @@ members = [
     "examples/token/leo",
     "examples/token",
     "examples/delegated",
-    "examples/delegated/leo"
+    "examples/delegated/leo",
+    "examples/dyn_example/leo/imports/dyn_plugin_add",
+    "examples/dyn_example/leo/imports/dyn_plugin_mul",
+    "examples/dyn_example/leo/imports/dyn_token_plugin",
+    "examples/dyn_example/leo",
+    "examples/dyn_example"
 ]
 
 [workspace.package]
