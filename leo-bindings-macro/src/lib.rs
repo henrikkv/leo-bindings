@@ -60,6 +60,9 @@ fn generate_bindings_inner(
             let filename = filename_os.to_str().unwrap();
             if filename.ends_with(".abi.json") {
                 let import_name = filename.trim_end_matches(".aleo.abi.json");
+                if import_name == program_id || import_name.starts_with("test_") {
+                    continue;
+                }
                 import_names.push(import_name.to_string());
             }
         }
