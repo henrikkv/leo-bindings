@@ -93,6 +93,7 @@ fn generate_program_impl(
         #[derive(Debug, Clone)]
         pub struct #program_struct<N: Network, M: VMManager<N> + Clone> {
             pub vm_manager: M,
+            pub program_id: ProgramID<N>,
             _network: std::marker::PhantomData<N>,
         }
 
@@ -464,7 +465,7 @@ fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]
 
             let program_id = ProgramID::<N>::from_str(Self::PROGRAM_ID)?;
             let program_exists = vm_manager
-                .program_exists(&program_id.to_string())
+                .program_exists(&program_id)
                 .map_err(|e| anyhow!("{}", e))?;
 
             if program_exists {
@@ -492,7 +493,7 @@ fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]
 
                 let program: Program<N> = bytecode.parse()?;
 
-                let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
+                let dependencies: Vec<ProgramID<N>> = vec![#(ProgramID::try_from(#dependency_ids).expect("invalid program ID")),*];
                 vm_manager
                     .deploy_and_broadcast(deployer, &program, &dependencies)
                     .map_err(|e| anyhow!("{}", e))?;
@@ -500,6 +501,7 @@ fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]
 
             Ok(Self {
                 vm_manager,
+                program_id,
                 _network: std::marker::PhantomData,
             })
         }
@@ -517,17 +519,16 @@ fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> T
 
     quote! {
         pub fn #name(&self, account: &Account<N>, #input_params) -> #return_type {
-            let program_id_str = Self::PROGRAM_ID;
-            let function_name = stringify!(#name);
+            let function_name = Identifier::try_from(stringify!(#name)).expect("invalid identifier");
             let function_args: Vec<Value<N>> = vec![#input_conversions];
-            let dependencies: Vec<&str> = vec![#(#dependency_ids),*];
+            let dependencies: Vec<ProgramID<N>> = vec![#(ProgramID::try_from(#dependency_ids).expect("invalid program ID")),*];
 
             let function_outputs = self
                 .vm_manager
                 .execute_and_broadcast(
                     account,
-                    program_id_str,
-                    function_name,
+                    &self.program_id,
+                    &function_name,
                     function_args,
                     &dependencies,
                 )
@@ -549,10 +550,11 @@ fn generate_mapping(types: &MappingTypes) -> TokenStream {
     quote! {
         pub fn #getter_name(&self, key: #key_type) -> Option<#value_type> {
             let key_value: Value<N> = key.to_value();
+            let mapping_id = Identifier::try_from(#mapping_name).expect("invalid identifier");
 
             match self
                 .vm_manager
-                .mapping_value(Self::PROGRAM_ID, #mapping_name, &key_value)
+                .mapping_value(&self.program_id, &mapping_id, &key_value)
             {
                 Ok(Some(val)) => Some(<#value_type>::from_value(val)),
                 Ok(None) => None,

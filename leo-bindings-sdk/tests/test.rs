@@ -28,8 +28,8 @@ fn test_transfer_credits() {
     let (tx, _) = vm
         .execute(
             account.private_key(),
-            "credits.aleo",
-            "transfer_public",
+            &"credits.aleo".try_into().unwrap(),
+            &"transfer_public".try_into().unwrap(),
             inputs,
             None,
             0,
@@ -57,7 +57,12 @@ fn test_delegated_proving() {
     ];
 
     let auth = vm
-        .authorize(account.private_key(), "delegated_proving_test.aleo", "divide", inputs)
+        .authorize(
+            account.private_key(),
+            &"delegated_proving_test.aleo".try_into().unwrap(),
+            &"divide".try_into().unwrap(),
+            inputs,
+        )
         .unwrap();
 
     let tx = block_on(client.prove(&auth)).unwrap();

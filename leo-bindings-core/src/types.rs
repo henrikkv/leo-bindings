@@ -58,7 +58,7 @@ fn rust_type_plaintext(p: &abi::Plaintext) -> TokenStream {
             abi::Primitive::Group => quote! { Group<N> },
             abi::Primitive::Scalar => quote! { Scalar<N> },
             abi::Primitive::Signature => quote! { Signature<N> },
-            abi::Primitive::Identifier => quote! { IdentifierLiteral<N> },
+            abi::Primitive::Identifier => quote! { Identifier<N> },
             abi::Primitive::Int(i) => match i {
                 abi::Int::I8 => quote! { i8 },
                 abi::Int::I16 => quote! { i16 },
@@ -535,18 +535,24 @@ impl<N: Network> FromValue<N> for StringType<N> {
     }
 }
 
-impl<N: Network> ToValue<N> for IdentifierLiteral<N> {
+impl<N: Network> ToValue<N> for Identifier<N> {
     fn to_value(&self) -> Value<N> {
-        Value::Plaintext(Plaintext::from(Literal::Identifier(Box::new(*self))))
+        let field = self.to_field().expect("identifier to field failed");
+        let lit =
+            IdentifierLiteral::from_field(&field).expect("field to identifier literal failed");
+        Value::Plaintext(Plaintext::from(Literal::Identifier(Box::new(lit))))
     }
 }
 
-impl<N: Network> FromValue<N> for IdentifierLiteral<N> {
+impl<N: Network> FromValue<N> for Identifier<N> {
     fn from_value(value: Value<N>) -> Self {
         match value {
             Value::Plaintext(plaintext) => match plaintext {
                 Plaintext::Literal(literal, _) => match literal {
-                    Literal::Identifier(identifier_val) => *identifier_val,
+                    Literal::Identifier(lit) => {
+                        let field = lit.to_field().expect("identifier literal to field failed");
+                        Identifier::from_field(&field).expect("field to identifier failed")
+                    }
                     _ => panic!("Expected identifier type"),
                 },
                 _ => panic!("Expected literal plaintext"),

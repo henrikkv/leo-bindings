@@ -14,12 +14,12 @@ use snarkvm::synthesizer::VM;
 pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V14;
 
 pub trait VMManager<N: Network>: Send + Sync + Clone {
-    fn program_exists(&self, program_id: &str) -> Result<bool>;
+    fn program_exists(&self, program_id: &ProgramID<N>) -> Result<bool>;
 
     fn mapping_value(
         &self,
-        program_id: &str,
-        mapping_name: &str,
+        program_id: &ProgramID<N>,
+        mapping_name: &Identifier<N>,
         key: &Value<N>,
     ) -> Result<Option<Value<N>>>;
 
@@ -27,16 +27,16 @@ pub trait VMManager<N: Network>: Send + Sync + Clone {
         &self,
         deployer: &Account<N>,
         program: &Program<N>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<()>;
 
     fn execute_and_broadcast(
         &self,
         account: &Account<N>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<N>,
+        function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<Vec<Value<N>>>;
 }
 
@@ -114,16 +114,14 @@ impl<N: Network> NetworkVm<N> {
     pub fn execute(
         &self,
         private_key: &PrivateKey<N>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<N>,
+        function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
         fee_record: Option<Record<N, Plaintext<N>>>,
         priority_fee: u64,
     ) -> Result<(Transaction<N>, Vec<Value<N>>)> {
         let query = Self::create_query(&self.client.endpoint)?;
         let rng = &mut rand::thread_rng();
-        let program_id: ProgramID<N> = program_id.parse()?;
-        let function_name: Identifier<N> = function_name.parse()?;
         let (transaction, response) = self
             .vm
             .execute_with_response(
@@ -143,15 +141,13 @@ impl<N: Network> NetworkVm<N> {
     pub fn authorize(
         &self,
         private_key: &PrivateKey<N>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<N>,
+        function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
     ) -> Result<Authorization<N>> {
         let rng = &mut rand::thread_rng();
-        let program_id: ProgramID<N> = program_id.parse()?;
-        let function_name: Identifier<N> = function_name.parse()?;
         self.vm
-            .authorize(private_key, program_id, function_name, inputs.iter(), rng)
+            .authorize(private_key, *program_id, *function_name, inputs.iter(), rng)
             .map_err(|e| Error::VmError(format!("Failed to create authorization: {e}")))
     }
 
@@ -239,16 +235,14 @@ impl<N: Network> NetworkVm<N> {
             .map_err(|e| Error::VmError(format!("Failed to calculate execution cost: {}", e)))
     }
 
-    fn load_missing_dependencies(&self, dependencies: &[&str]) -> Result<()> {
+    fn load_missing_dependencies(&self, dependencies: &[ProgramID<N>]) -> Result<()> {
         for dep_id in dependencies {
-            let dep_program_id: ProgramID<N> = dep_id.parse().map_err(|e| {
-                Error::Internal(format!("Invalid dependency ID '{}': {}", dep_id, e))
-            })?;
-            if self.contains_program(&dep_program_id) {
+            if self.contains_program(dep_id) {
                 continue;
             }
-            crate::block_on(self.client.wait_for_program::<N>(dep_id))?;
-            let bytecode = crate::block_on(self.client.program::<N>(dep_id))?;
+            let dep_id_str = dep_id.to_string();
+            crate::block_on(self.client.wait_for_program::<N>(&dep_id_str))?;
+            let bytecode = crate::block_on(self.client.program::<N>(&dep_id_str))?;
             let dep_program: Program<N> = bytecode.parse().map_err(|e| {
                 Error::Internal(format!("Failed to parse dependency '{}': {}", dep_id, e))
             })?;
@@ -259,19 +253,20 @@ impl<N: Network> NetworkVm<N> {
         Ok(())
     }
 
-    pub fn ensure_program_loaded(&self, program_id: &str, dependencies: &[&str]) -> Result<()> {
-        let program_id_parsed: ProgramID<N> = program_id
-            .parse()
-            .map_err(|e| Error::Internal(format!("Invalid program ID '{}': {}", program_id, e)))?;
-
-        if self.contains_program(&program_id_parsed) {
+    pub fn ensure_program_loaded(
+        &self,
+        program_id: &ProgramID<N>,
+        dependencies: &[ProgramID<N>],
+    ) -> Result<()> {
+        if self.contains_program(program_id) {
             return Ok(());
         }
 
         self.load_missing_dependencies(dependencies)?;
 
-        crate::block_on(self.client.wait_for_program::<N>(program_id))?;
-        let bytecode = crate::block_on(self.client.program::<N>(program_id))?;
+        let program_id_str = program_id.to_string();
+        crate::block_on(self.client.wait_for_program::<N>(&program_id_str))?;
+        let bytecode = crate::block_on(self.client.program::<N>(&program_id_str))?;
         let program: Program<N> = bytecode.parse().map_err(|e| {
             Error::Internal(format!("Failed to parse program '{}': {}", program_id, e))
         })?;
@@ -285,10 +280,10 @@ impl<N: Network> NetworkVm<N> {
     pub fn execute_and_broadcast(
         &self,
         account: &Account<N>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<N>,
+        function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<Vec<Value<N>>> {
         log::info!("Creating tx: {}.{}", program_id, function_name);
 
@@ -324,8 +319,14 @@ impl<N: Network> NetworkVm<N> {
         };
 
         if let Some(execution) = transaction.execution() {
-            print_execution_stats(self.vm(), program_id, execution, None, CONSENSUS_VERSION)
-                .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
+            print_execution_stats(
+                self.vm(),
+                &program_id.to_string(),
+                execution,
+                None,
+                CONSENSUS_VERSION,
+            )
+            .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
         }
         let (total_cost, _) = self
             .calculate_cost(&transaction)
@@ -347,9 +348,10 @@ impl<N: Network> NetworkVm<N> {
         &self,
         deployer: &Account<N>,
         program: &Program<N>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<()> {
-        let program_id = program.id().to_string();
+        let program_id = program.id();
+        let program_id_str = program_id.to_string();
         self.load_missing_dependencies(dependencies)?;
 
         log::info!("📦 Creating deployment tx for '{}'...", program_id);
@@ -361,8 +363,14 @@ impl<N: Network> NetworkVm<N> {
             })?;
 
         if let Transaction::Deploy(_, _, _, deployment, _fee) = &transaction {
-            print_deployment_stats(self.vm(), &program_id, deployment, None, CONSENSUS_VERSION)
-                .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
+            print_deployment_stats(
+                self.vm(),
+                &program_id_str,
+                deployment,
+                None,
+                CONSENSUS_VERSION,
+            )
+            .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
         }
 
         let balance = crate::block_on(self.client.public_balance::<N>(&deployer.address()))
@@ -386,7 +394,7 @@ impl<N: Network> NetworkVm<N> {
         crate::block_on(self.client.broadcast_wait(&transaction))
             .map_err(|e| Error::Internal(format!("Failed to broadcast deployment: {}", e)))?;
 
-        crate::block_on(self.client.wait_for_program::<N>(&program_id))?;
+        crate::block_on(self.client.wait_for_program::<N>(&program_id_str))?;
 
         self.add_program(program)
             .map_err(|e| Error::Internal(format!("Failed to add deployed program to VM: {}", e)))?;
@@ -409,24 +417,28 @@ impl<N: Network> NetworkVm<N> {
 }
 
 impl<N: Network> VMManager<N> for NetworkVm<N> {
-    fn program_exists(&self, program_id: &str) -> Result<bool> {
-        crate::block_on(self.client.program_exists::<N>(program_id))
+    fn program_exists(&self, program_id: &ProgramID<N>) -> Result<bool> {
+        crate::block_on(self.client.program_exists::<N>(&program_id.to_string()))
     }
 
     fn mapping_value(
         &self,
-        program_id: &str,
-        mapping_name: &str,
+        program_id: &ProgramID<N>,
+        mapping_name: &Identifier<N>,
         key: &Value<N>,
     ) -> Result<Option<Value<N>>> {
-        crate::block_on(self.client.mapping::<N>(program_id, mapping_name, key))
+        crate::block_on(self.client.mapping::<N>(
+            &program_id.to_string(),
+            &mapping_name.to_string(),
+            key,
+        ))
     }
 
     fn deploy_and_broadcast(
         &self,
         deployer: &Account<N>,
         program: &Program<N>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<()> {
         NetworkVm::deploy_and_broadcast(self, deployer, program, dependencies)
     }
@@ -434,10 +446,10 @@ impl<N: Network> VMManager<N> for NetworkVm<N> {
     fn execute_and_broadcast(
         &self,
         account: &Account<N>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<N>,
+        function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<N>],
     ) -> Result<Vec<Value<N>>> {
         NetworkVm::execute_and_broadcast(
             self,
@@ -477,20 +489,17 @@ impl LocalVM {
         self.vm.process().read().contains_program(program_id)
     }
 
-    fn ensure_program_loaded(&self, program_id: &str, dependencies: &[&str]) -> Result<()> {
-        let program_id_parsed: ProgramID<TestnetV0> = program_id
-            .parse()
-            .map_err(|e| Error::Internal(format!("Invalid program ID '{program_id}': {e}")))?;
-
-        if self.contains_program(&program_id_parsed) {
+    fn ensure_program_loaded(
+        &self,
+        program_id: &ProgramID<TestnetV0>,
+        dependencies: &[ProgramID<TestnetV0>],
+    ) -> Result<()> {
+        if self.contains_program(program_id) {
             return Ok(());
         }
 
         for dep_id in dependencies {
-            let dep_program_id: ProgramID<TestnetV0> = dep_id
-                .parse()
-                .map_err(|e| Error::Internal(format!("Invalid dependency ID '{dep_id}': {e}")))?;
-            if !self.contains_program(&dep_program_id) {
+            if !self.contains_program(dep_id) {
                 return Err(Error::Internal(format!(
                     "LocalVM: dependency '{dep_id}' not on ledger; deploy it first (missing program '{program_id}')"
                 )));
@@ -506,15 +515,12 @@ impl LocalVM {
         &self,
         deployer: &Account<TestnetV0>,
         program: &Program<TestnetV0>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<()> {
-        let program_id = program.id().to_string();
+        let program_id = program.id();
 
         for dep_id in dependencies {
-            let dep_program_id: ProgramID<TestnetV0> = dep_id
-                .parse()
-                .map_err(|e| Error::Internal(format!("Invalid dependency ID '{dep_id}': {e}")))?;
-            if !self.contains_program(&dep_program_id) {
+            if !self.contains_program(dep_id) {
                 return Err(Error::Internal(format!(
                     "LocalVM: missing dependency '{dep_id}' before deploying '{program_id}'"
                 )));
@@ -539,21 +545,14 @@ impl LocalVM {
     pub fn execute_and_broadcast(
         &self,
         account: &Account<TestnetV0>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<TestnetV0>,
+        function_name: &Identifier<TestnetV0>,
         inputs: Vec<Value<TestnetV0>>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<Vec<Value<TestnetV0>>> {
         log::info!("Creating local tx: {program_id}.{function_name}");
 
         self.ensure_program_loaded(program_id, dependencies)?;
-
-        let program_id_parsed: ProgramID<TestnetV0> = program_id
-            .parse()
-            .map_err(|e| Error::Internal(format!("Invalid program ID: {e}")))?;
-        let function_name_parsed: Identifier<TestnetV0> = function_name
-            .parse()
-            .map_err(|e| Error::Internal(format!("Invalid function name: {e}")))?;
 
         let mut rng = rand::thread_rng();
 
@@ -561,7 +560,7 @@ impl LocalVM {
             .vm
             .execute_with_response_local_proofless(
                 account.private_key(),
-                (program_id_parsed, function_name_parsed),
+                (*program_id, *function_name),
                 inputs.into_iter(),
                 None,
                 0,
@@ -579,21 +578,16 @@ impl LocalVM {
 }
 
 impl VMManager<TestnetV0> for LocalVM {
-    fn program_exists(&self, program_id: &str) -> Result<bool> {
-        let id: ProgramID<TestnetV0> = program_id
-            .parse()
-            .map_err(|e| Error::Internal(format!("Invalid program id: {e}")))?;
-        Ok(self.contains_program(&id))
+    fn program_exists(&self, program_id: &ProgramID<TestnetV0>) -> Result<bool> {
+        Ok(self.contains_program(program_id))
     }
 
     fn mapping_value(
         &self,
-        program_id: &str,
-        mapping_name: &str,
+        program_id: &ProgramID<TestnetV0>,
+        mapping_name: &Identifier<TestnetV0>,
         key: &Value<TestnetV0>,
     ) -> Result<Option<Value<TestnetV0>>> {
-        let pid = ProgramID::from_str(program_id).map_err(|e| Error::Internal(e.to_string()))?;
-        let mid = Identifier::from_str(mapping_name).map_err(|e| Error::Internal(e.to_string()))?;
         let key_plain = match key {
             Value::Plaintext(p) => p.clone(),
             _ => {
@@ -604,7 +598,7 @@ impl VMManager<TestnetV0> for LocalVM {
         };
         self.vm
             .finalize_store()
-            .get_value_confirmed(pid, mid, &key_plain)
+            .get_value_confirmed(*program_id, *mapping_name, &key_plain)
             .map_err(|e| Error::Internal(format!("Mapping lookup failed: {e}")))
     }
 
@@ -612,7 +606,7 @@ impl VMManager<TestnetV0> for LocalVM {
         &self,
         deployer: &Account<TestnetV0>,
         program: &Program<TestnetV0>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<()> {
         LocalVM::deploy_and_broadcast(self, deployer, program, dependencies)
     }
@@ -620,10 +614,10 @@ impl VMManager<TestnetV0> for LocalVM {
     fn execute_and_broadcast(
         &self,
         account: &Account<TestnetV0>,
-        program_id: &str,
-        function_name: &str,
+        program_id: &ProgramID<TestnetV0>,
+        function_name: &Identifier<TestnetV0>,
         inputs: Vec<Value<TestnetV0>>,
-        dependencies: &[&str],
+        dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<Vec<Value<TestnetV0>>> {
         LocalVM::execute_and_broadcast(
             self,
