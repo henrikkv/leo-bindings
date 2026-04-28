@@ -160,6 +160,10 @@ path = "lib.rs"
 
         match (&dep.location, &dep.path) {
             (Location::Local, Some(dep_path)) => {
+                let abs_dep_path = project_path.join(dep_path);
+                if is_library(&abs_dep_path) {
+                    continue;
+                }
                 let relative_path = dep_path
                     .strip_prefix(&project_path)
                     .unwrap_or(dep_path)
@@ -248,14 +252,25 @@ outputs/
             if dep.location == Location::Local
                 && let Some(dep_path) = dep.path.as_ref()
             {
+                let abs_dep_path = program_dir.join(dep_path);
                 let relative_path = dep_path.strip_prefix(program_dir).unwrap_or(dep_path);
-                let _ = write!(
-                    build_rs,
-                    r#"
+                if is_library(&abs_dep_path) {
+                    let _ = write!(
+                        build_rs,
+                        r#"
+    println!("cargo:rerun-if-changed={}/src/lib.leo");
+"#,
+                        relative_path.to_string_lossy()
+                    );
+                } else {
+                    let _ = write!(
+                        build_rs,
+                        r#"
     println!("cargo:rerun-if-changed={}/build/abi.json");
 "#,
-                    relative_path.to_string_lossy()
-                );
+                        relative_path.to_string_lossy()
+                    );
+                }
             }
         }
 
@@ -354,6 +369,10 @@ path = "lib.rs"
 
                 match (&dep.location, &dep.path) {
                     (Location::Local, Some(dep_path)) => {
+                        let abs_dep_path = program_dir.join(dep_path);
+                        if is_library(&abs_dep_path) {
+                            continue;
+                        }
                         let relative_path = dep_path
                             .strip_prefix(program_dir)
                             .unwrap_or(dep_path)
@@ -389,11 +408,21 @@ fn default_imports_block() -> &'static str {
 "#
 }
 
+fn is_library(path: &Path) -> bool {
+    path.join("src/lib.leo").exists()
+        && !path.join("src/main.leo").exists()
+        && !path.join("src/main.aleo").exists()
+}
+
 fn collect_local_programs(
     programs: &mut HashMap<PathBuf, (String, Vec<Dependency>)>,
     leo_dep_path: &Path,
     bindings_dep_path: &Path,
 ) -> Result<()> {
+    if is_library(leo_dep_path) {
+        return Ok(());
+    }
+
     let dep_manifest_path = leo_dep_path.join(MANIFEST_FILENAME);
     if !dep_manifest_path.exists() {
         return Ok(());
