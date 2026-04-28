@@ -3,6 +3,7 @@ use rand_chacha::rand_core::SeedableRng;
 use snarkvm::prelude::*;
 use std::env;
 use std::str::FromStr;
+use crate::Address;
 
 /// A helper struct for an Aleo account (from snarkOS).
 #[derive(Clone, Debug)]
@@ -43,7 +44,7 @@ impl<N: Network> TryFrom<&PrivateKey<N>> for Account<N> {
 
     fn try_from(private_key: &PrivateKey<N>) -> Result<Self, Self::Error> {
         let view_key = ViewKey::try_from(private_key)?;
-        let address = view_key.to_address();
+        let address = Address::from(view_key.to_address());
         Ok(Self {
             private_key: *private_key,
             view_key,

@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+leo-bindings-core.workspace = true
 anyhow.workspace = true
 indexmap.workspace = true
 snarkvm.workspace = true

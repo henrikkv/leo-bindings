@@ -1,6 +1,7 @@
 use crate::config::Client;
 use crate::error::{Error, Result};
-use snarkvm::prelude::{Address, Literal, Network, Plaintext, Value};
+use crate::Address;
+use snarkvm::prelude::{Literal, Network, Plaintext, Value};
 
 impl Client {
     /// Query a mapping value from the network
@@ -44,7 +45,7 @@ impl Client {
     }
 
     pub async fn public_balance<N: Network>(&self, address: &Address<N>) -> Result<u64> {
-        let key = Value::from(Literal::Address(*address));
+        let key = Value::from(Literal::Address(**address));
         let balance = self.mapping::<N>("credits.aleo", "account", &key).await?;
 
         match balance {

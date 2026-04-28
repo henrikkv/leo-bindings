@@ -36,7 +36,7 @@ pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream
             use snarkvm::prelude::Network;
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
-            use leo_bindings::leo_bindings_sdk::{Account, VMManager};
+            use leo_bindings::leo_bindings_sdk::{Account, Address, VMManager};
 
             #type_imports
 
@@ -102,6 +102,14 @@ fn generate_program_impl(
 
             #new_implementation
 
+            pub fn address(&self) -> Address<N> {
+                Address::from(self.program_id.to_address().expect("Could not convert the program id to address"))
+            }
+
+            pub fn identifier(&self) -> Identifier<N> {
+                *self.program_id.name()
+            }
+
             #(#function_implementations)*
 
             #(#mapping_implementations)*
@@ -162,7 +170,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                     if member.name == "owner" {
                         quote! {
                             let #member_name = match record.owner() {
-                                Owner::Public(addr) => *addr,
+                                Owner::Public(addr) => Address::from(*addr),
                                 Owner::Private(plaintext) => {
                                     <Address<N> as FromValue<N>>::from_value(Value::Plaintext(plaintext.clone()))
                                 }
@@ -186,13 +194,13 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
 
             let record_owner = match record.fields.iter().find(|f| f.name == "owner") {
                 Some(f) => match f.mode {
-                    Mode::Public => quote! { Owner::Public(self.owner) },
+                    Mode::Public => quote! { Owner::Public(self.owner.into()) },
                     Mode::Private | Mode::None | Mode::Constant => quote! {
-                        Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                        Owner::Private(Plaintext::from(Literal::Address(self.owner.into())))
                     },
                 },
                 None => quote! {
-                    Owner::Private(Plaintext::from(Literal::Address(self.owner)))
+                    Owner::Private(Plaintext::from(Literal::Address(self.owner.into())))
                 },
             };
 

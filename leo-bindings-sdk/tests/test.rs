@@ -1,11 +1,11 @@
-use leo_bindings_sdk::{Account, Client, NetworkVm, block_on};
-use snarkvm::prelude::*;
+use leo_bindings_sdk::snarkvm::prelude::*;
+use leo_bindings_sdk::{Account, Client, NetworkVm, ToValue, block_on};
 
 #[test]
 fn test_mapping_query() {
     let account = Account::<TestnetV0>::from_env().unwrap();
     let client = Client::new("https://api.explorer.provable.com", None).unwrap();
-    let key = Value::from(Literal::Address(account.address()));
+    let key = account.address().to_value();
 
     let _ = block_on(client.mapping::<TestnetV0>("credits.aleo", "account", &key)).unwrap();
 }
@@ -20,17 +20,12 @@ fn test_transfer_credits() {
     let program = Program::from_str(&credits).unwrap();
     vm.add_program(&program).unwrap();
 
-    let inputs = vec![
-        Value::from(Literal::Address(account.address())),
-        Value::from(Literal::U64(U64::new(1))),
-    ];
-
     let (tx, _) = vm
         .execute(
             account.private_key(),
             &"credits.aleo".try_into().unwrap(),
             &"transfer_public".try_into().unwrap(),
-            inputs,
+            vec![account.address().to_value(), 1u64.to_value()],
             None,
             0,
         )
@@ -49,19 +44,17 @@ fn test_delegated_proving() {
     let program = Program::from_str(&src).unwrap();
     vm.add_program(&program).unwrap();
 
-    let inputs = vec![
-        Value::from(Literal::U64(U64::new(1000))),
-        Value::from(Literal::U64(U64::new(10))),
-        Value::from(Literal::U64(U64::new(2))),
-        Value::from(Literal::U64(U64::new(1))),
-    ];
-
     let auth = vm
         .authorize(
             account.private_key(),
             &"delegated_proving_test.aleo".try_into().unwrap(),
             &"divide".try_into().unwrap(),
-            inputs,
+            vec![
+                1000u64.to_value(),
+                10u64.to_value(),
+                2u64.to_value(),
+                1u64.to_value(),
+            ],
         )
         .unwrap();
 
