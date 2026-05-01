@@ -255,6 +255,11 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                                     #extra_member_inits
                                 }
                             }
+                            Value::DynamicRecord(dynamic_record) => {
+                                let record = dynamic_record.to_record(true)
+                                    .expect("Failed to convert dynamic record to static record");
+                                <Self as FromValue<N>>::from_value(Value::Record(record))
+                            }
                             _ => panic!("Expected record value"),
                         }
                     }
@@ -262,6 +267,11 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
 
                 impl<N: Network> #record_name<N> {
                     /// Convert to a SnarkVM Record.
+                    pub fn to_dynamic_record(&self) -> Result<DynamicRecord<N>, anyhow::Error> {
+                        let record = self.to_record()?;
+                        DynamicRecord::<N>::from_record(&record)
+                    }
+
                     pub fn to_record(&self) -> Result<Record<N, Plaintext<N>>, anyhow::Error> {
                         let data = IndexMap::from([
                             #(#member_conversions),*
@@ -280,6 +290,16 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
 
                     #(#getter_methods)*
                 }
+
+                impl<N: Network> TryFrom<DynamicRecord<N>> for #record_name<N> {
+                    type Error = anyhow::Error;
+
+                    fn try_from(value: DynamicRecord<N>) -> Result<Self, anyhow::Error> {
+                        let record = value.to_record(true)?;
+                        Ok(<Self as FromValue<N>>::from_value(Value::Record(record)))
+                    }
+                }
+
             }
         })
         .collect()

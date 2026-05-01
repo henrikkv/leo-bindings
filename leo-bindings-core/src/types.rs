@@ -33,7 +33,7 @@ impl ToRustType for abi::FunctionInput {
         match self {
             abi::FunctionInput::Plaintext(p) => rust_type_plaintext(p),
             abi::FunctionInput::Record(rec) => record_rust_type(&rec.path),
-            abi::FunctionInput::DynamicRecord => quote! { Record<N, Plaintext<N>> },
+            abi::FunctionInput::DynamicRecord => quote! { DynamicRecord<N> },
         }
     }
 }
@@ -44,7 +44,7 @@ impl ToRustType for abi::FunctionOutput {
             abi::FunctionOutput::Plaintext(p) => rust_type_plaintext(p),
             abi::FunctionOutput::Record(rec) => record_rust_type(&rec.path),
             abi::FunctionOutput::Final => quote! { Future<N> },
-            abi::FunctionOutput::DynamicRecord => quote! { Record<N, Plaintext<N>> },
+            abi::FunctionOutput::DynamicRecord => quote! { DynamicRecord<N> },
         }
     }
 }
@@ -610,6 +610,23 @@ impl<N: Network> FromValue<N> for Record<N, Plaintext<N>> {
         match value {
             Value::Record(record) => record,
             _ => panic!("Expected record value"),
+        }
+    }
+}
+
+impl<N: Network> ToValue<N> for DynamicRecord<N> {
+    fn to_value(&self) -> Value<N> {
+        Value::DynamicRecord(self.clone())
+    }
+}
+
+impl<N: Network> FromValue<N> for DynamicRecord<N> {
+    fn from_value(value: Value<N>) -> Self {
+        match value {
+            Value::DynamicRecord(record) => record,
+            Value::Record(record) => DynamicRecord::<N>::from_record(&record)
+                .expect("Failed to convert static record into dynamic record"),
+            _ => panic!("Expected dynamic record value"),
         }
     }
 }
