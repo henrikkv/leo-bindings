@@ -584,7 +584,7 @@ version = "0.2.0"
 dependencies = [
  "delegated_proving_test_bindings",
  "leo-bindings",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
@@ -630,7 +630,7 @@ version = "0.2.0"
 dependencies = [
  "dev_bindings",
  "leo-bindings",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
@@ -710,7 +710,7 @@ version = "0.2.0"
 dependencies = [
  "dyn_example_bindings",
  "leo-bindings",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
@@ -1532,9 +1532,9 @@ dependencies = [
 
 [[package]]
 name = "js-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2964e92d1d9dc3364cae4d718d93f227e3abb088e747d92e0395bfdedf1c12ca"
+checksum = "a1840c94c045fbcf8ba2812c95db44499f7c64910a912551aaaa541decebcacf"
 dependencies = [
  "cfg-if",
  "futures-util",
@@ -1588,7 +1588,7 @@ dependencies = [
  "leo-span",
  "serde",
  "serde_json",
- "snarkvm 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1620,7 +1620,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "ureq",
  "walkdir",
 ]
@@ -1642,7 +1642,7 @@ dependencies = [
  "num-format",
  "proc-macro2",
  "quote 1.0.45",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "syn 2.0.117",
 ]
 
@@ -1678,7 +1678,7 @@ dependencies = [
  "reqwest-retry",
  "serde",
  "serde_json",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 1.0.69",
  "tokio",
 ]
@@ -1712,7 +1712,7 @@ dependencies = [
  "leo-span",
  "serde",
  "serde_json",
- "snarkvm 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing",
  "ureq",
 ]
@@ -1729,7 +1729,7 @@ dependencies = [
  "leo-errors",
  "leo-parser-rowan",
  "leo-span",
- "snarkvm 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2618,9 +2618,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.39"
+version = "0.23.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c2c118cb077cca2822033836dfb1b975355dfb784b5e8da48f7b6c5db74e60e"
+checksum = "ef86cd5876211988985292b91c96a8f2d298df24e75989a43a3c73f2d4d8168b"
 dependencies = [
  "aws-lc-rs",
  "log",
@@ -2920,50 +2920,50 @@ dependencies = [
 
 [[package]]
 name = "snarkvm"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4643d1e500e4768a310bb013cf47e99e367fd8d2d056d2770f3fa93c2e631288"
+checksum = "1c092e5cb51224b9d3ffeafedf56e05bdb5eb07647f1115639d49f7ad16792e5"
 dependencies = [
  "anyhow",
  "dotenvy",
  "rand 0.8.6",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-parameters 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-parameters 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ureq",
  "walkdir",
 ]
 
 [[package]]
 name = "snarkvm"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "dotenvy",
  "rand 0.8.6",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-parameters 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-parameters 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "ureq",
  "walkdir",
 ]
 
 [[package]]
 name = "snarkvm-algorithms"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04d6e5c1ef0715e97e1767b755ea1364bd1285a62dacad9949149b3050177fa7"
+checksum = "968ae18c17ffc17d685e2fdf0fd81badda60b986396c86288ef3956fe36a9634"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -2980,17 +2980,17 @@ dependencies = [
  "serde",
  "sha2",
  "smallvec",
- "snarkvm-curves 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-parameters 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-curves 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-parameters 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-algorithms"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -3007,110 +3007,110 @@ dependencies = [
  "serde",
  "sha2",
  "smallvec",
- "snarkvm-curves 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-parameters 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-curves 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-parameters 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-circuit"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb6147ddd08a6272c760a1827ff2fc98c42bdda78c84df3b98705d01efa7e1b8"
+checksum = "ecb2f9adefd7e2f1ca7a7fcc565b7240fbcb3c4e15e10fe9b34fe0b6b4ed38e3"
 dependencies = [
- "snarkvm-circuit-account 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-account 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-account 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-account 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-account"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1293ea0f9820f740cf0ae6f0d9e547951039d8414ca4868d5910831425ea124"
+checksum = "c48163678e651152836fa558a7d269b7758de63b890599d8dcfec83f6a30c9df"
 dependencies = [
- "snarkvm-circuit-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-account 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-account 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-account"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-account 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-account 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-algorithms"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f90e1b68c4d13ef39b6bb2a5a85fd6e8ada880e8eb64fa68f4a4447dcf991a4"
+checksum = "778e9b1e9e5a99ba006936934a9307645e095d38f3db340e988a764715419261"
 dependencies = [
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-algorithms"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-collections"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25be72a1844f7bcf9ea024bb9c9b0475de382ac2094f4d029ba3820ac50c0cd0"
+checksum = "61af9fb395c5649181cdd06a7b8192774f08fe8960f5ea81260915ee7e0ef9e5"
 dependencies = [
- "snarkvm-circuit-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-collections"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-environment"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de0f29720679a3be49a12cc3b35476af7d1431ec4499215f35972a58152c4e13"
+checksum = "0a0b61bb3327c0fa16e875bfc2713eb85bcefbbee1eb852dc63b5b9ebd45208b"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -3118,19 +3118,19 @@ dependencies = [
  "nom",
  "num-traits",
  "smallvec",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-environment-witness 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-curves 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment-witness 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-curves 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-circuit-environment"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -3138,389 +3138,389 @@ dependencies = [
  "nom",
  "num-traits",
  "smallvec",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-environment-witness 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-curves 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment-witness 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-curves 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-circuit-environment-witness"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "040fd8ff056efea11fef93fcef8466a40d0320dd508267640ca90b5a2c737218"
+checksum = "a338d22daeb11a28974b25dab808215b48afa1fa2f63323440e363b56bad678f"
 
 [[package]]
 name = "snarkvm-circuit-environment-witness"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 
 [[package]]
 name = "snarkvm-circuit-network"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f78cc65482d4f53f1dde70dea57c72c567f97fcf90cb9f6994fef085e06b1876"
+checksum = "c479238d3e119631be3006d2f204e58dfe524d337dc464e9c80f3fa4e1d8deac"
 dependencies = [
- "snarkvm-circuit-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-network"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-program"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13d7aff7e131a14d4db91a68aa6215d45711a1b4befdeb0b4885b207ab4db439"
+checksum = "cd643a5eb075d50dbe9592e5f97a836c0ac35f4635daa169b45f5bf4d8325d01"
 dependencies = [
- "snarkvm-circuit-account 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-account 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-program"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-account 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-account 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4681a67c5f3533f07411eb0b0148be77c71b9046bae273a7b83aac906fd930b0"
+checksum = "781b6fa914eeee0ae29895508bc64c950ffe2bd2ec9b2bf263d0724504042742"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-address 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-group 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-integers 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-string 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-address 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-group 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-integers 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-string 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-address 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-group 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-integers 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-string 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-address 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-group 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-integers 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-string 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-address"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ed02664fe039b01f02a2c8e51a738906583a030d44c503df09dae8bce0a5e24"
+checksum = "dd6864ba8e389ef52b9b220436f814c35c8b974a1b35886e452dec28bc013732"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-group 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-address 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-group 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-address 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-address"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-group 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-address 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-group 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-address 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-boolean"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b629373f2dab3c99a3822ed8e7dcd93bd9d52e6ec87a1fea30ce0bc6983c1d1e"
+checksum = "2c7753ab8a7ac6f64fd78246b6248daa0eba972a9e793162bb90ab07add82690"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-boolean"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-field"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10fed2de314e5e15f09e43705d2e440342b3ae6c1af5969788619f66ce43aff2"
+checksum = "ef74959a5b74728b8bb9d6a6b7d00740e5d36dff439805a811fb517014c943a3"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-field"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-group"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccd7710e85dac5c59861ff695e5985e2a256efebcd63feb63e4567acf9edba21"
+checksum = "56511a526b5e550f1eb8be82221169fda918d9d6f954db9ba957d3d2bc1ed46f"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-group 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-group 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-group"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-group 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-group 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-integers"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc7c9edeaf48572c4aeb2c2c8af3a13a90a7f7f8bd1c72688beb06a9e9788c8a"
+checksum = "210b02b6e427fb9c724cf76fe72e73248a477d4a14b1be476e48cf1bcf96cad7"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-integers 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-integers 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-integers"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-integers 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-integers 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-scalar"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b481ef69bfde4402444a791646b59a71cd447001633ae14ca9dca666f94f57d8"
+checksum = "6966e9f9b0ae81868d2d653d13ee7d80a532f6d6ac77d6bad511a9212941f632"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-scalar"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-string"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c477456f9a651db33e999bd027fc86e5177d3be5cc20aa6f596d0b17641f19a6"
+checksum = "5a7456f93289da01717545612410a58d2967f1c0fa657ab3ac228f690b5c0abe"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit-types-integers 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-string 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-types-integers 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-string 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-circuit-types-string"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit-types-integers 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-string 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-types-integers 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-string 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f6c4ec821345961070b7780841035e6595888e997031fe33cbbb2f15759d3e7"
+checksum = "006496cd774a1f5430cd1bb0fb6d3bb3f221b626df71637e35edbb057f7fd45f"
 dependencies = [
- "snarkvm-console-account 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-account 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-account 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-account 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-account"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fff66c4de0f9fc85a7eccac466086e604475cb862d94d7802c2014ca46bf4fd"
+checksum = "f1f5af343b814c2d6ec541c00d96d478d6ecae2a88b1fd0159af06080c0d7b45"
 dependencies = [
  "bs58",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-account"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "bs58",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-algorithms"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b079599074bcefeaf11354101ee102553c0101fe54cc7bf5af57477df45459b3"
+checksum = "29e74de8695a9675c3b6ed0016c6ff58d5663769b33ff180c74195b7a2561fe4"
 dependencies = [
  "blake2s_simd",
  "hex",
  "k256",
  "serde",
  "smallvec",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tiny-keccak",
 ]
 
 [[package]]
 name = "snarkvm-console-algorithms"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "blake2s_simd",
  "hex",
  "k256",
  "serde",
  "smallvec",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "tiny-keccak",
 ]
 
 [[package]]
 name = "snarkvm-console-collections"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cdc95d3a7a349eb84125af475b8f3089cbabd86fb396db8250fb713c3733bfd"
+checksum = "cb82068fe9f2f76fa39ba1e1c2d3ab8ec81e61d191e356993cfd9580183fe330"
 dependencies = [
  "aleo-std",
  "parking_lot 0.12.5",
  "rayon",
  "serde",
- "snarkvm-console-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-collections"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "parking_lot 0.12.5",
  "rayon",
  "serde",
- "snarkvm-console-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-network"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed55f7b5f1e6f5c919d91131f52f38d7b5d4fb43216e64371457a11e34879606"
+checksum = "acd85152a2e701811fd05c72d313ecc82069ca5c366da47d3a4e0e7d13453b89"
 dependencies = [
  "anyhow",
  "enum-iterator",
@@ -3528,19 +3528,19 @@ dependencies = [
  "lazy_static",
  "paste",
  "serde",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-curves 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-parameters 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-curves 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-parameters 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-network"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "enum-iterator",
@@ -3548,20 +3548,20 @@ dependencies = [
  "lazy_static",
  "paste",
  "serde",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-curves 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-parameters 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-curves 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-parameters 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-network-environment"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3142ea88820c3147cae2bcbaa786d6e0f74a4470fadba37bca5c9a94e6d0ad16"
+checksum = "8643b35b278716c776a334282d8632eebeb7b78c5b33f6e055d440411f242e09"
 dependencies = [
  "anyhow",
  "bech32",
@@ -3570,16 +3570,16 @@ dependencies = [
  "num-traits",
  "rand 0.8.6",
  "serde",
- "snarkvm-curves 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-curves 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-network-environment"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "bech32",
@@ -3588,17 +3588,17 @@ dependencies = [
  "num-traits",
  "rand 0.8.6",
  "serde",
- "snarkvm-curves 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-curves 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-program"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77e4f76b3f5ebd0fb72af0da84fed3d373440f8d217314679d3bc449686167f8"
+checksum = "b0a978757413da039408c2bf7cdf25af4a44f372da660dc571a8d5795a6b1b24"
 dependencies = [
  "enum-iterator",
  "enum_index",
@@ -3608,18 +3608,18 @@ dependencies = [
  "num-traits",
  "seq-macro",
  "serde_json",
- "snarkvm-console-account 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-collections 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-account 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-collections 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-program"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "enum-iterator",
  "enum_index",
@@ -3629,230 +3629,230 @@ dependencies = [
  "num-traits",
  "seq-macro",
  "serde_json",
- "snarkvm-console-account 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-collections 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-account 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-collections 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2ed70c42bc8d962b14b9f9efbc9b4f110fd1516373954e0d6e31c44c397eff8"
+checksum = "5e763d9f599a3acfdfb04bcb7a670a234ddcbf7b14ff826019e45adb47adfb20"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-address 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-group 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-integers 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-string 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-address 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-group 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-integers 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-string 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-address 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-group 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-integers 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-string 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-address 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-group 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-integers 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-string 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-address"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "152c0667a4901d02521ca9dbf6e252d47b66cd126d3a8c96ceb835acc3b32aeb"
+checksum = "aff9358e66f770c1c04aa5937dc666f0ceefd1d4f8f339d524e1a0749192cd67"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-group 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-group 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-address"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-group 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-group 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-boolean"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "999ef1a132894d424dea30c862534bc7320abcaadc11125a633766493177ab5d"
+checksum = "ceeb44cea5272c7a350278c56346064af8104285237f29bbb557c475461b8384"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-boolean"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-field"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "427ab852a9004f614faba56e8fb06b848022c88ca5692d571414b16a6da0c392"
+checksum = "1b5b46c8cb9a5036fbd744c092cdf9e7e4b3860a1cfdddf02f9eaa1a4051e4e4"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-types-field"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-types-group"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3d925ce882e35369ab3a1a2f9f1fdf6e1b1fba5774c28737d42051cc708f699"
+checksum = "2ffe7643d999f5a26530f98d1c4bcb25203a32681fbd2b0b2131ae8ad3be591f"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-group"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-integers"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da1c72043485f18029df17e62dd898f1f81bf3fc238c8236be84ba4d9a40d179"
+checksum = "0f5fd7f34bfd746e4752289bdcf287b4b665855742d2b4baa4b490ae43a2e8ef"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-scalar 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-scalar 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-integers"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-scalar 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-scalar 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-scalar"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c03dbfc98c799840e1f07be3a79fd872cb991153b5649c083fa118306d8069e"
+checksum = "fdca15e8131d11f7f936a0e95c87bfed265499df98c937d07410c9f2de45b0fd"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-types-scalar"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-console-types-string"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0537485c612d9fbcafa07445325c2f5bb8fbdbb4617e65ec2db5bc5909ea8f86"
+checksum = "d72952068227dec6ca3f723cf5478e04bafbe1581acd0f8c1d80d4e9e795d13b"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-boolean 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-field 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-types-integers 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-boolean 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-field 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-types-integers 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-console-types-string"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console-network-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-boolean 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-field 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-types-integers 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-boolean 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-field 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-types-integers 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-curves"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9529e3be9f0e14f4c72057c09a9016415f700aec4c18d46c9426dac00b3ade00"
+checksum = "40698180d6b5a277a3fd00a6313a69bb51ebc29c2fb7384472c4e36d6e3173c1"
 dependencies = [
  "rand 0.8.6",
  "rustc_version",
  "serde",
- "snarkvm-fields 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-fields 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-curves"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "rand 0.8.6",
  "rustc_version",
  "serde",
- "snarkvm-fields 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-fields 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-fields"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f9c63cbe1d38e90965156a922896c3bffb560dd5e67b469dbdd0790c9d680be"
+checksum = "f4f644ad19073650870a35247ce508375745a7add8bf32f3ccadab2bc0f8aab9"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -3861,15 +3861,15 @@ dependencies = [
  "rand 0.8.6",
  "rayon",
  "serde",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-fields"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -3878,16 +3878,16 @@ dependencies = [
  "rand 0.8.6",
  "rayon",
  "serde",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
  "zeroize",
 ]
 
 [[package]]
 name = "snarkvm-ledger"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64bfd8bbb6b53adeecfcb4b91806a6d2f935075381bc54cb451251f37717b1e6"
+checksum = "d12a6d5cfa17e83a55b3b02824641b8757660cef5d10b487a55030b9aad211ae"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -3897,17 +3897,17 @@ dependencies = [
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rayon",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-authority 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-committee 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-query 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-store 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-error 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-authority 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-committee 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-query 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-store 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-error 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
  "time",
  "tracing",
@@ -3915,8 +3915,8 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-ledger"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -3926,17 +3926,17 @@ dependencies = [
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rayon",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-authority 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-committee 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-query 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-store 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-error 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-authority 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-committee 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-query 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-store 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-error 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
  "time",
  "tracing",
@@ -3944,285 +3944,285 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-ledger-authority"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc0cc05009cb09c28479b24a9103ad019c07ed5adf411f7800a62fe4a893abf8"
+checksum = "d5fc4aa4dbf87652382f1d2c202afc6b6b509a9740b2c9a9424e816f97d298d0"
 dependencies = [
  "anyhow",
  "rand 0.8.6",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-authority"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "rand 0.8.6",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-block"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb725ed45f65a6006aef8dd4895931606e6e1792da68cde2391114099cdc0722"
+checksum = "6ffa19feef8a6969be7752c48b0c83a13ace6905c0c0c026f391f97fb5ec16ed"
 dependencies = [
  "anyhow",
  "indexmap",
  "itertools",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-authority 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-committee 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-data 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-snark 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-authority 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-committee 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-snark 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-block"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "indexmap",
  "itertools",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-authority 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-committee 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-data 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-snark 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-authority 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-committee 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-snark 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-committee"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbb3da5a66abda62e93287ec0bb39e0f58f0eafc067e4f52f028e93bec21ef6c"
+checksum = "36cc8e705e2dbfc8589f3e90b177ed9c908a3947f0b599321a9be805c14a9941"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-committee"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a094407c97a47e977667a93f3f5d931e1138bd04e0b625ef0114388b8e4c3c6"
+checksum = "444071691f1364cad63714405e8b18e69e9ceb0bc486c0bb63037a5a51a47740"
 dependencies = [
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-data 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-data 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-subdag 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-subdag 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-batch-certificate"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab0f01ed46f4dff96cb0131c554513464b83554c614cd5ba899072a23ab0707"
+checksum = "b10eab47c58b1f7c1f72357d5902f4e990c703b2eced3c230d557a53b8c0d01b"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-batch-certificate"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-batch-header"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25bc480cce56c2cf6780a8dee06d1a07e44dd07c401115fd1f8d23dcbbe5673e"
+checksum = "b33f91d1fa22a3d48e91da9af8755e32180a737d477afc08219df4cb51cec709"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-batch-header"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-data"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a67d35719001a79a875c229653666bbe2c513ed322a455e02756d0937748afa2"
+checksum = "49ca86aab5895940ba4fa2fd39d4369ab7c48d658cddbeeecdd20da32aade194"
 dependencies = [
  "bytes",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-data"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "bytes",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "tokio",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-subdag"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76610962178d8c5b276fb6880f4ea9bb5f1614fb58dbd1cc3048d7283efaf73f"
+checksum = "f00741f39bbf5bdd88f77c8e86332d86ed5b087a09edb4a32f24fb589341765d"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-committee 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-committee 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-subdag"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "indexmap",
  "rayon",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-committee 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-header 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-transmission-id 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-committee 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-header 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-transmission-id 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-transmission"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cad757c1e6379959227b065117eebdf349651a8cc83ded4ff80a1fb848dc8ca8"
+checksum = "ba9b32d89e8733ad2b6d6736803fdf94402e3b9f45b034b04c993abeafb2b6e3"
 dependencies = [
  "bytes",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-data 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-transmission"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "bytes",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-data 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-transmission-id"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a745bcac1725ac4ed7333a8215b4dbb76cb302925b53ea9e60f8e7fa83990ff4"
+checksum = "a0fc5839054aa3af7dc3cc15fb9b9771f90e8f4fbbc930b631abc606f35354bb"
 dependencies = [
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-narwhal-transmission-id"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-puzzle"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dcbedb11ca8814e0403f2cea199e0b92772784b3c54b16c5f7af59af58e2fcf"
+checksum = "10d6f366ed9db212afc8b681d0dc510693a7b742de4051de0bb63a9747994561"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4234,14 +4234,14 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-puzzle"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4253,15 +4253,15 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-puzzle-epoch"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f59451ca3855f805a95ec84ae74bb5fa075af38b8bd35dd4d18c2a8b251f205"
+checksum = "841d9d31d2a037ef7887097a4e7b5d46c774f254b8bd5e5cc70d1a867fd694da"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4272,18 +4272,18 @@ dependencies = [
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rayon",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-process 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-process 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-puzzle-epoch"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4294,54 +4294,54 @@ dependencies = [
  "rand 0.8.6",
  "rand_chacha 0.3.1",
  "rayon",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-process 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-process 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-ledger-query"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6775638c277e95bef3eaa171c1eb90405333df8983d1114f818c515f22514c74"
+checksum = "dec11ea862272a9a61ab0f57c1b625b298db6346a8f289ef0a563410f0153ba8"
 dependencies = [
  "anyhow",
  "async-trait",
  "reqwest 0.13.3",
  "serde",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-store 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-store 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "ureq",
 ]
 
 [[package]]
 name = "snarkvm-ledger-query"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
  "async-trait",
  "reqwest 0.13.3",
  "serde",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-store 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-store 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "ureq",
 ]
 
 [[package]]
 name = "snarkvm-ledger-store"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20e27989a67feb0fb254305debbf63758aecbf1d432c5c8971de3a49d6a401d9"
+checksum = "7991cf47fea3ee98a54706af0aa0f50b1f4019636dd1c893a9fefa82a5189530"
 dependencies = [
  "aleo-std-storage",
  "anyhow",
@@ -4351,22 +4351,22 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-authority 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-committee 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-snark 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-authority 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-committee 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-snark 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing",
 ]
 
 [[package]]
 name = "snarkvm-ledger-store"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std-storage",
  "anyhow",
@@ -4376,23 +4376,23 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-authority 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-committee 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-batch-certificate 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-snark 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-authority 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-committee 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-batch-certificate 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-snark 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "tracing",
 ]
 
 [[package]]
 name = "snarkvm-parameters"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b03f3c06fe690a189eda56a5a2b9f9b19d94fcb68892a8cc1f594f4bb15dad8b"
+checksum = "881df304a85063ae658c4d0937fde8f11647eb25b0dea10447be7284fc522888"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4406,15 +4406,15 @@ dependencies = [
  "reqwest 0.13.3",
  "serde_json",
  "sha2",
- "snarkvm-curves 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-curves 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-parameters"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4428,16 +4428,16 @@ dependencies = [
  "reqwest 0.13.3",
  "serde_json",
  "sha2",
- "snarkvm-curves 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-curves 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "083c5c925abd96df2686bfca6dbcdc47c7c158ff7f6e61fda743b9d83b197226"
+checksum = "64194e74e151d04fb95899f0129ca9fc725c1d88896a6c7a0905b0724cb5db93"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4448,21 +4448,21 @@ dependencies = [
  "rand 0.8.6",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-committee 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-narwhal-data 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-puzzle-epoch 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-query 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-store 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-error 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-process 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-snark 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-committee 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-puzzle-epoch 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-query 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-store 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-error 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-process 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-snark 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -4470,8 +4470,8 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-synthesizer"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4482,21 +4482,21 @@ dependencies = [
  "rand 0.8.6",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-committee 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-narwhal-data 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-puzzle-epoch 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-query 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-store 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-error 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-process 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-snark 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-committee 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-narwhal-data 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-puzzle-epoch 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-query 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-store 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-error 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-process 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-snark 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -4504,32 +4504,32 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-synthesizer-error"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65047f4d443c9daa688c34b5cdb5fa7bba1ce3c355358d720e1af6bb7c9d467f"
+checksum = "009d28655659297a66fa075ad40dcd184cf4072fb216f117702fda83caad4af2"
 dependencies = [
  "anyhow",
- "snarkvm-circuit-environment 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console-network 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit-environment 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console-network 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-error"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "anyhow",
- "snarkvm-circuit-environment 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console-network 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit-environment 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console-network 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-process"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5ee6721205627b4a72666569b5d9e1315cdfea4423f289ad51be80d39719127"
+checksum = "25fe00f71e739c22eabee850fcf962383acab55d23064fcc119c83f306b2f7ac"
 dependencies = [
  "aleo-std",
  "colored",
@@ -4540,22 +4540,22 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-block 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-query 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-ledger-store 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-error 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-program 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-snark 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-block 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-query 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-ledger-store 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-error 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-program 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-snark 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-process"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "colored",
@@ -4566,23 +4566,23 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-block 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-query 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-ledger-store 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-error 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-program 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-snark 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-block 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-query 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-ledger-store 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-error 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-program 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-snark 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-program"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6004dc475f9849b57d84c49cbf43f8ad330ee72b3f2c887d79242041369e1c0"
+checksum = "ac126a7f78dab7e79c887e2fc4559fb578abb3b6417dfbc510f0cfd010dd0eb9"
 dependencies = [
  "enum-iterator",
  "indexmap",
@@ -4591,19 +4591,19 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-error 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-synthesizer-snark 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-error 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-synthesizer-snark 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tiny-keccak",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-program"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "enum-iterator",
  "indexmap",
@@ -4612,47 +4612,47 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rayon",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-error 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-synthesizer-snark 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-error 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-synthesizer-snark 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "tiny-keccak",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-snark"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df31b48efd5418547a9a2d91f964e3681d835a624524f0fa2d99aa663a9905e0"
+checksum = "2576661caf149b0600fceb55344a6ab24b7f245f3e4d0af38ff4fb779fe606e2"
 dependencies = [
  "bincode",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-circuit 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-console 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "snarkvm-utilities 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-algorithms 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-circuit 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-console 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "snarkvm-synthesizer-snark"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "bincode",
  "serde_json",
- "snarkvm-algorithms 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-circuit 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-console 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
- "snarkvm-utilities 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-algorithms 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-circuit 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-console 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
 ]
 
 [[package]]
 name = "snarkvm-utilities"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85357654f5184c619795a9c295ece2551910ad1f0d67d55e553f02b183cc1f39"
+checksum = "66c76771c6fbd71cf866ba756a0eb5ae19f8d2b0846b8630ff44110dc63f2e10"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4666,7 +4666,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smol_str",
- "snarkvm-utilities-derives 4.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snarkvm-utilities-derives 4.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 2.0.18",
  "tracing",
  "zeroize",
@@ -4674,8 +4674,8 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-utilities"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "aleo-std",
  "anyhow",
@@ -4689,7 +4689,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smol_str",
- "snarkvm-utilities-derives 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm-utilities-derives 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "thiserror 2.0.18",
  "tracing",
  "zeroize",
@@ -4697,9 +4697,9 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-utilities-derives"
-version = "4.6.1"
+version = "4.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e1391680d05b348fb66da911f6ff01d07c8c5849a822e0f48061007e6363d26"
+checksum = "0756abcc92e46a88fd02dbde2fd1a4efef1f2ab137f097218e317d75afd037c9"
 dependencies = [
  "proc-macro2",
  "quote 1.0.45",
@@ -4708,8 +4708,8 @@ dependencies = [
 
 [[package]]
 name = "snarkvm-utilities-derives"
-version = "4.6.1"
-source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#d6cbb8c48263c83d727e5c7237daf56834f59087"
+version = "4.6.2"
+source = "git+https://github.com/henrikkv/snarkVM?branch=leo-bindings#97d172632cec1fb1d23295cac54b97b7003f6a88"
 dependencies = [
  "proc-macro2",
  "quote 1.0.45",
@@ -4955,7 +4955,7 @@ dependencies = [
  "credits_bindings",
  "leo-bindings",
  "rand 0.8.6",
- "snarkvm 4.6.1 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
+ "snarkvm 4.6.2 (git+https://github.com/henrikkv/snarkVM?branch=leo-bindings)",
  "token_bindings",
 ]
 
@@ -5281,9 +5281,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf938a0bacb0469e83c1e148908bd7d5a6010354cf4fb73279b7447422e3a89"
+checksum = "df52b6d9b87e0c74c9edfa1eb2d9bf85e5d63515474513aa50fa181b3c4f5db1"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -5294,9 +5294,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.68"
+version = "0.4.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f371d383f2fb139252e0bfac3b81b265689bf45b6874af544ffa4c975ac1ebf8"
+checksum = "af934872acec734c2d80e6617bbb5ff4f12b052dd8e6332b0817bce889516084"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -5304,9 +5304,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eeff24f84126c0ec2db7a449f0c2ec963c6a49efe0698c4242929da037ca28ed"
+checksum = "78b1041f495fb322e64aca85f5756b2172e35cd459376e67f2a6c9dffcedb103"
 dependencies = [
  "quote 1.0.45",
  "wasm-bindgen-macro-support",
@@ -5314,9 +5314,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d08065faf983b2b80a79fd87d8254c409281cf7de75fc4b773019824196c904"
+checksum = "9dcd0ff20416988a18ac686d4d4d0f6aae9ebf08a389ff5d29012b05af2a1b41"
 dependencies = [
  "bumpalo",
  "proc-macro2",
@@ -5327,9 +5327,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd04d9e306f1907bd13c6361b5c6bfc7b3b3c095ed3f8a9246390f8dbdee129"
+checksum = "49757b3c82ebf16c57d69365a142940b384176c24df52a087fb748e2085359ea"
 dependencies = [
  "unicode-ident",
 ]
@@ -5385,9 +5385,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f2dfbb17949fa2088e5d39408c48368947b86f7834484e87b73de55bc14d97d"
+checksum = "2eadbac71025cd7b0834f20d1fe8472e8495821b4e9801eb0a60bd1f19827602"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
