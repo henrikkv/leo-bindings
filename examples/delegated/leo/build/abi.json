@@ -1,5 +1,6 @@
 {
   "program": "delegated_proving_test.aleo",
+  "implements": [],
   "structs": [],
   "records": [],
   "mappings": [],
@@ -8,6 +9,7 @@
     {
       "name": "divide",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",

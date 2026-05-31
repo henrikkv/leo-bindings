@@ -21,7 +21,7 @@ pub fn print_deployment_stats<N: Network>(
     let variables = deployment.num_combined_variables()?;
     let constraints = deployment.num_combined_constraints()?;
     let (base_fee, (storage_cost, synthesis_cost, constructor_cost, namespace_cost)) =
-        deployment_cost(&vm.process().read(), deployment, consensus_version)?;
+        deployment_cost(&vm.process().lock(), deployment, consensus_version)?;
 
     let base_fee_cr = base_fee as f64 / 1_000_000.0;
     let prio_fee_cr = priority_fee.unwrap_or(0) as f64 / 1_000_000.0;
@@ -142,7 +142,7 @@ pub fn print_execution_stats<N: Network>(
 
     // ── Gather cost components ────────────────────────────────────────────
     let (base_fee, (storage_cost, execution_cost)) =
-        execution_cost(&vm.process().read(), execution, consensus_version)?;
+        execution_cost(&vm.process().lock(), execution, consensus_version)?;
 
     let base_cr = base_fee as f64 / 1_000_000.0;
     let prio_cr = priority_fee.unwrap_or(0) as f64 / 1_000_000.0;

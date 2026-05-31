@@ -23,7 +23,7 @@ fn token_sim() {
 }
 
 fn run_token_tests<V: VMManager<TestnetV0> + Clone>(vm: V, alice: &Account<TestnetV0>) {
-    let rng = &mut rand::thread_rng();
+    let rng = &mut rand::rng();
     let bob = Account::new(rng).unwrap();
 
     let credits = CreditsAleo::new(alice, vm.clone()).unwrap();

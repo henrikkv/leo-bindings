@@ -1,5 +1,6 @@
 {
   "program": "dev.aleo",
+  "implements": [],
   "structs": [
     {
       "path": [
@@ -165,6 +166,7 @@
     {
       "name": "main",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",
@@ -205,6 +207,7 @@
     {
       "name": "nested",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "b",
@@ -240,6 +243,7 @@
     {
       "name": "store_nested",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "b",
@@ -277,6 +281,7 @@
     {
       "name": "nested_array",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",
@@ -326,6 +331,7 @@
     {
       "name": "create_user",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "owner",
@@ -376,6 +382,7 @@
     {
       "name": "consume_user",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "user",
@@ -406,6 +413,7 @@
     {
       "name": "create_container",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "owner",
@@ -448,6 +456,7 @@
     {
       "name": "consume_container",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "container",
@@ -481,6 +490,7 @@
     {
       "name": "asynchronous",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "balance",
@@ -526,6 +536,7 @@
     {
       "name": "test_all_types",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "f",
@@ -602,6 +613,7 @@
     {
       "name": "store_block_info",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "id",

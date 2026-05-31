@@ -1,5 +1,6 @@
 {
   "program": "dyn_example.aleo",
+  "implements": [],
   "structs": [],
   "records": [],
   "mappings": [
@@ -22,6 +23,7 @@
     {
       "name": "main",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",
@@ -62,6 +64,7 @@
     {
       "name": "static_import_two_combines",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",
@@ -112,6 +115,7 @@
     {
       "name": "dynamic_combine_id_routing",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "add_prog",
@@ -180,6 +184,7 @@
     {
       "name": "dynamic_combine_with_network",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "prog",
@@ -238,6 +243,7 @@
     {
       "name": "dynamic_combine_field_target",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "program_name_as_field",
@@ -287,6 +293,7 @@
     {
       "name": "aleo_generator",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [],
       "outputs": [
         {
@@ -302,6 +309,7 @@
     {
       "name": "dyn_record_mint_then_double",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "amount",
@@ -350,6 +358,7 @@
     {
       "name": "final_compose_import_and_local",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "target",

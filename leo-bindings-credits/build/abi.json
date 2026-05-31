@@ -1,5 +1,6 @@
 {
   "program": "credits.aleo",
+  "implements": [],
   "structs": [
     {
       "path": [
@@ -194,6 +195,7 @@
     {
       "name": "bond_validator",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -237,6 +239,7 @@
     {
       "name": "bond_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -278,6 +281,7 @@
     {
       "name": "unbond_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -310,6 +314,7 @@
     {
       "name": "claim_unbond_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -331,6 +336,7 @@
     {
       "name": "set_validator_state",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -352,6 +358,7 @@
     {
       "name": "transfer_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -384,6 +391,7 @@
     {
       "name": "transfer_public_as_signer",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -416,6 +424,7 @@
     {
       "name": "transfer_private",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -478,6 +487,7 @@
     {
       "name": "transfer_private_to_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -533,6 +543,7 @@
     {
       "name": "transfer_public_to_private",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -576,6 +587,7 @@
     {
       "name": "join",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -619,6 +631,7 @@
     {
       "name": "split",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -672,6 +685,7 @@
     {
       "name": "fee_private",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -734,6 +748,7 @@
     {
       "name": "fee_public",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",
@@ -777,6 +792,7 @@
     {
       "name": "upgrade",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "arg1",

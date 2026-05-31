@@ -1,5 +1,13 @@
 {
   "program": "dyn_token_plugin.aleo",
+  "implements": [
+    {
+      "program": null,
+      "path": [
+        "TokenOps"
+      ]
+    }
+  ],
   "structs": [],
   "records": [
     {
@@ -32,6 +40,7 @@
     {
       "name": "double_balance",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "t",
@@ -63,6 +72,7 @@
     {
       "name": "mint",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "balance",

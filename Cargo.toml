@@ -41,8 +41,8 @@ aleo-std = { version = "1.0.1", features = ["storage"] }
 convert_case = "0.6"
 http = "1.0"
 ureq = { version = "3", features = ["json"] }
-rand = "0.8"
-rand_chacha = "0.3.1"
+rand = "0.10"
+rand_chacha = "0.10"
 clap = { version = "4.4", features = ["derive"] }
 colored = "3.0.0"
 num-format = "0.4.4"

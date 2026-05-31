@@ -1,5 +1,13 @@
 {
   "program": "dyn_token_plugin.aleo",
+  "implements": [
+    {
+      "program": null,
+      "path": [
+        "TokenOps"
+      ]
+    }
+  ],
   "structs": [],
   "records": [
     {
@@ -30,20 +38,20 @@
   "storage_variables": [],
   "functions": [
     {
-      "name": "double_balance",
+      "name": "mint",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
-          "name": "t",
+          "name": "balance",
           "ty": {
-            "Record": {
-              "path": [
-                "Token"
-              ],
-              "program": "dyn_token_plugin.aleo"
+            "Plaintext": {
+              "Primitive": {
+                "UInt": "U64"
+              }
             }
           },
-          "mode": "None"
+          "mode": "Public"
         }
       ],
       "outputs": [
@@ -61,19 +69,21 @@
       ]
     },
     {
-      "name": "mint",
+      "name": "double_balance",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
-          "name": "balance",
+          "name": "t",
           "ty": {
-            "Plaintext": {
-              "Primitive": {
-                "UInt": "U64"
-              }
+            "Record": {
+              "path": [
+                "Token"
+              ],
+              "program": "dyn_token_plugin.aleo"
             }
           },
-          "mode": "Public"
+          "mode": "None"
         }
       ],
       "outputs": [

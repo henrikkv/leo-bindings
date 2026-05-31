@@ -11,7 +11,7 @@ use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
 use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
 
-pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V14;
+pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V15;
 
 pub trait VMManager<N: Network>: Send + Sync + Clone {
     fn program_exists(&self, program_id: &ProgramID<N>) -> Result<bool>;
@@ -81,13 +81,13 @@ impl<N: Network> NetworkVm<N> {
         let edition = crate::block_on(self.client.program_edition::<N>(&program_id))?;
         self.vm
             .process()
-            .write()
+            .lock()
             .add_program_with_edition(program, edition)
             .map_err(|e| Error::VmError(format!("Failed to add program '{}': {}", program.id(), e)))
     }
 
     pub fn contains_program(&self, program_id: &ProgramID<N>) -> bool {
-        self.vm.process().read().contains_program(program_id)
+        self.vm.process().contains_program(program_id)
     }
 
     pub fn deploy(
@@ -98,7 +98,7 @@ impl<N: Network> NetworkVm<N> {
         fee_record: Option<Record<N, Plaintext<N>>>,
     ) -> Result<Transaction<N>> {
         let query = Self::create_query(&self.client.endpoint)?;
-        let rng = &mut rand::thread_rng();
+        let rng = &mut rand::rng();
         self.vm
             .deploy(
                 private_key,
@@ -121,7 +121,7 @@ impl<N: Network> NetworkVm<N> {
         priority_fee: u64,
     ) -> Result<(Transaction<N>, Vec<Value<N>>)> {
         let query = Self::create_query(&self.client.endpoint)?;
-        let rng = &mut rand::thread_rng();
+        let rng = &mut rand::rng();
         let (transaction, response) = self
             .vm
             .execute_with_response(
@@ -145,7 +145,7 @@ impl<N: Network> NetworkVm<N> {
         function_name: &Identifier<N>,
         inputs: Vec<Value<N>>,
     ) -> Result<Authorization<N>> {
-        let rng = &mut rand::thread_rng();
+        let rng = &mut rand::rng();
         self.vm
             .authorize(private_key, *program_id, *function_name, inputs.iter(), rng)
             .map_err(|e| Error::VmError(format!("Failed to create authorization: {e}")))
@@ -231,7 +231,7 @@ impl<N: Network> NetworkVm<N> {
             .execution()
             .ok_or_else(|| Error::VmError("Transaction has no execution".to_string()))?;
 
-        execution_cost(&self.vm.process().read(), execution, CONSENSUS_VERSION)
+        execution_cost(&self.vm.process().lock(), execution, CONSENSUS_VERSION)
             .map_err(|e| Error::VmError(format!("Failed to calculate execution cost: {}", e)))
     }
 
@@ -486,7 +486,7 @@ impl LocalVM {
     }
 
     fn contains_program(&self, program_id: &ProgramID<TestnetV0>) -> bool {
-        self.vm.process().read().contains_program(program_id)
+        self.vm.process().contains_program(program_id)
     }
 
     fn ensure_program_loaded(
@@ -529,7 +529,7 @@ impl LocalVM {
 
         log::info!("📦 Deploy: creating proofless deployment tx for '{program_id}'");
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let transaction = self
             .vm
             .deploy_local_proofless(deployer.private_key(), program, None, 0, None, &mut rng)
@@ -554,7 +554,7 @@ impl LocalVM {
 
         self.ensure_program_loaded(program_id, dependencies)?;
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let (transaction, response) = self
             .vm

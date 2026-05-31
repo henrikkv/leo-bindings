@@ -1,5 +1,19 @@
 {
   "program": "dyn_plugin_add.aleo",
+  "implements": [
+    {
+      "program": null,
+      "path": [
+        "MathOps"
+      ]
+    },
+    {
+      "program": null,
+      "path": [
+        "Counter"
+      ]
+    }
+  ],
   "structs": [],
   "records": [],
   "mappings": [
@@ -20,6 +34,7 @@
     {
       "name": "combine",
       "is_final": false,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "a",
@@ -60,6 +75,7 @@
     {
       "name": "increment",
       "is_final": true,
+      "const_parameters": [],
       "inputs": [
         {
           "name": "delta",

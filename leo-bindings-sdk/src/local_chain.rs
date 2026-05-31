@@ -95,8 +95,8 @@ pub fn build_local_chain_blocks() -> Result<Vec<Block<TestnetV0>>> {
     let mut blocks = vec![genesis.clone()];
     vm.add_next_block(&genesis)
         .map_err(|e| Error::Internal(format!("add_next_block genesis: {e}")))?;
-    let n = TestnetV0::CONSENSUS_HEIGHT(ConsensusVersion::V14)
-        .map_err(|e| Error::Internal(format!("CONSENSUS_HEIGHT(V14): {e}")))?;
+    let n = TestnetV0::CONSENSUS_HEIGHT(ConsensusVersion::V15)
+        .map_err(|e| Error::Internal(format!("CONSENSUS_HEIGHT(V15): {e}")))?;
     for _ in 0..n {
         let b = next_empty_block(&vm, &beacon_key, &mut rng)?;
         blocks.push(b.clone());
