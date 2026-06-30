@@ -1,19 +1,5 @@
 {
   "program": "dyn_plugin_add.aleo",
-  "implements": [
-    {
-      "program": null,
-      "path": [
-        "MathOps"
-      ]
-    },
-    {
-      "program": null,
-      "path": [
-        "Counter"
-      ]
-    }
-  ],
   "structs": [],
   "records": [],
   "mappings": [
@@ -33,77 +19,67 @@
   "functions": [
     {
       "name": "combine",
-      "is_final": false,
-      "const_parameters": [],
       "inputs": [
         {
-          "name": "a",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U32"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         },
         {
-          "name": "b",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U32"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         }
       ],
       "outputs": [
         {
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U32"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         }
       ]
     },
     {
       "name": "increment",
-      "is_final": true,
-      "const_parameters": [],
       "inputs": [
         {
-          "name": "delta",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U32"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         }
       ],
       "outputs": [
         {
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U32"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         },
-        {
-          "ty": "Final",
-          "mode": "None"
-        }
+        "Final"
       ]
     }
   ]

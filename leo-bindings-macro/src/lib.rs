@@ -23,7 +23,11 @@ fn generate_bindings_inner(
             format!("CARGO_MANIFEST_DIR is not set: {e}"),
         )
     })?;
-    let build_dir = PathBuf::from(&manifest_dir).join("build");
+    let crate_name = std::env::var("CARGO_CRATE_NAME").unwrap();
+    let program_name = crate_name
+        .strip_suffix("_bindings")
+        .ok_or_else(|| Error::new(Span::call_site(), format!("crate name '{crate_name}' does not end with '_bindings'")))?;
+    let build_dir = PathBuf::from(&manifest_dir).join("build").join(program_name);
     let abi_path = build_dir.join("abi.json");
     let json = std::fs::read_to_string(&abi_path).map_err(|e| {
         Error::new(
@@ -32,7 +36,6 @@ fn generate_bindings_inner(
         )
     })?;
     let abi: Program = serde_json::from_str(&json).map_err(|e| Error::new(Span::call_site(), e))?;
-    let crate_name = std::env::var("CARGO_CRATE_NAME").unwrap();
     let program_id = abi.program.trim_end_matches(".aleo");
     let expected_crate_name = format!("{}_bindings", program_id);
     if crate_name != expected_crate_name {
@@ -47,23 +50,19 @@ fn generate_bindings_inner(
     };
 
     let mut import_names: Vec<String> = Vec::new();
-    let imports_dir = build_dir.join("imports");
-    if imports_dir.is_dir() {
-        for f in std::fs::read_dir(&imports_dir).map_err(|e| {
-            Error::new(
-                Span::call_site(),
-                format!("failed to read {}: {e}", imports_dir.display()),
-            )
+    let build_root = PathBuf::from(&manifest_dir).join("build");
+    if build_root.is_dir() {
+        for entry in std::fs::read_dir(&build_root).map_err(|e| {
+            Error::new(Span::call_site(), format!("failed to read {}: {e}", build_root.display()))
         })? {
-            let f = f.map_err(|e| Error::new(Span::call_site(), e))?;
-            let filename_os = f.file_name();
-            let filename = filename_os.to_str().unwrap();
-            if filename.ends_with(".abi.json") {
-                let import_name = filename.trim_end_matches(".aleo.abi.json");
-                if import_name == program_id || import_name.starts_with("test_") {
-                    continue;
-                }
-                import_names.push(import_name.to_string());
+            let entry = entry.map_err(|e| Error::new(Span::call_site(), e))?;
+            let name = entry.file_name();
+            let name = name.to_str().unwrap();
+            if name == program_id || !entry.path().is_dir() {
+                continue;
+            }
+            if entry.path().join("abi.json").exists() {
+                import_names.push(name.to_string());
             }
         }
     }

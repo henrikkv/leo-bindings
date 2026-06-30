@@ -1,8 +1,8 @@
-interface MathOps {
+export interface MathOps {
     fn combine(a: u32, b: u32) -> u32;
 }
 
-interface Counter {
+export interface Counter {
     fn increment(delta: u32) -> (u32, Final);
 }
 

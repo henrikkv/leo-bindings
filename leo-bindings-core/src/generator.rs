@@ -142,7 +142,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                 let entry_creation = match member.mode {
                     Mode::Public => quote! { Entry::Public(plaintext_value) },
                     Mode::Constant => quote! { Entry::Constant(plaintext_value) },
-                    Mode::Private | Mode::None => quote! { Entry::Private(plaintext_value) },
+                    Mode::Private => quote! { Entry::Private(plaintext_value) },
                 };
 
                 quote! {
@@ -195,7 +195,7 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
             let record_owner = match record.fields.iter().find(|f| f.name == "owner") {
                 Some(f) => match f.mode {
                     Mode::Public => quote! { Owner::Public(self.owner.into()) },
-                    Mode::Private | Mode::None | Mode::Constant => quote! {
+                    Mode::Private | Mode::Constant => quote! {
                         Owner::Private(Plaintext::from(Literal::Address(self.owner.into())))
                     },
                 },
@@ -416,9 +416,9 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
     functions.iter().map(|function| {
         let name = Ident::new(&function.name, Span::call_site());
 
-        let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().map(|input| {
-            let param_name = Ident::new(&input.name, Span::call_site());
-            let param_type = input.ty.to_rust_type();
+        let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().enumerate().map(|(i, input)| {
+            let param_name = Ident::new(&format!("arg{}", i+1), Span::call_site());
+            let param_type = input.to_rust_type();
             let param = quote! { #param_name: #param_type };
             let conversion = quote! { (#param_name).to_value() };
             (param, conversion)
@@ -432,7 +432,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
                 quote! { Ok(()) }
             ),
             1 => {
-                let output_type = function.outputs[0].ty.to_rust_type();
+                let output_type = function.outputs[0].to_rust_type();
                 let conversion = quote! {
                     match function_outputs.get(0) {
                         Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -448,7 +448,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
                 let (output_types, output_conversions): (Vec<_>, Vec<_>) = function.outputs.iter()
                     .enumerate()
                     .map(|(i, output)| {
-                        let output_type = output.ty.to_rust_type();
+                        let output_type = output.to_rust_type();
                         let conversion = quote! {
                             match function_outputs.get(#i) {
                                 Some(snarkvm_value) => <#output_type>::from_value(snarkvm_value.clone()),
@@ -504,7 +504,8 @@ fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]
                 let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
                 let bytecode = {
                     let src_main = crate_dir.join("src/main.aleo");
-                    let build_main = crate_dir.join("build/main.aleo");
+                    let program_name = Self::PROGRAM_ID.trim_end_matches(".aleo");
+                    let build_main = crate_dir.join(format!("build/{program_name}/{program_name}.aleo"));
                     let path = if src_main.exists() {
                         src_main
                     } else if build_main.exists() {

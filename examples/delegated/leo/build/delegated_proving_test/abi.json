@@ -1,6 +1,5 @@
 {
   "program": "delegated_proving_test.aleo",
-  "implements": [],
   "structs": [],
   "records": [],
   "mappings": [],
@@ -8,64 +7,58 @@
   "functions": [
     {
       "name": "divide",
-      "is_final": false,
-      "const_parameters": [],
       "inputs": [
         {
-          "name": "a",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U64"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         },
         {
-          "name": "b",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U64"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         },
         {
-          "name": "c",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U64"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         },
         {
-          "name": "d",
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U64"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         }
       ],
       "outputs": [
         {
-          "ty": {
-            "Plaintext": {
+          "Plaintext": {
+            "ty": {
               "Primitive": {
                 "UInt": "U64"
               }
-            }
-          },
-          "mode": "None"
+            },
+            "mode": "Private"
+          }
         }
       ]
     }

@@ -31,7 +31,7 @@ impl ToRustType for abi::Plaintext {
 impl ToRustType for abi::FunctionInput {
     fn to_rust_type(&self) -> TokenStream {
         match self {
-            abi::FunctionInput::Plaintext(p) => rust_type_plaintext(p),
+            abi::FunctionInput::Plaintext { ty, .. } => rust_type_plaintext(ty),
             abi::FunctionInput::Record(rec) => record_rust_type(&rec.path),
             abi::FunctionInput::DynamicRecord => quote! { DynamicRecord<N> },
         }
@@ -41,7 +41,7 @@ impl ToRustType for abi::FunctionInput {
 impl ToRustType for abi::FunctionOutput {
     fn to_rust_type(&self) -> TokenStream {
         match self {
-            abi::FunctionOutput::Plaintext(p) => rust_type_plaintext(p),
+            abi::FunctionOutput::Plaintext { ty, .. } => rust_type_plaintext(ty),
             abi::FunctionOutput::Record(rec) => record_rust_type(&rec.path),
             abi::FunctionOutput::Final => quote! { Future<N> },
             abi::FunctionOutput::DynamicRecord => quote! { DynamicRecord<N> },

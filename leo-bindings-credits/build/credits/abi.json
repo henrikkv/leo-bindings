@@ -1,0 +1,683 @@
+{
+  "program": "credits.aleo",
+  "structs": [
+    {
+      "path": [
+        "committee_state"
+      ],
+      "fields": [
+        {
+          "name": "is_open",
+          "ty": {
+            "Primitive": "Boolean"
+          }
+        },
+        {
+          "name": "commission",
+          "ty": {
+            "Primitive": {
+              "UInt": "U8"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": [
+        "bond_state"
+      ],
+      "fields": [
+        {
+          "name": "validator",
+          "ty": {
+            "Primitive": "Address"
+          }
+        },
+        {
+          "name": "microcredits",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": [
+        "unbond_state"
+      ],
+      "fields": [
+        {
+          "name": "microcredits",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          }
+        },
+        {
+          "name": "height",
+          "ty": {
+            "Primitive": {
+              "UInt": "U32"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "path": [
+        "credits"
+      ],
+      "fields": [
+        {
+          "name": "owner",
+          "ty": {
+            "Primitive": "Address"
+          },
+          "mode": "Public"
+        },
+        {
+          "name": "microcredits",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          },
+          "mode": "Private"
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "name": "committee",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Struct": {
+          "path": [
+            "committee_state"
+          ],
+          "program": "credits.aleo"
+        }
+      }
+    },
+    {
+      "name": "delegated",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      }
+    },
+    {
+      "name": "metadata",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U32"
+        }
+      }
+    },
+    {
+      "name": "bonded",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Struct": {
+          "path": [
+            "bond_state"
+          ],
+          "program": "credits.aleo"
+        }
+      }
+    },
+    {
+      "name": "unbonding",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Struct": {
+          "path": [
+            "unbond_state"
+          ],
+          "program": "credits.aleo"
+        }
+      }
+    },
+    {
+      "name": "account",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      }
+    },
+    {
+      "name": "withdraw",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": "Address"
+      }
+    },
+    {
+      "name": "pool",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U64"
+        }
+      }
+    }
+  ],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "bond_validator",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U8"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "bond_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "unbond_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "claim_unbond_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "set_validator_state",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Boolean"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_public_as_signer",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_private",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Private"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transfer_private_to_public",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_public_to_private",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        "Final"
+      ]
+    },
+    {
+      "name": "join",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "split",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Private"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fee_private",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Field"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fee_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Field"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "upgrade",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "credits"
+            ],
+            "program": "credits.aleo"
+          }
+        },
+        "Final"
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-interface TokenOps {
+export interface TokenOps {
     record Token;
     fn double_balance(t: Token) -> Token;
 }

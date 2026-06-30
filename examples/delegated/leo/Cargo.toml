@@ -11,4 +11,5 @@ path = "lib.rs"
 leo-bindings.workspace = true
 
 # BEGIN IMPORTS
+# credits_bindings = { git = "https://github.com/henrikkv/leo-bindings" }
 # END IMPORTS

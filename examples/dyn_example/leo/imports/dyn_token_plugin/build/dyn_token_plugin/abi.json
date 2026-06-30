@@ -1,0 +1,81 @@
+{
+  "program": "dyn_token_plugin.aleo",
+  "structs": [],
+  "records": [
+    {
+      "path": [
+        "Token"
+      ],
+      "fields": [
+        {
+          "name": "owner",
+          "ty": {
+            "Primitive": "Address"
+          },
+          "mode": "Private"
+        },
+        {
+          "name": "balance",
+          "ty": {
+            "Primitive": {
+              "UInt": "U64"
+            }
+          },
+          "mode": "Private"
+        }
+      ]
+    }
+  ],
+  "mappings": [],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "double_balance",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "dyn_token_plugin.aleo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "dyn_token_plugin.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mint",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U64"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "dyn_token_plugin.aleo"
+          }
+        }
+      ]
+    }
+  ]
+}

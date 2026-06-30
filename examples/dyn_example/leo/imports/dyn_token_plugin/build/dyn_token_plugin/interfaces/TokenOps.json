@@ -1,0 +1,44 @@
+{
+  "name": "TokenOps",
+  "program": "dyn_token_plugin.aleo",
+  "path": [
+    "TokenOps"
+  ],
+  "parents": [],
+  "functions": [
+    {
+      "name": "double_balance",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "dyn_token_plugin.aleo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "dyn_token_plugin.aleo"
+          }
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "path": [
+        "Token"
+      ],
+      "fields": []
+    }
+  ],
+  "mappings": [],
+  "storage_variables": [],
+  "structs": []
+}

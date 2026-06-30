@@ -212,10 +212,7 @@ registry/
 Cargo.lock
 
 build/*
-!build/
-!build/main.aleo
-!build/abi.json
-!build/imports/
+!build/*/
 build/imports/*
 !build/imports/*.abi.json
 
@@ -223,29 +220,29 @@ outputs/
 ";
         fs::write(program_dir.join(".gitignore"), gitignore_content)?;
 
-        let mut build_rs = String::from(
-            r#"fn main() {
+        let mut build_rs = format!(
+            r#"fn main() {{
     use std::path::Path;
 
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let manifest_path = Path::new(&manifest_dir);
     let src_main_leo = manifest_path.join("src/main.leo");
     let src_main_aleo = manifest_path.join("src/main.aleo");
-    let build_main_aleo = manifest_path.join("build/main.aleo");
-    let build_abi = manifest_path.join("build/abi.json");
+    let build_aleo = manifest_path.join("build/{program_name}/{program_name}.aleo");
+    let build_abi = manifest_path.join("build/{program_name}/abi.json");
 
-    if src_main_leo.exists() && src_main_aleo.exists() {
+    if src_main_leo.exists() && src_main_aleo.exists() {{
         panic!("Cannot have both src/main.leo and src/main.aleo; remove one.");
-    }
+    }}
 
-    println!("cargo:rerun-if-changed=build/abi.json");
-    if src_main_leo.exists() {
+    println!("cargo:rerun-if-changed=build/{program_name}/abi.json");
+    if src_main_leo.exists() {{
         println!("cargo:rerun-if-changed=src/main.leo");
-    } else if src_main_aleo.exists() {
+    }} else if src_main_aleo.exists() {{
         println!("cargo:rerun-if-changed=src/main.aleo");
-    }
+    }}
 
-"#,
+"#
         );
 
         for dep in deps {
@@ -263,12 +260,12 @@ outputs/
                         relative_path.to_string_lossy()
                     );
                 } else {
+                    let dependency_name = dep.name.strip_suffix(".aleo").unwrap_or(&dep.name);
                     let _ = write!(
                         build_rs,
                         r#"
-    println!("cargo:rerun-if-changed={}/build/abi.json");
-"#,
-                        relative_path.to_string_lossy()
+    println!("cargo:rerun-if-changed=build/{dependency_name}/abi.json");
+"#
                     );
                 }
             }
@@ -277,11 +274,11 @@ outputs/
         build_rs.push_str(
             r#"
     let needs_refresh = if src_main_leo.exists() {
-        !build_main_aleo.exists()
+        !build_aleo.exists()
             || !build_abi.exists()
             || match (
                 src_main_leo.metadata().ok().and_then(|m| m.modified().ok()),
-                build_main_aleo.metadata().ok().and_then(|m| m.modified().ok()),
+                build_aleo.metadata().ok().and_then(|m| m.modified().ok()),
             ) {
                 (Some(s), Some(d)) => s > d,
                 _ => false,
@@ -300,7 +297,6 @@ outputs/
     };
 
     if needs_refresh {
-        std::fs::create_dir_all(manifest_path.join("build")).expect("create build directory");
         if src_main_leo.exists() {
             println!("cargo:warning=Running leo build");
             let status = std::process::Command::new("leo")
@@ -313,17 +309,22 @@ outputs/
             }
         } else {
             println!("cargo:warning=Running leo abi");
+            let abi_dir = build_abi.parent().unwrap();
+            std::fs::create_dir_all(abi_dir).expect("create build directory");
             let status = std::process::Command::new("leo")
                 .arg("abi")
                 .arg(&src_main_aleo)
                 .arg("-o")
-                .arg(&build_abi)
+                .arg(abi_dir)
                 .current_dir(manifest_path)
                 .status()
                 .expect("Failed to run leo abi");
             if !status.success() {
                 panic!("leo abi failed");
             }
+            let program_name = abi_dir.file_name().unwrap().to_str().unwrap();
+            std::fs::rename(abi_dir.join(format!("{program_name}.aleo.abi.json")), &build_abi)
+                .expect("rename abi.json");
         }
     } else {
         println!("cargo:warning=ABI up to date, skipping");

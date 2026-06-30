@@ -1,3 +1,12 @@
+
+struct A {
+    number: u64,
+}
+struct B {
+    number: u32,
+    a: A,
+}
+
 program dev.aleo {
     @noupgrade
     constructor() {}
@@ -12,13 +21,6 @@ program dev.aleo {
     fn main(public a: u32, public b: u32) -> public u32 {
         let c: u32 = a + b;
         return c;
-    }
-    struct A {
-        number: u64,
-    }
-    struct B {
-        number: u32,
-        a: A,
     }
     fn nested(public b: B) -> public B {
         let resulta: A = A {
