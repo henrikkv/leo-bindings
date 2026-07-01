@@ -10,6 +10,7 @@ use snarkvm::ledger::store::ConsensusStore;
 use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
 use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
+use snarkvm::synthesizer::program::FinalizeStoreTrait;
 
 pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V15;
 
@@ -57,10 +58,10 @@ impl<N: Network> std::fmt::Debug for NetworkVm<N> {
 impl<N: Network> NetworkVm<N> {
     pub fn new(client: &Client) -> Result<Self> {
         let store = ConsensusStore::<N, ConsensusMemory<N>>::open(StorageMode::Production)
-            .map_err(|e| Error::Internal(format!("Failed to create consensus store: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to create consensus store: {}", e)))?;
 
         let vm =
-            VM::from(store).map_err(|e| Error::Internal(format!("Failed to create VM: {}", e)))?;
+            VM::from(store).map_err(|e| Error::Other(format!("Failed to create VM: {}", e)))?;
 
         Ok(Self {
             vm,
@@ -83,7 +84,7 @@ impl<N: Network> NetworkVm<N> {
             .process()
             .lock()
             .add_program_with_edition(program, edition)
-            .map_err(|e| Error::VmError(format!("Failed to add program '{}': {}", program.id(), e)))
+            .map_err(|e| Error::Other(format!("Failed to add program '{}': {}", program.id(), e)))
     }
 
     pub fn contains_program(&self, program_id: &ProgramID<N>) -> bool {
@@ -108,7 +109,7 @@ impl<N: Network> NetworkVm<N> {
                 Some(&query),
                 rng,
             )
-            .map_err(|e| Error::VmError(format!("Failed to create deployment transaction: {e}")))
+            .map_err(|e| Error::Other(format!("Failed to create deployment transaction: {e}")))
     }
 
     pub fn execute(
@@ -133,7 +134,7 @@ impl<N: Network> NetworkVm<N> {
                 Some(&query),
                 rng,
             )
-            .map_err(|e| Error::VmError(format!("Failed to create execution transaction: {e}")))?;
+            .map_err(|e| Error::Other(format!("Failed to create execution transaction: {e}")))?;
         let outputs = response.outputs().to_vec();
         Ok((transaction, outputs))
     }
@@ -148,7 +149,7 @@ impl<N: Network> NetworkVm<N> {
         let rng = &mut rand::rng();
         self.vm
             .authorize(private_key, *program_id, *function_name, inputs.iter(), rng)
-            .map_err(|e| Error::VmError(format!("Failed to create authorization: {e}")))
+            .map_err(|e| Error::Other(format!("Failed to create authorization: {e}")))
     }
 
     pub fn extract_outputs(
@@ -158,14 +159,14 @@ impl<N: Network> NetworkVm<N> {
     ) -> Result<Vec<Value<N>>> {
         let request = authorization
             .peek_next()
-            .map_err(|e| Error::VmError(format!("Failed to peek authorization: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to peek authorization: {}", e)))?;
 
         let function_id = snarkvm::console::program::compute_function_id(
             request.network_id(),
             request.program_id(),
             request.function_name(),
         )
-        .map_err(|e| Error::VmError(format!("Failed to compute function ID: {}", e)))?;
+        .map_err(|e| Error::Other(format!("Failed to compute function ID: {}", e)))?;
 
         let num_inputs = request.inputs().len();
 
@@ -173,7 +174,7 @@ impl<N: Network> NetworkVm<N> {
         let main_transition = transitions
             .values()
             .last()
-            .ok_or_else(|| Error::VmError("Authorization contains no transitions".to_string()))?;
+            .ok_or_else(|| Error::Other("Authorization contains no transitions".to_string()))?;
 
         main_transition
             .outputs()
@@ -200,27 +201,27 @@ impl<N: Network> NetworkVm<N> {
             Output::Private(_, Some(ciphertext)) => {
                 let index = Field::from_u16(
                     u16::try_from(num_inputs + output_index)
-                        .map_err(|e| Error::Internal(format!("Index overflow: {}", e)))?,
+                        .map_err(|e| Error::Other(format!("Index overflow: {}", e)))?,
                 );
                 let output_view_key = N::hash_psd4(&[function_id, *tvk, index]).map_err(|e| {
-                    Error::VmError(format!("Failed to compute output view key: {}", e))
+                    Error::Other(format!("Failed to compute output view key: {}", e))
                 })?;
                 let plaintext = ciphertext.decrypt_symmetric(output_view_key).map_err(|e| {
-                    Error::VmError(format!("Failed to decrypt private output: {}", e))
+                    Error::Other(format!("Failed to decrypt private output: {}", e))
                 })?;
                 Ok(Value::Plaintext(plaintext))
             }
             Output::Record(_, _, Some(record_ciphertext), _) => {
                 let record_plaintext = record_ciphertext
                     .decrypt(view_key)
-                    .map_err(|e| Error::VmError(format!("Failed to decrypt record: {}", e)))?;
+                    .map_err(|e| Error::Other(format!("Failed to decrypt record: {}", e)))?;
                 Ok(Value::Record(record_plaintext))
             }
             Output::Future(_, Some(future)) => Ok(Value::Future(future.clone())),
-            Output::ExternalRecord(_) => Err(Error::VmError(
+            Output::ExternalRecord(_) => Err(Error::Other(
                 "External record outputs are not supported".to_string(),
             )),
-            _ => Err(Error::VmError(
+            _ => Err(Error::Other(
                 "Output value is missing from transition".to_string(),
             )),
         }
@@ -229,10 +230,10 @@ impl<N: Network> NetworkVm<N> {
     pub fn calculate_cost(&self, transaction: &Transaction<N>) -> Result<(u64, (u64, u64))> {
         let execution = transaction
             .execution()
-            .ok_or_else(|| Error::VmError("Transaction has no execution".to_string()))?;
+            .ok_or_else(|| Error::Other("Transaction has no execution".to_string()))?;
 
         execution_cost(&self.vm.process().lock(), execution, CONSENSUS_VERSION)
-            .map_err(|e| Error::VmError(format!("Failed to calculate execution cost: {}", e)))
+            .map_err(|e| Error::Other(format!("Failed to calculate execution cost: {}", e)))
     }
 
     fn load_missing_dependencies(&self, dependencies: &[ProgramID<N>]) -> Result<()> {
@@ -244,10 +245,10 @@ impl<N: Network> NetworkVm<N> {
             crate::block_on(self.client.wait_for_program::<N>(&dep_id_str))?;
             let bytecode = crate::block_on(self.client.program::<N>(&dep_id_str))?;
             let dep_program: Program<N> = bytecode.parse().map_err(|e| {
-                Error::Internal(format!("Failed to parse dependency '{}': {}", dep_id, e))
+                Error::Other(format!("Failed to parse dependency '{}': {}", dep_id, e))
             })?;
             self.add_program(&dep_program).map_err(|e| {
-                Error::Internal(format!("Failed to add dependency '{}': {}", dep_id, e))
+                Error::Other(format!("Failed to add dependency '{}': {}", dep_id, e))
             })?;
         }
         Ok(())
@@ -268,10 +269,10 @@ impl<N: Network> NetworkVm<N> {
         crate::block_on(self.client.wait_for_program::<N>(&program_id_str))?;
         let bytecode = crate::block_on(self.client.program::<N>(&program_id_str))?;
         let program: Program<N> = bytecode.parse().map_err(|e| {
-            Error::Internal(format!("Failed to parse program '{}': {}", program_id, e))
+            Error::Other(format!("Failed to parse program '{}': {}", program_id, e))
         })?;
         self.add_program(&program).map_err(|e| {
-            Error::Internal(format!("Failed to add program '{}': {}", program_id, e))
+            Error::Other(format!("Failed to add program '{}': {}", program_id, e))
         })?;
 
         Ok(())
@@ -290,7 +291,7 @@ impl<N: Network> NetworkVm<N> {
         self.ensure_program_loaded(program_id, dependencies)?;
 
         let balance = crate::block_on(self.client.public_balance::<N>(&account.address()))
-            .map_err(|e| Error::Internal(format!("Failed to get balance: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to get balance: {}", e)))?;
 
         let (transaction, function_outputs) = if self.client.has_credentials() {
             let auth = self.authorize(
@@ -301,9 +302,9 @@ impl<N: Network> NetworkVm<N> {
             )?;
             let outputs = self
                 .extract_outputs(&auth, account.view_key())
-                .map_err(|e| Error::Internal(format!("Failed to extract outputs: {}", e)))?;
+                .map_err(|e| Error::Other(format!("Failed to extract outputs: {}", e)))?;
             let tx = crate::block_on(self.client.prove(&auth))
-                .map_err(|e| Error::Internal(format!("Delegated proving failed: {}", e)))?;
+                .map_err(|e| Error::Other(format!("Delegated proving failed: {}", e)))?;
             log::info!("✅ Received proved transaction: {}", tx.id());
             (tx, outputs)
         } else {
@@ -315,7 +316,7 @@ impl<N: Network> NetworkVm<N> {
                 None,
                 0,
             )
-            .map_err(|e| Error::Internal(format!("Failed to execute '{function_name}': {e}")))?
+            .map_err(|e| Error::Other(format!("Failed to execute '{function_name}': {e}")))?
         };
 
         if let Some(execution) = transaction.execution() {
@@ -326,20 +327,20 @@ impl<N: Network> NetworkVm<N> {
                 None,
                 CONSENSUS_VERSION,
             )
-            .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to print stats: {}", e)))?;
         }
         let (total_cost, _) = self
             .calculate_cost(&transaction)
-            .map_err(|e| Error::Internal(format!("Failed to calculate cost: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to calculate cost: {}", e)))?;
         if balance < total_cost {
-            return Err(Error::Internal(format!(
+            return Err(Error::Other(format!(
                 "Insufficient balance {balance} for total cost {total_cost} on `{program_id}.{function_name}`"
             )));
         }
 
         log::info!("📡 Broadcasting tx: {}", transaction.id());
         crate::block_on(self.client.broadcast_wait(&transaction))
-            .map_err(|e| Error::Internal(format!("Failed to broadcast transaction: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to broadcast transaction: {}", e)))?;
 
         Ok(function_outputs)
     }
@@ -359,7 +360,7 @@ impl<N: Network> NetworkVm<N> {
         let transaction = self
             .deploy(deployer.private_key(), program, 0, None)
             .map_err(|e| {
-                Error::Internal(format!("Failed to create deployment transaction: {}", e))
+                Error::Other(format!("Failed to create deployment transaction: {}", e))
             })?;
 
         if let Transaction::Deploy(_, _, _, deployment, _fee) = &transaction {
@@ -370,16 +371,16 @@ impl<N: Network> NetworkVm<N> {
                 None,
                 CONSENSUS_VERSION,
             )
-            .map_err(|e| Error::Internal(format!("Failed to print stats: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to print stats: {}", e)))?;
         }
 
         let balance = crate::block_on(self.client.public_balance::<N>(&deployer.address()))
-            .map_err(|e| Error::Internal(format!("Failed to get balance: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to get balance: {}", e)))?;
         let fee = transaction
             .fee_amount()
-            .map_err(|e| Error::Internal(format!("Failed to get fee: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to get fee: {}", e)))?;
         if *fee > balance {
-            return Err(Error::Internal(format!(
+            return Err(Error::Other(format!(
                 "Insufficient balance {} for deployment cost {} on '{}'",
                 balance, fee, program_id
             )));
@@ -392,12 +393,12 @@ impl<N: Network> NetworkVm<N> {
         );
 
         crate::block_on(self.client.broadcast_wait(&transaction))
-            .map_err(|e| Error::Internal(format!("Failed to broadcast deployment: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to broadcast deployment: {}", e)))?;
 
         crate::block_on(self.client.wait_for_program::<N>(&program_id_str))?;
 
         self.add_program(program)
-            .map_err(|e| Error::Internal(format!("Failed to add deployed program to VM: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to add deployed program to VM: {}", e)))?;
 
         Ok(())
     }
@@ -500,13 +501,13 @@ impl LocalVM {
 
         for dep_id in dependencies {
             if !self.contains_program(dep_id) {
-                return Err(Error::Internal(format!(
+                return Err(Error::Other(format!(
                     "LocalVM: dependency '{dep_id}' not on ledger; deploy it first (missing program '{program_id}')"
                 )));
             }
         }
 
-        Err(Error::Internal(format!(
+        Err(Error::Other(format!(
             "LocalVM: program '{program_id}' not loaded; deploy via bindings::new first"
         )))
     }
@@ -521,7 +522,7 @@ impl LocalVM {
 
         for dep_id in dependencies {
             if !self.contains_program(dep_id) {
-                return Err(Error::Internal(format!(
+                return Err(Error::Other(format!(
                     "LocalVM: missing dependency '{dep_id}' before deploying '{program_id}'"
                 )));
             }
@@ -533,9 +534,9 @@ impl LocalVM {
         let transaction = self
             .vm
             .deploy_local_proofless(deployer.private_key(), program, None, 0, None, &mut rng)
-            .map_err(|e| Error::VmError(format!("deploy_local_proofless: {e}")))?;
+            .map_err(|e| Error::Other(format!("deploy_local_proofless: {e}")))?;
 
-        let beacon_account = Account::dev_account(0).map_err(|e| Error::Internal(e.to_string()))?;
+        let beacon_account = Account::dev_account(0).map_err(|e| Error::Other(e.to_string()))?;
         let beacon_key = *beacon_account.private_key();
         crate::local_chain::commit_transaction(&self.vm, &beacon_key, &transaction, &mut rng)?;
 
@@ -567,13 +568,33 @@ impl LocalVM {
                 None,
                 &mut rng,
             )
-            .map_err(|e| Error::VmError(format!("execute_with_response_local_proofless: {e}")))?;
+            .map_err(|e| Error::Other(format!("execute_with_response_local_proofless: {e}")))?;
 
-        let beacon_account = Account::dev_account(0).map_err(|e| Error::Internal(e.to_string()))?;
+        let beacon_account = Account::dev_account(0).map_err(|e| Error::Other(e.to_string()))?;
         let beacon_key = *beacon_account.private_key();
         crate::local_chain::commit_transaction(&self.vm, &beacon_key, &transaction, &mut rng)?;
 
         Ok(response.outputs().to_vec())
+    }
+
+    pub fn set_mapping_value<N: Network>(
+        &self,
+        program_id: &ProgramID<N>,
+        mapping_name: &Identifier<N>,
+        key: &Value<N>,
+        value: &Value<N>,
+    ) -> Result<()> {
+        let program: ProgramID<TestnetV0> = program_id.to_string().parse()?;
+        let mapping: Identifier<TestnetV0> = mapping_name.to_string().parse()?;
+        let k = match key {
+            Value::Plaintext(p) => p.to_string().parse::<Plaintext<TestnetV0>>()?,
+            _ => return Err(Error::Other("Mapping key must be plaintext".to_string())),
+        };
+        let v: Value<TestnetV0> = value.to_string().parse()?;
+        self.vm
+            .finalize_store()
+            .update_key_value(program, mapping, k, v)?;
+        Ok(())
     }
 }
 
@@ -588,18 +609,18 @@ impl VMManager<TestnetV0> for LocalVM {
         mapping_name: &Identifier<TestnetV0>,
         key: &Value<TestnetV0>,
     ) -> Result<Option<Value<TestnetV0>>> {
-        let key_plain = match key {
+        let k = match key {
             Value::Plaintext(p) => p.clone(),
             _ => {
-                return Err(Error::Internal(
+                return Err(Error::Other(
                     "LocalVM mapping keys must be plaintext values".to_string(),
                 ));
             }
         };
         self.vm
             .finalize_store()
-            .get_value_confirmed(*program_id, *mapping_name, &key_plain)
-            .map_err(|e| Error::Internal(format!("Mapping lookup failed: {e}")))
+            .get_value_confirmed(*program_id, *mapping_name, &k)
+            .map_err(|e| Error::Other(format!("Mapping lookup failed: {e}")))
     }
 
     fn deploy_and_broadcast(

@@ -36,7 +36,7 @@ pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream
             use snarkvm::prelude::Network;
             use indexmap::IndexMap;
             use leo_bindings::{ToValue, FromValue};
-            use leo_bindings::leo_bindings_sdk::{Account, Address, VMManager};
+            use leo_bindings::leo_bindings_sdk::{Account, Address, VMManager, LocalVM};
 
             #type_imports
 
@@ -82,6 +82,9 @@ fn generate_program_impl(
     let mapping_implementations: Vec<TokenStream> =
         mapping_types.iter().map(generate_mapping).collect();
 
+    let mapping_setter_implementations: Vec<TokenStream> =
+        mapping_types.iter().map(generate_mapping_setter).collect();
+
     let new_implementation = generate_new(&deployment_calls, &dependency_ids);
 
     quote! {
@@ -113,6 +116,10 @@ fn generate_program_impl(
             #(#function_implementations)*
 
             #(#mapping_implementations)*
+        }
+
+        impl<N: Network> #program_struct<N, LocalVM> where LocalVM: VMManager<N>{
+            #(#mapping_setter_implementations)*
         }
     }
 }
@@ -407,6 +414,7 @@ pub(crate) struct FunctionTypes {
 
 pub(crate) struct MappingTypes {
     pub(crate) getter_name: Ident,
+    pub(crate) setter_name: Ident,
     pub(crate) mapping_name: String,
     pub(crate) key_type: TokenStream,
     pub(crate) value_type: TokenStream,
@@ -479,6 +487,7 @@ fn generate_mapping_types(mappings: &[leo_abi_types::Mapping]) -> Vec<MappingTyp
         .iter()
         .map(|mapping| MappingTypes {
             getter_name: Ident::new(&format!("get_{}", mapping.name), Span::call_site()),
+            setter_name: Ident::new(&format!("set_{}", mapping.name), Span::call_site()),
             mapping_name: mapping.name.clone(),
             key_type: mapping.key.to_rust_type(),
             value_type: mapping.value.to_rust_type(),
@@ -574,6 +583,7 @@ fn generate_mapping(types: &MappingTypes) -> TokenStream {
         mapping_name,
         key_type,
         value_type,
+        ..
     } = types;
 
     quote! {
@@ -592,6 +602,25 @@ fn generate_mapping(types: &MappingTypes) -> TokenStream {
                     None
                 }
             }
+        }
+    }
+}
+
+fn generate_mapping_setter(types: &MappingTypes) -> TokenStream {
+    let MappingTypes {
+        setter_name,
+        mapping_name,
+        key_type,
+        value_type,
+        ..
+    } = types;
+
+    quote! {
+        pub fn #setter_name(&self, key: #key_type, value: #value_type) {
+            let key_value: Value<N> = key.to_value();
+            let val_value: Value<N> = value.to_value();
+            let mapping_id = Identifier::try_from(#mapping_name).expect("invalid identifier");
+            self.vm_manager.set_mapping_value(&self.program_id, &mapping_id, &key_value, &val_value).unwrap();
         }
     }
 }

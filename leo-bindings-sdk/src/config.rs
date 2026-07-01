@@ -53,34 +53,34 @@ impl Credentials {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Failed to fetch JWT token".to_string());
-            return Err(Error::JwtFetchFailed { status, message });
+            return Err(Error::Other(format!("JWT fetch failed: {status} - {message}")));
         }
 
         let auth_header = response
             .headers()
             .get("Authorization")
-            .ok_or_else(|| Error::BadResponse("Missing Authorization header".to_string()))?
+            .ok_or_else(|| Error::Other("Missing Authorization header".to_string()))?
             .to_str()
-            .map_err(|_| Error::BadResponse("Invalid Authorization header".to_string()))?;
+            .map_err(|_| Error::Other("Invalid Authorization header".to_string()))?;
 
         let token = auth_header
             .strip_prefix("Bearer ")
-            .ok_or_else(|| Error::BadResponse("Invalid Authorization header format".to_string()))?
+            .ok_or_else(|| Error::Other("Invalid Authorization header format".to_string()))?
             .to_string();
 
         let body_text = response
             .text()
             .await
-            .map_err(|e| Error::BadResponse(format!("Failed to read response body: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to read response body: {}", e)))?;
 
         let body_json: serde_json::Value = serde_json::from_str(&body_text)
-            .map_err(|e| Error::BadResponse(format!("Failed to parse response body: {}", e)))?;
+            .map_err(|e| Error::Other(format!("Failed to parse response body: {}", e)))?;
 
         let expires_at = body_json
             .get("exp")
             .and_then(|v| v.as_u64())
             .ok_or_else(|| {
-                Error::BadResponse("Missing or invalid 'exp' field in response".to_string())
+                Error::Other("Missing or invalid 'exp' field in response".to_string())
             })?;
 
         Ok(JwtToken { token, expires_at })
@@ -135,7 +135,7 @@ impl Client {
         let reqwest_client = reqwest::Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
-            .map_err(Error::Http)?;
+            .map_err(|e| Error::Other(e.to_string()))?;
 
         let client = ClientBuilder::new(reqwest_client)
             .with(RetryTransientMiddleware::new_with_policy(retry_policy))
@@ -182,7 +182,7 @@ impl Client {
         let credentials = self
             .credentials
             .as_ref()
-            .ok_or(Error::JwtCredentialsRequired)?;
+            .ok_or(Error::Config("JWT credentials (consumer_id and api_key) required".to_string()))?;
 
         credentials.get_valid_jwt_token(&self.client).await
     }

@@ -1,6 +1,6 @@
+use crate::Address;
 use crate::config::Client;
 use crate::error::{Error, Result};
-use crate::Address;
 use snarkvm::prelude::{Literal, Network, Plaintext, Value};
 
 impl Client {
@@ -40,7 +40,7 @@ impl Client {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError { status, message })
+            Err(Error::Other(format!("API error {status}: {message}")))
         }
     }
 
@@ -51,7 +51,7 @@ impl Client {
         match balance {
             Some(Value::Plaintext(Plaintext::Literal(Literal::U64(amount), _))) => Ok(*amount),
             None => Ok(0),
-            Some(other) => Err(Error::BadResponse(format!(
+            Some(other) => Err(Error::Other(format!(
                 "Unexpected balance format: {:?}",
                 other
             ))),

@@ -22,6 +22,18 @@ fn test_dev_sim() {
     run_dev_tests(sim_vm, &alice);
 }
 
+#[test]
+fn test_mapping_cheat() {
+    leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let sim_vm = LocalVM::new().unwrap();
+    let dev = DevAleo::new(&alice, sim_vm).unwrap();
+
+    assert_eq!(dev.get_balances(0u64), None);
+    dev.set_balances(0u64, 999u64);
+    assert_eq!(dev.get_balances(0u64), Some(999u64));
+}
+
 fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
     let dev = DevAleo::new(alice, vm).unwrap();
     let user = dev.create_user(alice, alice.address(), 0, 0).unwrap();

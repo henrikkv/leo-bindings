@@ -3,26 +3,14 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("HTTP request failed: {0}")]
-    Http(#[from] reqwest::Error),
-
-    #[error("Request middleware error: {0}")]
-    Middleware(#[from] reqwest_middleware::Error),
-
-    #[error("Resource not found: {0}")]
+    #[error("Not found: {0}")]
     NotFound(String),
 
-    #[error("Bad request: {0}")]
-    BadRequest(String),
-
-    #[error("Unauthorized: JWT token invalid or expired")]
+    #[error("Unauthorized")]
     Unauthorized,
 
     #[error("Rate limited, retry after {0:?}")]
     RateLimited(Option<Duration>),
-
-    #[error("Server error: {0}")]
-    ServerError(String),
 
     #[error("Transaction {tx_id} was rejected: {reason}")]
     TransactionRejected { tx_id: String, reason: String },
@@ -33,41 +21,35 @@ pub enum Error {
     #[error("Program {0} not available within timeout")]
     ProgramTimeout(String),
 
-    #[error("Failed to fetch JWT token: {status} - {message}")]
-    JwtFetchFailed { status: u16, message: String },
-
-    #[error("JWT authentication failed: {0}")]
-    JwtAuthFailed(String),
-
-    #[error("Bad API response: {0}")]
-    BadResponse(String),
-
-    #[error("API error {status}: {message}")]
-    ApiError { status: u16, message: String },
-
-    #[error("{0}")]
-    AnyhowError(#[from] anyhow::Error),
-
-    #[error("JSON error: {0}")]
-    Json(#[from] serde_json::Error),
-
     #[error("Invalid configuration: {0}")]
     Config(String),
 
-    #[error("JWT credentials (consumer_id and api_key) required")]
-    JwtCredentialsRequired,
+    #[error("{0}")]
+    Other(String),
+}
 
-    #[error("VM error: {0}")]
-    VmError(String),
+impl From<reqwest::Error> for Error {
+    fn from(e: reqwest::Error) -> Self {
+        Error::Other(e.to_string())
+    }
+}
 
-    #[error("Program {0} not found in VM")]
-    ProgramNotFound(String),
+impl From<reqwest_middleware::Error> for Error {
+    fn from(e: reqwest_middleware::Error) -> Self {
+        Error::Other(e.to_string())
+    }
+}
 
-    #[error("Failed to parse program: {0}")]
-    ProgramParse(String),
+impl From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Self {
+        Error::Other(e.to_string())
+    }
+}
 
-    #[error("Internal error: {0}")]
-    Internal(String),
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error::Other(e.to_string())
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -8,11 +8,7 @@ impl Client {
     /// GET /{network}/block/height/latest
     ///
     pub async fn height<N: Network>(&self) -> Result<u32> {
-        let url = format!(
-            "{}/v2/{}/block/height/latest",
-            self.endpoint,
-            N::SHORT_NAME
-        );
+        let url = format!("{}/v2/{}/block/height/latest", self.endpoint, N::SHORT_NAME);
 
         let response = self.client.get(&url).send().await?;
 
@@ -21,14 +17,14 @@ impl Client {
             height_str
                 .trim()
                 .parse()
-                .map_err(|_| Error::BadResponse("Invalid block height format".to_string()))
+                .map_err(|_| Error::Other("Invalid block height format".to_string()))
         } else {
             let status = response.status().as_u16();
             let message = response
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError { status, message })
+            Err(Error::Other(format!("API error {status}: {message}")))
         }
     }
 
@@ -37,17 +33,15 @@ impl Client {
     /// GET /{network}/block/{height}
     ///
     pub async fn block<N: Network>(&self, height: u32) -> Result<String> {
-        let url = format!(
-            "{}/v2/{}/block/{}",
-            self.endpoint,
-            N::SHORT_NAME,
-            height
-        );
+        let url = format!("{}/v2/{}/block/{}", self.endpoint, N::SHORT_NAME, height);
 
         let response = self.client.get(&url).send().await?;
 
         if response.status().is_success() {
-            response.text().await.map_err(Error::Http)
+            response
+                .text()
+                .await
+                .map_err(|e| Error::Other(e.to_string()))
         } else if response.status() == 404 {
             Err(Error::NotFound(format!("Block {} not found", height)))
         } else {
@@ -56,7 +50,7 @@ impl Client {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError { status, message })
+            Err(Error::Other(format!("API error {status}: {message}")))
         }
     }
 }

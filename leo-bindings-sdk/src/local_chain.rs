@@ -18,26 +18,26 @@ pub const LOCAL_CHAIN_RNG_SEED: u64 = 1234567890;
 pub fn local_chain_blob_path() -> Result<std::path::PathBuf> {
     std::env::current_dir()
         .map(|cwd| cwd.join(".consensusblocks"))
-        .map_err(|e| Error::Internal(format!("local_chain: current_dir: {e}")))
+        .map_err(|e| Error::Other(format!("local_chain: current_dir: {e}")))
 }
 
 pub fn parse_local_chain_blocks(data: &[u8]) -> Result<Vec<Block<TestnetV0>>> {
     if data.len() < 4 {
-        return Err(Error::Internal("local_chain: blob too short".into()));
+        return Err(Error::Other("local_chain: blob too short".into()));
     }
     let mut c = Cursor::new(data);
     let n =
-        u32::read_le(&mut c).map_err(|e| Error::Internal(format!("local_chain: {e}")))? as usize;
+        u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))? as usize;
     let mut blocks = Vec::with_capacity(n);
     for _ in 0..n {
-        let len = u32::read_le(&mut c).map_err(|e| Error::Internal(format!("local_chain: {e}")))?
+        let len = u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))?
             as usize;
         let mut buf = vec![0u8; len];
         c.read_exact(&mut buf)
-            .map_err(|e| Error::Internal(format!("local_chain: {e}")))?;
+            .map_err(|e| Error::Other(format!("local_chain: {e}")))?;
         blocks.push(
             Block::<TestnetV0>::read_le(&mut Cursor::new(buf))
-                .map_err(|e| Error::Internal(format!("local_chain: block decode: {e}")))?,
+                .map_err(|e| Error::Other(format!("local_chain: block decode: {e}")))?,
         );
     }
     Ok(blocks)
@@ -46,16 +46,16 @@ pub fn parse_local_chain_blocks(data: &[u8]) -> Result<Vec<Block<TestnetV0>>> {
 pub fn encode_local_chain_blocks<W: Write>(w: &mut W, blocks: &[Block<TestnetV0>]) -> Result<()> {
     (blocks.len() as u32)
         .write_le(&mut *w)
-        .map_err(|e| Error::Internal(format!("local_chain: write: {e}")))?;
+        .map_err(|e| Error::Other(format!("local_chain: write: {e}")))?;
     for block in blocks {
         let bytes = block
             .to_bytes_le()
-            .map_err(|e| Error::Internal(format!("block to_bytes: {e}")))?;
+            .map_err(|e| Error::Other(format!("block to_bytes: {e}")))?;
         (bytes.len() as u32)
             .write_le(&mut *w)
-            .map_err(|e| Error::Internal(format!("local_chain: write: {e}")))?;
+            .map_err(|e| Error::Other(format!("local_chain: write: {e}")))?;
         w.write_all(&bytes)
-            .map_err(|e| Error::Internal(format!("local_chain: write: {e}")))?;
+            .map_err(|e| Error::Other(format!("local_chain: write: {e}")))?;
     }
     Ok(())
 }
@@ -65,16 +65,16 @@ pub fn vm_from_local_chain_blocks(
 ) -> Result<VM<TestnetV0, ConsensusMemory<TestnetV0>>> {
     let store =
         ConsensusStore::<TestnetV0, ConsensusMemory<TestnetV0>>::open(StorageMode::new_test(None))
-            .map_err(|e| Error::Internal(format!("consensus store: {e}")))?;
-    let vm = VM::from(store).map_err(|e| Error::Internal(format!("VM: {e}")))?;
+            .map_err(|e| Error::Other(format!("consensus store: {e}")))?;
+    let vm = VM::from(store).map_err(|e| Error::Other(format!("VM: {e}")))?;
     for block in blocks {
         vm.add_next_block(block)
-            .map_err(|e| Error::Internal(format!("add_next_block: {e}")))?;
+            .map_err(|e| Error::Other(format!("add_next_block: {e}")))?;
     }
     let h = vm.block_store().current_block_height();
-    let v = TestnetV0::CONSENSUS_VERSION(h).map_err(|e| Error::Internal(e.to_string()))?;
+    let v = TestnetV0::CONSENSUS_VERSION(h).map_err(|e| Error::Other(e.to_string()))?;
     if v < ConsensusVersion::V14 {
-        return Err(Error::Internal(format!(
+        return Err(Error::Other(format!(
             "local_chain: need consensus >= V14 at height {h}, got {v:?}"
         )));
     }
@@ -88,20 +88,20 @@ pub fn build_local_chain_blocks() -> Result<Vec<Block<TestnetV0>>> {
     let mut rng = ChaCha8Rng::seed_from_u64(LOCAL_CHAIN_RNG_SEED);
     let store =
         ConsensusStore::<TestnetV0, ConsensusMemory<TestnetV0>>::open(StorageMode::new_test(None))
-            .map_err(|e| Error::Internal(format!("Failed to create consensus store: {e}")))?;
+            .map_err(|e| Error::Other(format!("Failed to create consensus store: {e}")))?;
     let vm: VM<TestnetV0, ConsensusMemory<TestnetV0>> =
-        VM::from(store).map_err(|e| Error::Internal(format!("Failed to create VM: {e}")))?;
+        VM::from(store).map_err(|e| Error::Other(format!("Failed to create VM: {e}")))?;
     let (genesis, beacon_key) = genesis_dev_quorum(&vm, &mut rng)?;
     let mut blocks = vec![genesis.clone()];
     vm.add_next_block(&genesis)
-        .map_err(|e| Error::Internal(format!("add_next_block genesis: {e}")))?;
+        .map_err(|e| Error::Other(format!("add_next_block genesis: {e}")))?;
     let n = TestnetV0::CONSENSUS_HEIGHT(ConsensusVersion::V15)
-        .map_err(|e| Error::Internal(format!("CONSENSUS_HEIGHT(V15): {e}")))?;
+        .map_err(|e| Error::Other(format!("CONSENSUS_HEIGHT(V15): {e}")))?;
     for _ in 0..n {
         let b = next_empty_block(&vm, &beacon_key, &mut rng)?;
         blocks.push(b.clone());
         vm.add_next_block(&b)
-            .map_err(|e| Error::Internal(format!("add_next_block (local chain build): {e}")))?;
+            .map_err(|e| Error::Other(format!("add_next_block (local chain build): {e}")))?;
     }
     Ok(blocks)
 }
@@ -125,7 +125,7 @@ pub(crate) fn load_or_create_local_chain_bytes() -> Result<Vec<u8>> {
     log::info!("LocalVM: writing local chain blob {}", path.display());
     let bytes = build_local_chain_bytes()?;
     std::fs::write(&path, &bytes)
-        .map_err(|e| Error::Internal(format!("write {}: {e}", path.display())))?;
+        .map_err(|e| Error::Other(format!("write {}: {e}", path.display())))?;
     Ok(bytes)
 }
 
@@ -139,7 +139,7 @@ fn genesis_dev_quorum<R: Rng + CryptoRng>(
         let i = i as u16;
         private_keys.push(
             *Account::<TestnetV0>::dev_account(i)
-                .map_err(|e| Error::Internal(format!("dev_account({i}): {e}")))?
+                .map_err(|e| Error::Other(format!("dev_account({i}): {e}")))?
                 .private_key(),
         );
     }
@@ -148,22 +148,22 @@ fn genesis_dev_quorum<R: Rng + CryptoRng>(
     let mut members = IndexMap::with_capacity(N);
     for key in &private_keys {
         let addr = Address::try_from(key)
-            .map_err(|e| Error::Internal(format!("Address::try_from: {e}")))?;
+            .map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
         members.insert(addr, (MIN_VALIDATOR_STAKE, true, 0u8));
     }
     let committee = Committee::<TestnetV0>::new_genesis(members)
-        .map_err(|e| Error::Internal(format!("Committee::new_genesis: {e}")))?;
+        .map_err(|e| Error::Other(format!("Committee::new_genesis: {e}")))?;
 
     let remaining = TestnetV0::STARTING_SUPPLY
         .checked_sub(MIN_VALIDATOR_STAKE * (N as u64))
         .ok_or_else(|| {
-            Error::Internal("Not enough starting supply for genesis validators".into())
+            Error::Other("Not enough starting supply for genesis validators".into())
         })?;
 
     let mut public_balances = IndexMap::with_capacity(N);
     for key in &private_keys {
         let addr = Address::try_from(key)
-            .map_err(|e| Error::Internal(format!("Address::try_from: {e}")))?;
+            .map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
         public_balances.insert(addr, remaining / N as u64);
     }
 
@@ -181,7 +181,7 @@ fn genesis_dev_quorum<R: Rng + CryptoRng>(
             bonded_balances,
             rng,
         )
-        .map_err(|e| Error::Internal(format!("genesis_quorum: {e}")))?;
+        .map_err(|e| Error::Other(format!("genesis_quorum: {e}")))?;
     Ok((genesis, beacon_key))
 }
 
@@ -201,9 +201,9 @@ fn next_empty_block<C: ConsensusStorage<TestnetV0>, R: Rng + CryptoRng>(
             [].into_iter(),
             rng,
         )
-        .map_err(|e| Error::Internal(format!("speculate (advance chain): {e}")))?;
+        .map_err(|e| Error::Other(format!("speculate (advance chain): {e}")))?;
     if !aborted.is_empty() {
-        return Err(Error::Internal(format!(
+        return Err(Error::Other(format!(
             "local_chain: empty advance aborted: {aborted:?}"
         )));
     }
@@ -236,9 +236,9 @@ pub(crate) fn commit_transaction<R: Rng + CryptoRng>(
             std::iter::once(transaction),
             rng,
         )
-        .map_err(|e| Error::Internal(format!("speculate_local_proofless: {e}")))?;
+        .map_err(|e| Error::Other(format!("speculate_local_proofless: {e}")))?;
     if !aborted.is_empty() {
-        return Err(Error::Internal(format!(
+        return Err(Error::Other(format!(
             "local_chain: proofless transaction aborted (ids): {aborted:?}"
         )));
     }
@@ -253,7 +253,7 @@ pub(crate) fn commit_transaction<R: Rng + CryptoRng>(
         rng,
     )?;
     vm.add_next_block(&block)
-        .map_err(|e| Error::Internal(format!("add_next_block: {e}")))?;
+        .map_err(|e| Error::Other(format!("add_next_block: {e}")))?;
     Ok(())
 }
 
@@ -326,24 +326,24 @@ fn construct_next_block<C: ConsensusStorage<TestnetV0>, R: Rng + CryptoRng>(
             .timestamp()
             .saturating_add(time_since_last_block),
     )
-    .map_err(|e| Error::Internal(format!("Metadata::new: {e}")))?;
+    .map_err(|e| Error::Other(format!("Metadata::new: {e}")))?;
 
     let header = Header::from(
         vm.block_store().current_state_root(),
         transactions
             .to_transactions_root()
-            .map_err(|e| Error::Internal(e.to_string()))?,
+            .map_err(|e| Error::Other(e.to_string()))?,
         transactions
             .to_finalize_root(ratified_finalize_operations)
-            .map_err(|e| Error::Internal(e.to_string()))?,
+            .map_err(|e| Error::Other(e.to_string()))?,
         ratifications
             .to_ratifications_root()
-            .map_err(|e| Error::Internal(e.to_string()))?,
+            .map_err(|e| Error::Other(e.to_string()))?,
         Field::zero(),
         Field::zero(),
         metadata,
     )
-    .map_err(|e| Error::Internal(format!("Header::from: {e}")))?;
+    .map_err(|e| Error::Other(format!("Header::from: {e}")))?;
 
     Block::new_beacon(
         private_key,
@@ -356,5 +356,5 @@ fn construct_next_block<C: ConsensusStorage<TestnetV0>, R: Rng + CryptoRng>(
         aborted_transaction_ids,
         rng,
     )
-    .map_err(|e| Error::Internal(format!("Block::new_beacon: {e}")))
+    .map_err(|e| Error::Other(format!("Block::new_beacon: {e}")))
 }

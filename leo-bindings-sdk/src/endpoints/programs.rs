@@ -22,7 +22,7 @@ impl Client {
         if response.status().is_success() {
             let json: serde_json::Value = response.json().await?;
             json.as_str()
-                .ok_or_else(|| Error::BadResponse("Expected string program".to_string()))
+                .ok_or_else(|| Error::Other("Expected string program".to_string()))
                 .map(|s| s.to_string())
         } else if response.status() == 404 {
             Err(Error::NotFound(format!("Program {} not found", program_id)))
@@ -35,7 +35,7 @@ impl Client {
             if status == 500 && message.contains("Missing program") {
                 Err(Error::NotFound(format!("Program {} not found", program_id)))
             } else {
-                Err(Error::ApiError { status, message })
+                Err(Error::Other(format!("API error {status}: {message}")))
             }
         }
     }
@@ -77,7 +77,7 @@ impl Client {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError { status, message })
+            Err(Error::Other(format!("API error {status}: {message}")))
         }
     }
 
@@ -108,10 +108,10 @@ impl Client {
                             if status == 500 && message.contains("Missing program") {
                                 Ok(None)
                             } else {
-                                Err(Error::ApiError { status, message })
+                                Err(Error::Other(format!("API error {status}: {message}")))
                             }
                         }
-                        Err(e) => Err(Error::Middleware(e)),
+                        Err(e) => Err(Error::Other(e.to_string())),
                     }
                 }
             },

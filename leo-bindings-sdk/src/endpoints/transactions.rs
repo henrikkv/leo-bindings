@@ -58,10 +58,10 @@ impl Client {
                 .unwrap_or_else(|_| "Unknown error".to_string());
 
             match status {
-                400 => Err(Error::BadRequest(message)),
-                401 => Err(Error::JwtAuthFailed(message)),
+                400 => Err(Error::Other(message)),
+                401 => Err(Error::Unauthorized),
                 429 => Err(Error::RateLimited(None)),
-                _ => Err(Error::ApiError { status, message }),
+                _ => Err(Error::Other(format!("API error {status}: {message}"))),
             }
         }
     }
@@ -93,7 +93,7 @@ impl Client {
             let status = json
                 .get("status")
                 .and_then(|s| s.as_str())
-                .ok_or_else(|| Error::BadResponse("Missing status field".to_string()))?;
+                .ok_or_else(|| Error::Other("Missing status field".to_string()))?;
 
             match status {
                 "accepted" => Ok(TransactionStatus::Accepted),
@@ -109,10 +109,7 @@ impl Client {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            Err(Error::ApiError {
-                status: status_code,
-                message,
-            })
+            Err(Error::Other(format!("API error {status_code}: {message}")))
         }
     }
 
@@ -138,7 +135,7 @@ impl Client {
 
                             let status =
                                 json.get("status").and_then(|s| s.as_str()).ok_or_else(|| {
-                                    Error::BadResponse("Missing status field".to_string())
+                                    Error::Other("Missing status field".to_string())
                                 })?;
 
                             match status {
@@ -156,9 +153,9 @@ impl Client {
                                 .text()
                                 .await
                                 .unwrap_or_else(|_| "Unknown error".to_string());
-                            Err(Error::ApiError { status, message })
+                            Err(Error::Other(format!("API error {status}: {message}")))
                         }
-                        Err(e) => Err(Error::Middleware(e)),
+                        Err(e) => Err(Error::Other(e.to_string())),
                     }
                 }
             },
