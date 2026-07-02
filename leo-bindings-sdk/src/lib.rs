@@ -16,7 +16,7 @@ pub use endpoints::transactions::TransactionStatus;
 pub use error::{Error, Result};
 pub use local_chain::build_local_chain_bytes;
 pub use stats::{print_deployment_stats, print_execution_stats};
-pub use vm_manager::LocalVM;
+pub use vm_manager::{LocalVM, LocalVMSnapshot, SnapshotStore};
 pub use vm_manager::{CONSENSUS_VERSION, NetworkVm, VMManager};
 
 pub fn block_on<F: std::future::Future>(f: F) -> F::Output {

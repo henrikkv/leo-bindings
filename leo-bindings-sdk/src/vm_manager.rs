@@ -1,6 +1,7 @@
 use crate::account::Account;
 use crate::config::Client;
 use crate::error::{Error, Result};
+use crate::local_chain::encode_local_chain_blocks;
 use crate::stats::{print_deployment_stats, print_execution_stats};
 use aleo_std::StorageMode;
 use http::uri::Uri;
@@ -271,9 +272,8 @@ impl<N: Network> NetworkVm<N> {
         let program: Program<N> = bytecode.parse().map_err(|e| {
             Error::Other(format!("Failed to parse program '{}': {}", program_id, e))
         })?;
-        self.add_program(&program).map_err(|e| {
-            Error::Other(format!("Failed to add program '{}': {}", program_id, e))
-        })?;
+        self.add_program(&program)
+            .map_err(|e| Error::Other(format!("Failed to add program '{}': {}", program_id, e)))?;
 
         Ok(())
     }
@@ -359,9 +359,7 @@ impl<N: Network> NetworkVm<N> {
 
         let transaction = self
             .deploy(deployer.private_key(), program, 0, None)
-            .map_err(|e| {
-                Error::Other(format!("Failed to create deployment transaction: {}", e))
-            })?;
+            .map_err(|e| Error::Other(format!("Failed to create deployment transaction: {}", e)))?;
 
         if let Transaction::Deploy(_, _, _, deployment, _fee) = &transaction {
             print_deployment_stats(
@@ -577,6 +575,36 @@ impl LocalVM {
         Ok(response.outputs().to_vec())
     }
 
+    pub fn as_bytes(&self) -> Result<Vec<u8>> {
+        let height = self.vm.block_store().current_block_height();
+        let mut blocks = Vec::new();
+        for h in 0..=height {
+            let hash = self
+                .vm
+                .block_store()
+                .get_block_hash(h)
+                .map_err(|e| Error::Other(format!("get_block_hash({h}): {e}")))?
+                .ok_or_else(|| Error::Other(format!("no block at height {h}")))?;
+            let block = self
+                .vm
+                .block_store()
+                .get_block(&hash)
+                .map_err(|e| Error::Other(format!("get_block({h}): {e}")))?
+                .ok_or_else(|| Error::Other(format!("block not found at height {h}")))?;
+            blocks.push(block);
+        }
+
+        let mut bytes = Vec::new();
+        encode_local_chain_blocks(&mut bytes, &blocks)?;
+        Ok(bytes)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        let blocks = crate::local_chain::parse_local_chain_blocks(bytes)?;
+        let vm = crate::local_chain::vm_from_local_chain_blocks(&blocks)?;
+        Ok(Self { vm })
+    }
+
     pub fn set_mapping_value<N: Network>(
         &self,
         program_id: &ProgramID<N>,
@@ -596,6 +624,123 @@ impl LocalVM {
             .update_key_value(program, mapping, k, v)?;
         Ok(())
     }
+}
+
+pub struct LocalVMSnapshot {
+    bytes: Vec<u8>,
+    finalize_overlay: Vec<(
+        ProgramID<TestnetV0>,
+        Identifier<TestnetV0>,
+        Plaintext<TestnetV0>,
+        Value<TestnetV0>,
+    )>,
+}
+
+impl LocalVMSnapshot {
+    pub fn restore(&self) -> LocalVM {
+        let vm = LocalVM::from_bytes(&self.bytes).unwrap();
+        for (program_id, mapping_name, key, value) in &self.finalize_overlay {
+            vm.vm
+                .finalize_store()
+                .update_key_value(*program_id, *mapping_name, key.clone(), value.clone())
+                .expect("finalize overlay apply failed");
+        }
+        vm
+    }
+}
+
+impl LocalVM {
+    pub fn snapshot(&self) -> LocalVMSnapshot {
+        let bytes = self.as_bytes().unwrap();
+        let mut finalize_overlay = Vec::new();
+        let process = self.vm.process();
+        let finalize_store = self.vm.finalize_store();
+        for program_id in process.program_ids() {
+            let Ok(Some(mapping_names)) = finalize_store.get_mapping_names_confirmed(&program_id)
+            else {
+                continue;
+            };
+            for mapping_name in mapping_names {
+                let Ok(entries) = finalize_store.get_mapping_confirmed(program_id, mapping_name)
+                else {
+                    continue;
+                };
+                for (key, value) in entries {
+                    finalize_overlay.push((program_id, mapping_name, key, value));
+                }
+            }
+        }
+        LocalVMSnapshot {
+            bytes,
+            finalize_overlay,
+        }
+    }
+}
+
+pub struct SnapshotStore {
+    current: LocalVM,
+    snapshots: std::collections::HashMap<&'static str, LocalVMSnapshot>,
+}
+
+impl SnapshotStore {
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            current: LocalVM::new()?,
+            snapshots: Default::default(),
+        })
+    }
+
+    /// Create a store, run `f` for setup and return the store.
+    pub fn build<F: FnOnce(&mut Self)>(f: F) -> Result<Self> {
+        let mut store = Self::new()?;
+        f(&mut store);
+        Ok(store)
+    }
+
+    /// The current VM
+    pub fn vm(&self) -> &LocalVM {
+        &self.current
+    }
+
+    /// Snapshot the current state under `name`
+    pub fn save(&mut self, name: &'static str) -> &mut Self {
+        self.snapshots.insert(name, self.current.snapshot());
+        self
+    }
+
+    /// Restore a previously saved snapshot
+    pub fn restore(&self, name: &'static str) -> LocalVM {
+        self.snapshots
+            .get(name)
+            .unwrap_or_else(|| panic!("snapshot '{name}' not found"))
+            .restore()
+    }
+}
+
+/// Declares a global [`SnapshotStore`] for multiple tests.
+///
+/// ```
+/// snapshot_store!(SETUP, |store| {
+///     let alice = Account::dev_account(0).unwrap();
+///     MyAleo::new(&alice, store.vm().clone()).unwrap();
+///     store.save("deployed");
+/// });
+///
+/// #[test]
+/// fn test_snapshot() {
+///     let alice = Account::dev_account(0).unwrap();
+///     
+///     let vm = SETUP.restore("deployed");
+///     // Skips deployment
+///     let dev_a = DevAleo::new(&alice, vm).unwrap();
+/// }
+/// ```
+#[macro_export]
+macro_rules! snapshot_store {
+    ($name:ident, |$store:ident| $body:block) => {
+        static $name: ::std::sync::LazyLock<$crate::SnapshotStore> =
+            ::std::sync::LazyLock::new(|| $crate::SnapshotStore::build(|$store| $body).unwrap());
+    };
 }
 
 impl VMManager<TestnetV0> for LocalVM {

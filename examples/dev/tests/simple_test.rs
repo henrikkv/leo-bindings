@@ -1,4 +1,5 @@
 use dev_bindings::dev::{A, B, DevAleo};
+use leo_bindings::leo_bindings_sdk::snapshot_store;
 use leo_bindings::leo_bindings_sdk::{Account, Client, LocalVM, NetworkVm, VMManager};
 use snarkvm::prelude::TestnetV0;
 use std::str::FromStr;
@@ -20,18 +21,6 @@ fn test_dev_sim() {
     let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
     let sim_vm = LocalVM::new().unwrap();
     run_dev_tests(sim_vm, &alice);
-}
-
-#[test]
-fn test_mapping_cheat() {
-    leo_bindings::utils::init_test_logger();
-    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
-    let sim_vm = LocalVM::new().unwrap();
-    let dev = DevAleo::new(&alice, sim_vm).unwrap();
-
-    assert_eq!(dev.get_balances(0u64), None);
-    dev.set_balances(0u64, 999u64);
-    assert_eq!(dev.get_balances(0u64), Some(999u64));
 }
 
 fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
@@ -87,4 +76,45 @@ fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
 
     dev.test_all_types(alice, field_a, scalar_a, group_a, false)
         .unwrap();
+}
+
+#[test]
+fn test_mapping_cheat() {
+    leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let sim_vm = LocalVM::new().unwrap();
+    let dev = DevAleo::new(&alice, sim_vm).unwrap();
+
+    assert_eq!(dev.get_balances(0u64), None);
+    dev.set_balances(0u64, 999u64);
+    assert_eq!(dev.get_balances(0u64), Some(999u64));
+}
+
+snapshot_store!(SETUP, |store| {
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+    let dev = DevAleo::new(&alice, store.vm().clone()).unwrap();
+    store.save("deployed");
+
+    dev.set_balances(0u64, 100u64);
+    store.save("with_balance");
+});
+
+#[test]
+fn test_snapshot_isolation() {
+    leo_bindings::utils::init_test_logger();
+    let alice: Account<TestnetV0> = Account::dev_account(0).unwrap();
+
+    let dev_a = DevAleo::new(&alice, SETUP.restore("deployed")).unwrap();
+    assert_eq!(dev_a.get_balances(0u64), None);
+    dev_a.set_balances(0u64, 10u64);
+    assert_eq!(dev_a.get_balances(0u64), Some(10u64));
+
+    let dev_b = DevAleo::new(&alice, SETUP.restore("with_balance")).unwrap();
+    assert_eq!(dev_a.get_balances(0u64), Some(10u64));
+    assert_eq!(dev_b.get_balances(0u64), Some(100u64));
+
+    let dev_c = DevAleo::new(&alice, SETUP.restore("deployed")).unwrap();
+    assert_eq!(dev_a.get_balances(0u64), Some(10u64));
+    assert_eq!(dev_b.get_balances(0u64), Some(100u64));
+    assert_eq!(dev_c.get_balances(0u64), None);
 }
