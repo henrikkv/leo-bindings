@@ -24,10 +24,29 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Restore Leo CLI build cache
+        id: leo_build_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cargo-install-target
+          key: leo-install-target-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            leo-install-target-${{ runner.os }}-
+
       - name: Install Leo CLI
         run: |
-          cargo install leo-lang
+          cargo install leo-lang --git https://github.com/ProvableHQ/leo --branch master --target-dir ~/.cargo-install-target
           leo --version
+
+      - name: Save Leo CLI build cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cargo-install-target
+          key: ${{ steps.leo_build_cache.outputs.cache-primary-key }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
