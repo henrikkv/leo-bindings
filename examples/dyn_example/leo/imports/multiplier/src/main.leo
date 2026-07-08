@@ -1,0 +1,8 @@
+program multiplier.aleo : math_ops_lib::MathOps {
+    fn combine(a: u32, b: u32) -> u32 {
+        return a * b;
+    }
+
+    @noupgrade
+    constructor() {}
+}

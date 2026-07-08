@@ -6,22 +6,22 @@
   "leo": "4.0.0",
   "dependencies": [
     {
-      "name": "dyn_plugin_add.aleo",
+      "name": "adder.aleo",
       "location": "local",
-      "network": null,
-      "path": "imports/dyn_plugin_add"
+      "path": "imports/adder",
+      "edition": null
     },
     {
-      "name": "dyn_plugin_mul.aleo",
+      "name": "multiplier.aleo",
       "location": "local",
-      "network": null,
-      "path": "imports/dyn_plugin_mul"
+      "path": "imports/multiplier",
+      "edition": null
     },
     {
-      "name": "dyn_token_plugin.aleo",
+      "name": "math_ops_lib",
       "location": "local",
-      "network": null,
-      "path": "imports/dyn_token_plugin"
+      "path": "lib/math_ops_lib",
+      "edition": null
     }
   ],
   "dev_dependencies": null

@@ -11,7 +11,7 @@ use snarkvm::ledger::store::ConsensusStore;
 use snarkvm::ledger::store::helpers::memory::{BlockMemory, ConsensusMemory};
 use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
-use snarkvm::synthesizer::program::FinalizeStoreTrait;
+use snarkvm::synthesizer::program::{FinalizeGlobalState, FinalizeStoreTrait, StackTrait};
 
 pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V15;
 
@@ -24,6 +24,13 @@ pub trait VMManager<N: Network>: Send + Sync + Clone {
         mapping_name: &Identifier<N>,
         key: &Value<N>,
     ) -> Result<Option<Value<N>>>;
+
+    fn evaluate_view(
+        &self,
+        program_id: &ProgramID<N>,
+        view_name: &Identifier<N>,
+        inputs: Vec<Value<N>>,
+    ) -> Result<Vec<Value<N>>>;
 
     fn deploy_and_broadcast(
         &self,
@@ -433,6 +440,19 @@ impl<N: Network> VMManager<N> for NetworkVm<N> {
         ))
     }
 
+    fn evaluate_view(
+        &self,
+        program_id: &ProgramID<N>,
+        view_name: &Identifier<N>,
+        inputs: Vec<Value<N>>,
+    ) -> Result<Vec<Value<N>>> {
+        crate::block_on(self.client.evaluate_view::<N>(
+            &program_id.to_string(),
+            &view_name.to_string(),
+            &inputs,
+        ))
+    }
+
     fn deploy_and_broadcast(
         &self,
         deployer: &Account<N>,
@@ -575,23 +595,25 @@ impl LocalVM {
         Ok(response.outputs().to_vec())
     }
 
+    fn block_at_height(&self, height: u32) -> Result<Block<TestnetV0>> {
+        let hash = self
+            .vm
+            .block_store()
+            .get_block_hash(height)
+            .map_err(|e| Error::Other(format!("get_block_hash({height}): {e}")))?
+            .ok_or_else(|| Error::Other(format!("no block at height {height}")))?;
+        self.vm
+            .block_store()
+            .get_block(&hash)
+            .map_err(|e| Error::Other(format!("get_block({height}): {e}")))?
+            .ok_or_else(|| Error::Other(format!("block not found at height {height}")))
+    }
+
     pub fn as_bytes(&self) -> Result<Vec<u8>> {
         let height = self.vm.block_store().current_block_height();
         let mut blocks = Vec::new();
         for h in 0..=height {
-            let hash = self
-                .vm
-                .block_store()
-                .get_block_hash(h)
-                .map_err(|e| Error::Other(format!("get_block_hash({h}): {e}")))?
-                .ok_or_else(|| Error::Other(format!("no block at height {h}")))?;
-            let block = self
-                .vm
-                .block_store()
-                .get_block(&hash)
-                .map_err(|e| Error::Other(format!("get_block({h}): {e}")))?
-                .ok_or_else(|| Error::Other(format!("block not found at height {h}")))?;
-            blocks.push(block);
+            blocks.push(self.block_at_height(h)?);
         }
 
         let mut bytes = Vec::new();
@@ -766,6 +788,37 @@ impl VMManager<TestnetV0> for LocalVM {
             .finalize_store()
             .get_value_confirmed(*program_id, *mapping_name, &k)
             .map_err(|e| Error::Other(format!("Mapping lookup failed: {e}")))
+    }
+
+    fn evaluate_view(
+        &self,
+        program_id: &ProgramID<TestnetV0>,
+        view_name: &Identifier<TestnetV0>,
+        inputs: Vec<Value<TestnetV0>>,
+    ) -> Result<Vec<Value<TestnetV0>>> {
+        let height = self.vm.block_store().current_block_height();
+        let block = self.block_at_height(height)?;
+
+        let block_timestamp = Some(block.timestamp());
+        let state = FinalizeGlobalState::new::<TestnetV0>(
+            block.round(),
+            height,
+            block_timestamp,
+            block.cumulative_weight(),
+            block.cumulative_proof_target(),
+            block.previous_hash(),
+        )
+        .map_err(|e| Error::Other(format!("Failed to build finalize global state: {e}")))?;
+
+        let stack = self
+            .vm
+            .process()
+            .get_stack(*program_id)
+            .map_err(|e| Error::Other(format!("get_stack({program_id}): {e}")))?;
+
+        stack
+            .evaluate_view(state, self.vm.finalize_store(), view_name, inputs)
+            .map_err(|e| Error::Other(format!("evaluate_view({program_id}, {view_name}): {e}")))
     }
 
     fn deploy_and_broadcast(

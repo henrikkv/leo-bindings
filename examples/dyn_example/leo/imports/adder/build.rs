@@ -5,14 +5,14 @@ fn main() {
     let manifest_path = Path::new(&manifest_dir);
     let src_main_leo = manifest_path.join("src/main.leo");
     let src_main_aleo = manifest_path.join("src/main.aleo");
-    let build_aleo = manifest_path.join("build/dyn_example/dyn_example.aleo");
-    let build_abi = manifest_path.join("build/dyn_example/abi.json");
+    let build_aleo = manifest_path.join("build/adder/adder.aleo");
+    let build_abi = manifest_path.join("build/adder/abi.json");
 
     if src_main_leo.exists() && src_main_aleo.exists() {
         panic!("Cannot have both src/main.leo and src/main.aleo; remove one.");
     }
 
-    println!("cargo:rerun-if-changed=build/dyn_example/abi.json");
+    println!("cargo:rerun-if-changed=build/adder/abi.json");
     if src_main_leo.exists() {
         println!("cargo:rerun-if-changed=src/main.leo");
     } else if src_main_aleo.exists() {
@@ -20,11 +20,7 @@ fn main() {
     }
 
 
-    println!("cargo:rerun-if-changed=imports/adder/build/adder/abi.json");
-
-    println!("cargo:rerun-if-changed=imports/multiplier/build/multiplier/abi.json");
-
-    println!("cargo:rerun-if-changed=lib/math_ops_lib/src/lib.leo");
+    println!("cargo:rerun-if-changed=../../lib/math_ops_lib/src/lib.leo");
 
     let needs_refresh = if src_main_leo.exists() {
         !build_aleo.exists()

@@ -30,8 +30,8 @@ fn run_dyn_example_tests<V: VMManager<TestnetV0>>(vm: V) {
     let result = app
         .dynamic_combine_id_routing(
             &alice,
-            "dyn_plugin_add".try_into().unwrap(),
-            "dyn_plugin_mul".try_into().unwrap(),
+            "adder".try_into().unwrap(),
+            "multiplier".try_into().unwrap(),
             10u32,
             4u32,
         )
@@ -41,7 +41,7 @@ fn run_dyn_example_tests<V: VMManager<TestnetV0>>(vm: V) {
     let result = app
         .dynamic_combine_with_network(
             &alice,
-            "dyn_plugin_add".try_into().unwrap(),
+            "adder".try_into().unwrap(),
             "aleo".try_into().unwrap(),
             2u32,
             3u32,
@@ -50,17 +50,7 @@ fn run_dyn_example_tests<V: VMManager<TestnetV0>>(vm: V) {
     assert_eq!(result, 5u32);
 
     let result = app
-        .dynamic_combine_field_target(&alice, "dyn_plugin_add".try_into().unwrap(), 10u32, 4u32)
+        .dynamic_combine_field_target(&alice, "adder".try_into().unwrap(), 10u32, 4u32)
         .unwrap();
     assert_eq!(result, 14u32);
-
-    let result = app
-        .dyn_record_mint_then_double(&alice, 25u64, "dyn_token_plugin".try_into().unwrap())
-        .unwrap();
-    assert_eq!(result, (25u64, 50u64));
-
-    let (delta_out, _fin) = app
-        .final_compose_import_and_local(&alice, "dyn_plugin_add".try_into().unwrap(), 1u64, 12u32)
-        .unwrap();
-    assert_eq!(delta_out, 12u32);
 }

@@ -12,9 +12,8 @@ members = [
     "examples/token",
     "examples/delegated",
     "examples/delegated/leo",
-    "examples/dyn_example/leo/imports/dyn_plugin_add",
-    "examples/dyn_example/leo/imports/dyn_plugin_mul",
-    "examples/dyn_example/leo/imports/dyn_token_plugin",
+    "examples/dyn_example/leo/imports/adder",
+    "examples/dyn_example/leo/imports/multiplier",
     "examples/dyn_example/leo",
     "examples/dyn_example"
 ]
@@ -59,7 +58,7 @@ leo-parser = "4.0"
 leo-errors = "4.0"
 leo-abi-types = "4.0"
 reqwest = { version = "0.12", default-features = false }
-reqwest-middleware = "0.3"
+reqwest-middleware = { version = "0.3", features = ["json"] }
 reqwest-retry = "0.6"
 tokio = "1"
 thiserror = "1.0"

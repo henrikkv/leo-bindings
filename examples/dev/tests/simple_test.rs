@@ -47,6 +47,9 @@ fn run_dev_tests<V: VMManager<TestnetV0>>(vm: V, alice: &Account<TestnetV0>) {
     let balance_after = dev.get_balances(0);
     dbg!(&balance_after);
 
+    let view_balance = dev.balance_view(0u64).unwrap();
+    assert_eq!(view_balance, 60u64);
+
     let result = dev.main(alice, 10u32, 5u32).unwrap();
     assert_eq!(result, 15u32);
     let a = A::new(1);

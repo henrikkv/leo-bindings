@@ -1,0 +1,10 @@
+[package]
+name = "adder_bindings"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "adder_bindings"
+path = "lib.rs"
+
+[dependencies]
+leo-bindings.workspace = true

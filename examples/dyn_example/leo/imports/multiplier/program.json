@@ -1,0 +1,16 @@
+{
+  "program": "multiplier.aleo",
+  "version": "0.1.0",
+  "description": "Interface test",
+  "license": "MIT",
+  "leo": "4.0.0",
+  "dependencies": [
+    {
+      "name": "math_ops_lib",
+      "location": "local",
+      "path": "../../lib/math_ops_lib",
+      "edition": null
+    }
+  ],
+  "dev_dependencies": null
+}

@@ -16,11 +16,13 @@ pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream
     let structs = generate_structs(&abi.structs);
 
     let function_types = generate_function_types(&abi.functions);
+    let view_types = generate_function_types(&abi.views);
     let mapping_types = generate_mapping_types(&abi.mappings);
 
     let program_impl = generate_program_impl(
         imports,
         &function_types,
+        &view_types,
         &mapping_types,
         &program_struct,
         &Literal::string(abi.program.as_str()),
@@ -52,6 +54,7 @@ pub fn generate_program_module(abi: &Program, imports: &[String]) -> TokenStream
 fn generate_program_impl(
     imports: &[String],
     function_types: &[FunctionTypes],
+    view_types: &[FunctionTypes],
     mapping_types: &[MappingTypes],
     program_struct: &Ident,
     program_id: &Literal,
@@ -78,6 +81,9 @@ fn generate_program_impl(
         .iter()
         .map(|types| generate_function(&dependency_ids, types))
         .collect();
+
+    let view_implementations: Vec<TokenStream> =
+        view_types.iter().map(generate_view_function).collect();
 
     let mapping_implementations: Vec<TokenStream> =
         mapping_types.iter().map(generate_mapping).collect();
@@ -114,6 +120,8 @@ fn generate_program_impl(
             }
 
             #(#function_implementations)*
+
+            #(#view_implementations)*
 
             #(#mapping_implementations)*
         }
@@ -570,6 +578,30 @@ fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> T
                     function_args,
                     &dependencies,
                 )
+                .map_err(|e| anyhow!("{}", e))?;
+
+            #return_conversions
+        }
+    }
+}
+
+fn generate_view_function(types: &FunctionTypes) -> TokenStream {
+    let FunctionTypes {
+        name,
+        input_params,
+        input_conversions,
+        return_type,
+        return_conversions,
+    } = types;
+
+    quote! {
+        pub fn #name(&self, #input_params) -> #return_type {
+            let function_name = Identifier::try_from(stringify!(#name)).expect("invalid identifier");
+            let function_args: Vec<Value<N>> = vec![#input_conversions];
+
+            let function_outputs = self
+                .vm_manager
+                .evaluate_view(&self.program_id, &function_name, function_args)
                 .map_err(|e| anyhow!("{}", e))?;
 
             #return_conversions

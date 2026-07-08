@@ -22,6 +22,11 @@ program dev.aleo {
         let c: u32 = a + b;
         return c;
     }
+
+    view fn balance_view(id: u64) -> u64 {
+        return balances.get_or_use(id, 0u64);
+    }
+
     fn nested(public b: B) -> public B {
         let resulta: A = A {
             number: 1u64,

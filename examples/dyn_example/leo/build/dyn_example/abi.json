@@ -2,21 +2,7 @@
   "program": "dyn_example.aleo",
   "structs": [],
   "records": [],
-  "mappings": [
-    {
-      "name": "local_counter",
-      "key": {
-        "Primitive": {
-          "UInt": "U64"
-        }
-      },
-      "value": {
-        "Primitive": {
-          "UInt": "U32"
-        }
-      }
-    }
-  ],
+  "mappings": [],
   "storage_variables": [],
   "functions": [
     {
@@ -262,111 +248,6 @@
             "mode": "Private"
           }
         }
-      ]
-    },
-    {
-      "name": "aleo_generator",
-      "inputs": [],
-      "outputs": [
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": "Group"
-            },
-            "mode": "Private"
-          }
-        }
-      ]
-    },
-    {
-      "name": "dyn_record_mint_then_double",
-      "inputs": [
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U64"
-              }
-            },
-            "mode": "Public"
-          }
-        },
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": "Identifier"
-            },
-            "mode": "Private"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U64"
-              }
-            },
-            "mode": "Private"
-          }
-        },
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U64"
-              }
-            },
-            "mode": "Private"
-          }
-        }
-      ]
-    },
-    {
-      "name": "final_compose_import_and_local",
-      "inputs": [
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": "Field"
-            },
-            "mode": "Private"
-          }
-        },
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U64"
-              }
-            },
-            "mode": "Public"
-          }
-        },
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U32"
-              }
-            },
-            "mode": "Public"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "Plaintext": {
-            "ty": {
-              "Primitive": {
-                "UInt": "U32"
-              }
-            },
-            "mode": "Private"
-          }
-        },
-        "Final"
       ]
     }
   ]

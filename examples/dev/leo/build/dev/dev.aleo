@@ -115,5 +115,10 @@ finalize store_block_info:
     set block.height into block_heights[r0];
     set block.timestamp into block_timestamps[r0];
 
+view balance_view:
+    input r0 as u64.public;
+    get.or_use balances[r0] 0u64 into r1;
+    output r1 as u64.public;
+
 constructor:
     assert.eq edition 0u16;
