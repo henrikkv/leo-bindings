@@ -1,4 +1,4 @@
-use leo_bindings_core::{FromValue, ToValue};
+use crate::value::{FromValue, ToValue};
 use snarkvm::prelude::{Address as SvmAddress, Literal, Network, Plaintext, ProgramID, Value};
 use std::fmt;
 use std::ops::Deref;

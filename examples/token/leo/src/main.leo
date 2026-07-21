@@ -24,7 +24,7 @@ program token.aleo {
     }
 
     fn transfer_public(public receiver: address, public amount: u64) -> Final {
-        let sender: address = self.caller;
+        let sender: address = std::ctx::caller();
         return final {
             let sender_amount: u64 = Mapping::get_or_use(account, sender, 0u64);
             Mapping::set(account, sender, sender_amount - amount);
@@ -64,7 +64,7 @@ program token.aleo {
     }
 
     fn transfer_public_to_private(public receiver: address, public amount: u64) -> (Token, Final) {
-        let sender: address = self.caller;
+        let sender: address = std::ctx::caller();
         let transferred: Token = Token {
             owner: receiver,
             amount: amount,

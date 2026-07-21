@@ -84,7 +84,7 @@ program dev.aleo {
 
     fn asynchronous(balance: u64, id: u64) -> (User, Final) {
         let user: User  = User {
-            owner: self.caller,
+            owner: std::ctx::caller(),
             id: id,
             balance: balance,
         };
@@ -97,8 +97,8 @@ program dev.aleo {
 
     fn store_block_info(id: u64) -> Final {
         return final {
-            Mapping::set(block_heights, id, block.height);
-            Mapping::set(block_timestamps, id, block.timestamp);
+            Mapping::set(block_heights, id, std::ctx::block_height());
+            Mapping::set(block_timestamps, id, std::ctx::block_timestamp());
         };
     }
 }

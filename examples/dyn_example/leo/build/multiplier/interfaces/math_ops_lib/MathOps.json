@@ -1,9 +1,10 @@
 {
-  "program": "adder.aleo",
-  "structs": [],
-  "records": [],
-  "mappings": [],
-  "storage_variables": [],
+  "name": "MathOps",
+  "program": "math_ops_lib",
+  "path": [
+    "MathOps"
+  ],
+  "parents": [],
   "functions": [
     {
       "name": "combine",
@@ -42,5 +43,9 @@
         }
       ]
     }
-  ]
+  ],
+  "records": [],
+  "mappings": [],
+  "storage_variables": [],
+  "structs": []
 }

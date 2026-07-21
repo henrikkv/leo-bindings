@@ -1,0 +1,20 @@
+[package]
+name = "leo-bindings-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "leo-bindings"
+path = "src/main.rs"
+
+[dependencies]
+leo-bindings.workspace = true
+leo-bindings-core.workspace = true
+aleo-std = { workspace = true, features = ["storage"] }
+anyhow.workspace = true
+clap.workspace = true
+colored.workspace = true
+indexmap.workspace = true
+regex.workspace = true
+leo-span.workspace = true
+leo-package.workspace = true

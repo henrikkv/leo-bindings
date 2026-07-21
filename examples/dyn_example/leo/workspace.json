@@ -1,0 +1,3 @@
+{
+  "members": ["dyn_example", "imports/adder", "imports/multiplier", "lib/math_ops_lib"]
+}

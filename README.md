@@ -17,10 +17,8 @@ leo devnet --snarkos-features test_network --clear-storage --yes --consensus-hei
 Run tests with:
 
 ```bash
-cargo test --release -- --nocapture
+cargo test -- --nocapture
 ```
-
-The `--release` flag slows down compile times and speeds up proving times.
 
 ## Generating bindings
 
@@ -30,10 +28,11 @@ The `--release` flag slows down compile times and speeds up proving times.
 leo-bindings update
 ```
 
-Install leo-bindings with `cargo install --path .` and run `leo-bindings update` in the top level of the Leo project.
+Install leo-bindings with `cargo install --path .` in ./leo-bindings-cli and run `leo-bindings update` in the top level of the Leo project.
 Run again if `program.json` changes to update the generated files.
 Keep this workspace as it was generated, and import it in another Rust package.
 Use `--workspace` if the bindings are in a Cargo workspace.
+It is recommended to use leo workspaces for projects with more than one leo program.
 
 The generated bindings are available at `projectname_bindings::projectname::*` in rust.
 See how to create accounts and use credits.aleo in the [token example](examples/token/tests/simple_test.rs).

@@ -800,6 +800,12 @@ impl VMManager<TestnetV0> for LocalVM {
         let block = self.block_at_height(height)?;
 
         let block_timestamp = Some(block.timestamp());
+        let block_spend_limit = match block.authority() {
+            snarkvm::ledger::authority::Authority::Quorum(subdag) => {
+                subdag.spend_limit(block.height())
+            }
+            _ => None,
+        };
         let state = FinalizeGlobalState::new::<TestnetV0>(
             block.round(),
             height,
@@ -807,6 +813,7 @@ impl VMManager<TestnetV0> for LocalVM {
             block.cumulative_weight(),
             block.cumulative_proof_target(),
             block.previous_hash(),
+            block_spend_limit,
         )
         .map_err(|e| Error::Other(format!("Failed to build finalize global state: {e}")))?;
 

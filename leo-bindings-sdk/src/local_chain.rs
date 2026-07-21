@@ -26,12 +26,11 @@ pub fn parse_local_chain_blocks(data: &[u8]) -> Result<Vec<Block<TestnetV0>>> {
         return Err(Error::Other("local_chain: blob too short".into()));
     }
     let mut c = Cursor::new(data);
-    let n =
-        u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))? as usize;
+    let n = u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))? as usize;
     let mut blocks = Vec::with_capacity(n);
     for _ in 0..n {
-        let len = u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))?
-            as usize;
+        let len =
+            u32::read_le(&mut c).map_err(|e| Error::Other(format!("local_chain: {e}")))? as usize;
         let mut buf = vec![0u8; len];
         c.read_exact(&mut buf)
             .map_err(|e| Error::Other(format!("local_chain: {e}")))?;
@@ -147,8 +146,8 @@ fn genesis_dev_quorum<R: Rng + CryptoRng>(
 
     let mut members = IndexMap::with_capacity(N);
     for key in &private_keys {
-        let addr = Address::try_from(key)
-            .map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
+        let addr =
+            Address::try_from(key).map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
         members.insert(addr, (MIN_VALIDATOR_STAKE, true, 0u8));
     }
     let committee = Committee::<TestnetV0>::new_genesis(members)
@@ -156,14 +155,12 @@ fn genesis_dev_quorum<R: Rng + CryptoRng>(
 
     let remaining = TestnetV0::STARTING_SUPPLY
         .checked_sub(MIN_VALIDATOR_STAKE * (N as u64))
-        .ok_or_else(|| {
-            Error::Other("Not enough starting supply for genesis validators".into())
-        })?;
+        .ok_or_else(|| Error::Other("Not enough starting supply for genesis validators".into()))?;
 
     let mut public_balances = IndexMap::with_capacity(N);
     for key in &private_keys {
-        let addr = Address::try_from(key)
-            .map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
+        let addr =
+            Address::try_from(key).map_err(|e| Error::Other(format!("Address::try_from: {e}")))?;
         public_balances.insert(addr, remaining / N as u64);
     }
 
@@ -291,6 +288,7 @@ fn construct_finalize_global_state<C: ConsensusStorage<TestnetV0>>(
         latest_block.cumulative_weight(),
         0u128,
         latest_block.hash(),
+        None,
     )
     .expect("FinalizeGlobalState::new")
 }

@@ -7,20 +7,20 @@
   "dependencies": [
     {
       "name": "adder.aleo",
-      "location": "local",
-      "path": "imports/adder",
+      "location": "workspace",
+      "path": null,
       "edition": null
     },
     {
       "name": "multiplier.aleo",
-      "location": "local",
-      "path": "imports/multiplier",
+      "location": "workspace",
+      "path": null,
       "edition": null
     },
     {
       "name": "math_ops_lib",
-      "location": "local",
-      "path": "lib/math_ops_lib",
+      "location": "workspace",
+      "path": null,
       "edition": null
     }
   ],

@@ -7,8 +7,8 @@
   "dependencies": [
     {
       "name": "math_ops_lib",
-      "location": "local",
-      "path": "../../lib/math_ops_lib",
+      "location": "workspace",
+      "path": null,
       "edition": null
     }
   ],

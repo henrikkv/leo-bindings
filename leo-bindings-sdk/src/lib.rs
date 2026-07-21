@@ -6,11 +6,12 @@ mod error;
 pub mod local_chain;
 mod stats;
 mod utils;
+mod value;
 mod vm_manager;
 
 pub use account::Account;
 pub use address::Address;
-pub use leo_bindings_core::{FromValue, ToValue};
+pub use value::{FromValue, ToValue};
 pub use config::{Client, Credentials};
 pub use endpoints::transactions::TransactionStatus;
 pub use error::{Error, Result};
@@ -19,6 +20,11 @@ pub use stats::{print_deployment_stats, print_execution_stats};
 pub use vm_manager::{LocalVM, LocalVMSnapshot, SnapshotStore};
 pub use vm_manager::{CONSENSUS_VERSION, NetworkVm, VMManager};
 
+pub use anyhow;
+pub use indexmap;
+pub use log;
+pub use snarkvm;
+
 pub fn block_on<F: std::future::Future>(f: F) -> F::Output {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
@@ -26,5 +32,3 @@ pub fn block_on<F: std::future::Future>(f: F) -> F::Output {
         .expect("Failed to build tokio runtime")
         .block_on(f)
 }
-
-pub use snarkvm;
