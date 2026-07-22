@@ -53,24 +53,22 @@ fn update_bindings(project_path: &Path, auto_yes: bool, cargo_workspace: bool) -
         .context("Failed to resolve project path")?;
 
     let workspace = resolve_workspace(&project_path)?;
-    let root_unit = root_program_unit(&workspace, &project_path)?;
-    if !root_unit.kind().is_program() {
-        bail!(
-            "`{}` is a Leo library (has `src/lib.leo`, no `src/main.leo`/`src/main.aleo`).\n\
-             leo-bindings update only scaffolds the project root when it is a deployable program \
-             (library-root bindings are not supported yet).",
-            project_path.display()
-        );
-    }
-    let crate_name = format!("{}_bindings", root_unit.name());
+    let root_unit = resolve_root_unit(&workspace, &project_path)?;
+    let crate_name = format!("{}_bindings", root_unit.name().to_lowercase());
 
     let scaffold_dir = workspace
         .workspace_root()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| project_path.clone());
     let programs = workspace.programs();
+    let libraries = workspace.libraries();
 
-    println!("{} Found {} programs", "✓".green(), programs.len());
+    println!(
+        "{} Found {} programs, {} libraries",
+        "✓".green(),
+        programs.len(),
+        libraries.len()
+    );
 
     let file_paths = [
         scaffold_dir.join("Cargo.toml"),
@@ -235,7 +233,7 @@ fn default_imports_block() -> &'static str {
 "#
 }
 
-fn root_program_unit<'a>(
+fn resolve_root_unit<'a>(
     workspace: &'a ResolvedWorkspace,
     project_path: &Path,
 ) -> Result<&'a ResolvedUnit> {

@@ -8,15 +8,19 @@ use crate::discover::{
     ResolvedWorkspace, cross_crate_imports, program_imports, register_rerun_if_changed,
     resolve_workspace,
 };
-use crate::generator::generate_program_module;
+use crate::generator::{generate_interface_module, generate_program_module};
+use quote::quote;
 
 pub fn run_bindings_build() -> Result<()> {
     let manifest_path = PathBuf::from(
         std::env::var("CARGO_MANIFEST_DIR").context("CARGO_MANIFEST_DIR is not set")?,
     );
     let workspace = resolve_workspace(&manifest_path)?;
-    if workspace.programs().is_empty() {
-        bail!("no Leo programs found under {}", manifest_path.display());
+    if workspace.programs().is_empty() && workspace.libraries().is_empty() {
+        bail!(
+            "no Leo programs or libraries found under {}",
+            manifest_path.display()
+        );
     }
 
     register_rerun_if_changed(&workspace);
@@ -28,7 +32,8 @@ fn ensure_leo_outputs(manifest_path: &Path, workspace: &ResolvedWorkspace) -> Re
     let leo_root = workspace.leo_root(manifest_path);
     let programs = workspace.programs();
 
-    if programs.iter().any(|unit| !unit.is_bytecode_only()) {
+    let has_libraries = !workspace.libraries().is_empty();
+    if has_libraries || programs.iter().any(|unit| !unit.is_bytecode_only()) {
         println!("cargo:warning=Running leo build");
         run_leo_command(&leo_root, "build", &[])?;
     }
@@ -77,12 +82,31 @@ fn write_bindings(workspace: &ResolvedWorkspace) -> Result<()> {
     let programs = workspace.programs();
     for unit in &programs {
         let imports = program_imports(unit, units);
-        let tokens = generate_program_module(&unit.load_abi()?, &imports);
+        let mut tokens = generate_program_module(&unit.load_abi()?, &imports);
+        for interface in unit.load_interfaces()? {
+            tokens.extend(generate_interface_module(&interface));
+        }
         let file = syn::parse2(tokens).context("failed to parse generated bindings")?;
         write_if_changed(
             &bindings_dir.join(format!("{}.rs", unit.name())),
             prettyplease::unparse(&file),
         )?;
+    }
+
+    let mut interface_units: Vec<String> = Vec::new();
+    for unit in workspace.libraries() {
+        let interfaces = unit.load_interfaces()?;
+        if interfaces.is_empty() {
+            continue;
+        }
+        let modules = interfaces.iter().map(generate_interface_module);
+        let tokens = quote! { #(#modules)* };
+        let file = syn::parse2(tokens).context("failed to parse generated interface bindings")?;
+        write_if_changed(
+            &bindings_dir.join(format!("{}.rs", unit.name())),
+            prettyplease::unparse(&file),
+        )?;
+        interface_units.push(unit.name().to_string());
     }
 
     let mut root = String::from(
@@ -94,6 +118,12 @@ fn write_bindings(workspace: &ResolvedWorkspace) -> Result<()> {
             root,
             "include!(concat!(env!(\"OUT_DIR\"), \"/bindings/{}.rs\"));",
             unit.name()
+        )?;
+    }
+    for name in &interface_units {
+        writeln!(
+            root,
+            "include!(concat!(env!(\"OUT_DIR\"), \"/bindings/{name}.rs\"));"
         )?;
     }
     for name in cross_crate_imports(&programs) {

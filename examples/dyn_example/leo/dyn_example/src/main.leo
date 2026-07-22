@@ -1,12 +1,20 @@
 import adder.aleo;
 import multiplier.aleo;
 
-program dyn_example.aleo {
+export interface Doubler {
+    fn double_it(x: u32) -> u32;
+}
+
+program dyn_example.aleo : Doubler {
     @noupgrade
     constructor() {}
 
     fn main(public a: u32, b: u32) -> u32 {
         return a + b;
+    }
+
+    fn double_it(x: u32) -> u32 {
+        return x + x;
     }
 
     fn static_import_two_combines(public a: u32, public b: u32) -> (u32, u32) {

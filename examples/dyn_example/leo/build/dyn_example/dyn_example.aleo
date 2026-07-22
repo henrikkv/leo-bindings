@@ -8,6 +8,11 @@ function main:
     add r0 r1 into r2;
     output r2 as u32.private;
 
+function double_it:
+    input r0 as u32.private;
+    add r0 r0 into r1;
+    output r1 as u32.private;
+
 function static_import_two_combines:
     input r0 as u32.public;
     input r1 as u32.public;

@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
 use indexmap::{IndexMap, IndexSet};
-use leo_abi_types::Program;
+use leo_abi_types::{Interface, Program};
 use leo_package::{
     CompilationUnit, Dependency, Location, MANIFEST_FILENAME, Package, PackageKind, ProgramData,
     WORKSPACE_MANIFEST_FILENAME, Workspace, bare_unit_name,
@@ -85,6 +85,33 @@ impl ResolvedUnit {
         }
 
         Ok(abi)
+    }
+
+    pub(crate) fn load_interfaces(&self) -> Result<Vec<Interface>> {
+        let interfaces_dir = self
+            .package
+            .unit_build_directory(&self.bare_name)
+            .join("interfaces");
+        if !interfaces_dir.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut interfaces = Vec::new();
+        for entry in std::fs::read_dir(&interfaces_dir)
+            .with_context(|| format!("failed to read {}", interfaces_dir.display()))?
+        {
+            let path = entry?.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                continue;
+            }
+            let json = std::fs::read_to_string(&path)
+                .with_context(|| format!("failed to read interface at {}", path.display()))?;
+            let interface: Interface = serde_json::from_str(&json)
+                .with_context(|| format!("failed to parse interface at {}", path.display()))?;
+            interfaces.push(interface);
+        }
+        interfaces.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(interfaces)
     }
 }
 
