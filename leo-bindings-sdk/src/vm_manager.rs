@@ -13,7 +13,7 @@ use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
 use snarkvm::synthesizer::program::{FinalizeGlobalState, FinalizeStoreTrait, StackTrait};
 
-pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V15;
+pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V18;
 
 pub trait VMManager<N: Network>: Send + Sync + Clone {
     fn program_exists(&self, program_id: &ProgramID<N>) -> Result<bool>;
@@ -800,11 +800,12 @@ impl VMManager<TestnetV0> for LocalVM {
         let block = self.block_at_height(height)?;
 
         let block_timestamp = Some(block.timestamp());
-        let block_spend_limit = match block.authority() {
-            snarkvm::ledger::authority::Authority::Quorum(subdag) => {
-                subdag.spend_limit(block.height())
-            }
-            _ => None,
+        let (block_spend_limit, block_synthesis_limit) = match block.authority() {
+            snarkvm::ledger::authority::Authority::Quorum(subdag) => (
+                subdag.spend_limit(block.height()),
+                subdag.synthesis_limit(block.height()),
+            ),
+            _ => (None, None),
         };
         let state = FinalizeGlobalState::new::<TestnetV0>(
             block.round(),
@@ -814,6 +815,7 @@ impl VMManager<TestnetV0> for LocalVM {
             block.cumulative_proof_target(),
             block.previous_hash(),
             block_spend_limit,
+            block_synthesis_limit,
         )
         .map_err(|e| Error::Other(format!("Failed to build finalize global state: {e}")))?;
 

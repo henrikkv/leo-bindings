@@ -289,6 +289,7 @@ fn construct_finalize_global_state<C: ConsensusStorage<TestnetV0>>(
         0u128,
         latest_block.hash(),
         None,
+        None,
     )
     .expect("FinalizeGlobalState::new")
 }
