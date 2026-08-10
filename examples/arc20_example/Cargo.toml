@@ -1,0 +1,13 @@
+[package]
+name = "arc20-example"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+arc20_token_bindings = { path = "leo" }
+arc20_bindings.workspace = true
+leo-bindings.workspace = true
+
+[dev-dependencies]
+snarkvm.workspace = true
+rand.workspace = true

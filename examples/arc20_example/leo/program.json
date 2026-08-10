@@ -1,0 +1,14 @@
+{
+    "program": "arc20_token.aleo",
+    "version": "0.0.0",
+    "description": "Example token implementing arc20",
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "arc20",
+            "location": "local",
+            "path": "../../../leo-bindings-arc20",
+            "edition": null
+        }
+    ]
+}

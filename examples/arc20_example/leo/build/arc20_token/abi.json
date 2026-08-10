@@ -1,0 +1,639 @@
+{
+  "program": "arc20_token.aleo",
+  "structs": [],
+  "records": [
+    {
+      "path": [
+        "Token"
+      ],
+      "fields": [
+        {
+          "name": "owner",
+          "ty": {
+            "Primitive": "Address"
+          },
+          "mode": "Private"
+        },
+        {
+          "name": "amount",
+          "ty": {
+            "Primitive": {
+              "UInt": "U128"
+            }
+          },
+          "mode": "Private"
+        }
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "name": "balances",
+      "key": {
+        "Primitive": "Address"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U128"
+        }
+      }
+    },
+    {
+      "name": "allowances",
+      "key": {
+        "Primitive": "Field"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U128"
+        }
+      }
+    },
+    {
+      "name": "total_supply",
+      "key": {
+        "Primitive": "Boolean"
+      },
+      "value": {
+        "Primitive": {
+          "UInt": "U128"
+        }
+      }
+    }
+  ],
+  "storage_variables": [],
+  "functions": [
+    {
+      "name": "mint_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "mint_private",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Private"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transfer_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_private",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Private"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transfer_private_to_public",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_public_to_private",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_public_as_signer",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_from_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "transfer_from_public_to_private",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Private"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        "Final"
+      ]
+    },
+    {
+      "name": "approve_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "unapprove_public",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        "Final"
+      ]
+    },
+    {
+      "name": "join",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "split",
+      "inputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Private"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        },
+        {
+          "Record": {
+            "path": [
+              "Token"
+            ],
+            "program": "arc20_token.aleo"
+          }
+        }
+      ]
+    }
+  ],
+  "views": [
+    {
+      "name": "balance_of",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "allowance",
+      "inputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        },
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Address"
+            },
+            "mode": "Public"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "supply",
+      "inputs": [],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "max_supply",
+      "inputs": [],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U128"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "decimals",
+      "inputs": [],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": {
+                "UInt": "U8"
+              }
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "name",
+      "inputs": [],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Identifier"
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "symbol",
+      "inputs": [],
+      "outputs": [
+        {
+          "Plaintext": {
+            "ty": {
+              "Primitive": "Identifier"
+            },
+            "mode": "Public"
+          }
+        }
+      ]
+    }
+  ]
+}

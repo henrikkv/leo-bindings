@@ -6,6 +6,8 @@ members = [
     "leo-bindings-core",
     "leo-bindings-credits",
     "leo-bindings-sdk",
+    "examples/arc20_example",
+    "examples/arc20_example/leo",
     "examples/dev/leo",
     "examples/dev",
     "examples/token/leo",
@@ -34,6 +36,7 @@ leo-bindings-cli = { path = "leo-bindings-cli" }
 leo-bindings-core = { path = "leo-bindings-core" }
 leo-bindings-sdk = { path = "leo-bindings-sdk" }
 credits_bindings = { path = "leo-bindings-credits" }
+arc20_bindings = { path = "leo-bindings-arc20" }
 snarkvm = { git = "https://github.com/henrikkv/snarkVM", branch = "leo-bindings", features = ["test_consensus_heights"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

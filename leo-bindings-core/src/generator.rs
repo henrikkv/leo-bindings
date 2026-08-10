@@ -250,8 +250,8 @@ pub fn generate_records(records: &[Record]) -> Vec<TokenStream> {
                     let member_name = Ident::new(&member.name, Span::call_site());
                     let member_type = member.ty.to_rust_type();
                     quote! {
-                        pub fn #member_name(&self) -> &#member_type {
-                            &self.#member_name
+                        pub fn #member_name(&self) -> #member_type {
+                            self.#member_name.clone()
                         }
                     }
                 })
@@ -793,8 +793,8 @@ fn generate_record_view(record: &Record) -> TokenStream {
             let member_name = Ident::new(&member.name, Span::call_site());
             let member_type = member.ty.to_rust_type();
             quote! {
-                pub fn #member_name(&self) -> &#member_type {
-                    &self.#member_name
+                pub fn #member_name(&self) -> #member_type {
+                    self.#member_name.clone()
                 }
             }
         })
@@ -810,7 +810,10 @@ fn generate_record_view(record: &Record) -> TokenStream {
         /// Convert to a SnarkVM Value
         impl<N: Network> ToValue<N> for #record_name<N> {
             fn to_value(&self) -> Value<N> {
-                Value::DynamicRecord(self.__record.clone())
+                match self.__record.to_record(true) {
+                    Ok(record) => Value::Record(record),
+                    Err(e) => panic!("Failed to materialize dynamic record: {}", e),
+                }
             }
         }
 

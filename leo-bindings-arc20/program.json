@@ -1,0 +1,9 @@
+{
+  "program": "arc20",
+  "version": "0.1.0",
+  "description": "Arc20 standard interface",
+  "license": "MIT",
+  "leo": "4.4.1",
+  "dependencies": null,
+  "dev_dependencies": null
+}
