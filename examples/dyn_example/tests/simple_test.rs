@@ -29,7 +29,7 @@ fn run_dyn_example_tests<V: VMManager<TestnetV0>>(vm: V) {
     assert_eq!(result, (5u32, 6u32));
 
     let result = app
-        .dynamic_combine_id_routing(
+        .debug_dynamic_combine_id_routing(
             &alice,
             "adder".try_into().unwrap(),
             "multiplier".try_into().unwrap(),

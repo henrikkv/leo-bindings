@@ -37,7 +37,7 @@ leo-bindings-core = { path = "leo-bindings-core" }
 leo-bindings-sdk = { path = "leo-bindings-sdk" }
 credits_bindings = { path = "leo-bindings-credits" }
 arc20_bindings = { path = "leo-bindings-arc20" }
-snarkvm = { git = "https://github.com/henrikkv/snarkVM", branch = "leo-bindings", features = ["test_consensus_heights"] }
+snarkvm = { git = "https://github.com/henrikkv/snarkVM", branch = "debugger", features = ["test_consensus_heights"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
@@ -62,12 +62,14 @@ regex = "1.10"
 log = "0.4"
 dotenvy = "0.15"
 env_logger = "0.11"
-leo-span = { git = "https://github.com/ProvableHQ/leo", package = "leo-span" }
-leo-package = { git = "https://github.com/ProvableHQ/leo", package = "leo-package" }
-leo-ast = { git = "https://github.com/ProvableHQ/leo", package = "leo-ast" }
-leo-parser = { git = "https://github.com/ProvableHQ/leo", package = "leo-parser" }
-leo-errors = { git = "https://github.com/ProvableHQ/leo", package = "leo-errors" }
-leo-abi-types = { git = "https://github.com/ProvableHQ/leo", package = "leo-abi-types" }
+leo-span = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-package = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-ast = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-parser = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-errors = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-abi-types = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-debugger = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
+leo-passes = { git = "https://github.com/henrikkv/leo", branch = "debugger" }
 reqwest = { version = "0.12", default-features = false }
 reqwest-middleware = { version = "0.3", features = ["json"] }
 reqwest-retry = "0.6"

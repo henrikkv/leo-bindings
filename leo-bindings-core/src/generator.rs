@@ -93,21 +93,19 @@ fn generate_program_impl(
         })
         .multiunzip();
 
-    let function_implementations: Vec<TokenStream> = function_types
+    let fn_impls: Vec<TokenStream> = function_types
         .iter()
         .map(|types| generate_function(&dependency_ids, types))
         .collect();
 
-    let view_implementations: Vec<TokenStream> =
-        view_types.iter().map(generate_view_function).collect();
+    let view_impls: Vec<TokenStream> = view_types.iter().map(generate_view_function).collect();
 
-    let mapping_implementations: Vec<TokenStream> =
-        mapping_types.iter().map(generate_mapping).collect();
+    let mapping_impls: Vec<TokenStream> = mapping_types.iter().map(generate_mapping).collect();
 
-    let mapping_setter_implementations: Vec<TokenStream> =
+    let mapping_setter_impls: Vec<TokenStream> =
         mapping_types.iter().map(generate_mapping_setter).collect();
 
-    let new_implementation = generate_new(&deployment_calls, &dependency_ids);
+    let new_impl = generate_new(&deployment_calls, &dependency_ids);
 
     quote! {
         #[allow(unused_imports)]
@@ -125,7 +123,7 @@ fn generate_program_impl(
         impl<N: Network, M: VMManager<N> + Clone> #program_struct<N, M> {
             const PROGRAM_ID: &str = #program_id;
 
-            #new_implementation
+            #new_impl
 
             pub fn address(&self) -> Address<N> {
                 Address::from(self.program_id.to_address().expect("Could not convert the program id to address"))
@@ -135,15 +133,15 @@ fn generate_program_impl(
                 *self.program_id.name()
             }
 
-            #(#function_implementations)*
+            #(#fn_impls)*
 
-            #(#view_implementations)*
+            #(#view_impls)*
 
-            #(#mapping_implementations)*
+            #(#mapping_impls)*
         }
 
         impl<N: Network> #program_struct<N, LocalVM> where LocalVM: VMManager<N>{
-            #(#mapping_setter_implementations)*
+            #(#mapping_setter_impls)*
         }
     }
 }
@@ -430,6 +428,7 @@ pub fn generate_structs(structs: &[leo_abi_types::Struct]) -> Vec<TokenStream> {
 
 pub(crate) struct FunctionTypes {
     pub(crate) name: Ident,
+    pub(crate) debug_name: Ident,
     pub(crate) input_params: TokenStream,
     pub(crate) input_conversions: TokenStream,
     pub(crate) return_type: TokenStream,
@@ -447,6 +446,7 @@ pub(crate) struct MappingTypes {
 fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<FunctionTypes> {
     functions.iter().map(|function| {
         let name = Ident::new(&function.name, Span::call_site());
+        let debug_name = Ident::new(&format!("debug_{}", function.name), Span::call_site());
 
         let (input_params, input_conversions): (Vec<_>, Vec<_>) = function.inputs.iter().enumerate().map(|(i, input)| {
             let param_name = Ident::new(&format!("arg{}", i+1), Span::call_site());
@@ -498,6 +498,7 @@ fn generate_function_types(functions: &[leo_abi_types::Function]) -> Vec<Functio
         };
         FunctionTypes {
             name,
+            debug_name,
             input_params,
             input_conversions,
             return_type,
@@ -571,6 +572,7 @@ fn generate_new(deployment_calls: &[TokenStream], dependency_ids: &[TokenStream]
 fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> TokenStream {
     let FunctionTypes {
         name,
+        debug_name,
         input_params,
         input_conversions,
         return_type,
@@ -595,6 +597,26 @@ fn generate_function(dependency_ids: &[TokenStream], types: &FunctionTypes) -> T
 
             #return_conversions
         }
+
+        pub fn #debug_name(&self, account: &Account<N>, #input_params) -> #return_type {
+            let function_name = Identifier::try_from(stringify!(#name)).expect("invalid identifier");
+            let function_args: Vec<Value<N>> = vec![#input_conversions];
+            let dependencies: Vec<ProgramID<N>> = vec![#(ProgramID::try_from(#dependency_ids).expect("invalid program ID")),*];
+            let debug_sources = leo_bindings_sdk::collect_debug_sources(Path::new(env!("CARGO_MANIFEST_DIR")))?;
+
+            let function_outputs = self
+                .vm_manager
+                .debug_execute(
+                    account,
+                    &self.program_id,
+                    &function_name,
+                    function_args,
+                    &dependencies,
+                    debug_sources,
+                )?;
+
+            #return_conversions
+        }
     }
 }
 
@@ -605,6 +627,7 @@ fn generate_view_function(types: &FunctionTypes) -> TokenStream {
         input_conversions,
         return_type,
         return_conversions,
+        ..
     } = types;
 
     quote! {
@@ -678,7 +701,7 @@ pub fn generate_interface_module(iface: &Interface) -> TokenStream {
     let function_types = generate_function_types(&iface.functions);
     let view_types = generate_function_types(&iface.views);
 
-    let function_impls: Vec<TokenStream> = function_types
+    let fn_impls: Vec<TokenStream> = function_types
         .iter()
         .map(|types| generate_function(&[], types))
         .collect();
@@ -691,10 +714,11 @@ pub fn generate_interface_module(iface: &Interface) -> TokenStream {
         pub mod #module {
             #[allow(unused_imports)]
             use leo_bindings_sdk::{Account, Address, FromValue, LocalVM, ToValue, VMManager, anyhow, log, snarkvm, indexmap::IndexMap};
-            use anyhow::{anyhow, Result};
+            use anyhow::Result;
             use snarkvm::prelude::*;
             #[allow(unused_imports)]
             use snarkvm::console::program::{Record, Plaintext};
+            use std::path::Path;
             use std::str::FromStr;
 
             #(#structs)*
@@ -725,7 +749,7 @@ pub fn generate_interface_module(iface: &Interface) -> TokenStream {
                     Address::from(self.program_id.to_address().expect("Could not convert the program id to address"))
                 }
 
-                #(#function_impls)*
+                #(#fn_impls)*
 
                 #(#view_impls)*
             }

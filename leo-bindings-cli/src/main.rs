@@ -142,6 +142,7 @@ build/*
 !build/*/
 build/imports/*
 !build/imports/*.abi.json
+*.dbg.json
 
 outputs/
 "

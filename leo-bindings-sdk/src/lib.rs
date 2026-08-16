@@ -1,6 +1,7 @@
 mod account;
 pub mod address;
 mod config;
+mod debug;
 mod endpoints;
 mod error;
 pub mod local_chain;
@@ -19,6 +20,9 @@ pub use local_chain::build_local_chain_bytes;
 pub use stats::{print_deployment_stats, print_execution_stats};
 pub use vm_manager::{LocalVM, LocalVMSnapshot, SnapshotStore};
 pub use vm_manager::{CONSENSUS_VERSION, NetworkVm, VMManager};
+pub use debug::collect_debug_sources;
+pub use leo_debugger::ProgramSource;
+pub use leo_debugger::debug_info::load as load_debug_info;
 
 pub use anyhow;
 pub use indexmap;

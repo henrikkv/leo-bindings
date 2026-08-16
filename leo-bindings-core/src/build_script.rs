@@ -35,7 +35,7 @@ fn ensure_leo_outputs(manifest_path: &Path, workspace: &ResolvedWorkspace) -> Re
     let has_libraries = !workspace.libraries().is_empty();
     if has_libraries || programs.iter().any(|unit| !unit.is_bytecode_only()) {
         println!("cargo:warning=Running leo build");
-        run_leo_command(&leo_root, "build", &[])?;
+        run_leo_command(&leo_root, "build", &["--debug-info"])?;
     }
     for unit in programs.iter().filter(|unit| unit.is_bytecode_only()) {
         let source = unit

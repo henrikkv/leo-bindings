@@ -5,6 +5,8 @@ use crate::local_chain::encode_local_chain_blocks;
 use crate::stats::{print_deployment_stats, print_execution_stats};
 use aleo_std::StorageMode;
 use http::uri::Uri;
+use leo_debugger::{DebugEvent, Phase, ProgramSource, Session};
+use snarkvm::circuit::AleoSimulate;
 use snarkvm::ledger::block::Transaction;
 use snarkvm::ledger::query::Query;
 use snarkvm::ledger::store::ConsensusStore;
@@ -47,6 +49,18 @@ pub trait VMManager<N: Network>: Send + Sync + Clone {
         inputs: Vec<Value<N>>,
         dependencies: &[ProgramID<N>],
     ) -> Result<Vec<Value<N>>>;
+
+    fn debug_execute(
+        &self,
+        _account: &Account<N>,
+        _program_id: &ProgramID<N>,
+        _function_name: &Identifier<N>,
+        _inputs: Vec<Value<N>>,
+        _dependencies: &[ProgramID<N>],
+        _debug_sources: Vec<ProgramSource>,
+    ) -> Result<Vec<Value<N>>> {
+        Err(Error::Other("Only LocalVM can debug.".to_string()))
+    }
 }
 
 #[derive(Clone)]
@@ -595,6 +609,89 @@ impl LocalVM {
         Ok(response.outputs().to_vec())
     }
 
+    pub fn debug_execute(
+        &self,
+        account: &Account<TestnetV0>,
+        program_id: &ProgramID<TestnetV0>,
+        function_name: &Identifier<TestnetV0>,
+        inputs: Vec<Value<TestnetV0>>,
+        dependencies: &[ProgramID<TestnetV0>],
+        debug_sources: Vec<ProgramSource>,
+    ) -> Result<Vec<Value<TestnetV0>>> {
+        log::info!("Debugging tx: {program_id}.{function_name}");
+
+        self.ensure_program_loaded(program_id, dependencies)?;
+
+        let private_key = *account.private_key();
+        let program_id = *program_id;
+        let function_name = *function_name;
+        let this = self.clone();
+
+        let (session, result_slot) =
+            Session::spawn_around(&debug_sources, Vec::new(), move |context| {
+                let mut rng = rand::rng();
+
+                let authorization = this.vm.authorize_local_proofless(
+                    &private_key,
+                    program_id,
+                    function_name,
+                    inputs,
+                    &mut rng,
+                )?;
+
+                context.install_hook();
+                this.vm
+                    .process()
+                    .evaluate::<AleoSimulate>(authorization.replicate())
+                    .map_err(|e| anyhow::anyhow!("evaluation failed: {e}"))?;
+
+                context.skip_instructions(true);
+                let has_finalize = this
+                    .vm
+                    .process()
+                    .get_stack(program_id)
+                    .and_then(|stack| stack.get_function(&function_name))
+                    .is_ok_and(|function| function.finalize_logic().is_some());
+                if has_finalize {
+                    context.send_event(DebugEvent::PhaseChange(Phase::Finalize));
+                }
+
+                let (transaction, response) = this
+                    .vm
+                    .execute_authorization_with_response_local_proofless(
+                        &private_key,
+                        authorization,
+                        None,
+                        0,
+                        None,
+                        &mut rng,
+                    )
+                    .map_err(|e| {
+                        anyhow::anyhow!("execute_authorization_with_response_local_proofless: {e}")
+                    })?;
+
+                let beacon_account = Account::dev_account(0)?;
+                crate::local_chain::commit_transaction(
+                    &this.vm,
+                    beacon_account.private_key(),
+                    &transaction,
+                    &mut rng,
+                )?;
+
+                Ok(response.outputs().to_vec())
+            });
+
+        leo_debugger::tui::run(session, debug_sources)
+            .map_err(|e| Error::Other(format!("debugger TUI: {e}")))?;
+
+        result_slot
+            .lock()
+            .expect("debug result mutex poisoned")
+            .take()
+            .ok_or_else(|| Error::Other("debug session ended without a result".to_string()))?
+            .map_err(|e| Error::Other(format!("debugged execution: {e}")))
+    }
+
     fn block_at_height(&self, height: u32) -> Result<Block<TestnetV0>> {
         let hash = self
             .vm
@@ -854,6 +951,26 @@ impl VMManager<TestnetV0> for LocalVM {
             function_name,
             inputs,
             dependencies,
+        )
+    }
+
+    fn debug_execute(
+        &self,
+        account: &Account<TestnetV0>,
+        program_id: &ProgramID<TestnetV0>,
+        function_name: &Identifier<TestnetV0>,
+        inputs: Vec<Value<TestnetV0>>,
+        dependencies: &[ProgramID<TestnetV0>],
+        debug_sources: Vec<ProgramSource>,
+    ) -> Result<Vec<Value<TestnetV0>>> {
+        LocalVM::debug_execute(
+            self,
+            account,
+            program_id,
+            function_name,
+            inputs,
+            dependencies,
+            debug_sources,
         )
     }
 }

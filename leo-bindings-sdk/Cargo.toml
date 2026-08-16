@@ -22,6 +22,8 @@ http.workspace = true
 colored.workspace = true
 num-format.workspace = true
 log.workspace = true
+leo-debugger.workspace = true
+leo-package.workspace = true
 
 [dev-dependencies]
 anyhow.workspace = true
