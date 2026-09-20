@@ -48,20 +48,20 @@
           "UInt": "U128"
         }
       }
-    },
+    }
+  ],
+  "storage_variables": [
     {
       "name": "total_supply",
-      "key": {
-        "Primitive": "Boolean"
-      },
-      "value": {
-        "Primitive": {
-          "UInt": "U128"
+      "ty": {
+        "Plaintext": {
+          "Primitive": {
+            "UInt": "U128"
+          }
         }
       }
     }
   ],
-  "storage_variables": [],
   "functions": [
     {
       "name": "mint_public",

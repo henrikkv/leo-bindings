@@ -53,7 +53,6 @@ pub fn generate_program_module(abi: &Program, imports: &[ImportRef]) -> TokenStr
         pub mod #program_module {
             #[allow(unused_imports)]
             use leo_bindings_sdk::{Account, Address, FromValue, LocalVM, ToValue, VMManager, anyhow, log, snarkvm, indexmap::IndexMap};
-            use anyhow::{anyhow, Result};
             use snarkvm::prelude::*;
 
             #type_imports
@@ -93,21 +92,19 @@ fn generate_program_impl(
         })
         .multiunzip();
 
-    let function_implementations: Vec<TokenStream> = function_types
+    let fn_impls: Vec<TokenStream> = function_types
         .iter()
         .map(|types| generate_function(&dependency_ids, types))
         .collect();
 
-    let view_implementations: Vec<TokenStream> =
-        view_types.iter().map(generate_view_function).collect();
+    let view_impls: Vec<TokenStream> = view_types.iter().map(generate_view_function).collect();
 
-    let mapping_implementations: Vec<TokenStream> =
-        mapping_types.iter().map(generate_mapping).collect();
+    let mapping_impls: Vec<TokenStream> = mapping_types.iter().map(generate_mapping).collect();
 
-    let mapping_setter_implementations: Vec<TokenStream> =
+    let mapping_setter_impls: Vec<TokenStream> =
         mapping_types.iter().map(generate_mapping_setter).collect();
 
-    let new_implementation = generate_new(&deployment_calls, &dependency_ids);
+    let new_impl = generate_new(&deployment_calls, &dependency_ids);
 
     quote! {
         #[allow(unused_imports)]
@@ -125,7 +122,7 @@ fn generate_program_impl(
         impl<N: Network, M: VMManager<N> + Clone> #program_struct<N, M> {
             const PROGRAM_ID: &str = #program_id;
 
-            #new_implementation
+            #new_impl
 
             pub fn address(&self) -> Address<N> {
                 Address::from(self.program_id.to_address().expect("Could not convert the program id to address"))
@@ -135,15 +132,15 @@ fn generate_program_impl(
                 *self.program_id.name()
             }
 
-            #(#function_implementations)*
+            #(#fn_impls)*
 
-            #(#view_implementations)*
+            #(#view_impls)*
 
-            #(#mapping_implementations)*
+            #(#mapping_impls)*
         }
 
         impl<N: Network> #program_struct<N, LocalVM> where LocalVM: VMManager<N>{
-            #(#mapping_setter_implementations)*
+            #(#mapping_setter_impls)*
         }
     }
 }
@@ -691,7 +688,6 @@ pub fn generate_interface_module(iface: &Interface) -> TokenStream {
         pub mod #module {
             #[allow(unused_imports)]
             use leo_bindings_sdk::{Account, Address, FromValue, LocalVM, ToValue, VMManager, anyhow, log, snarkvm, indexmap::IndexMap};
-            use anyhow::{anyhow, Result};
             use snarkvm::prelude::*;
             #[allow(unused_imports)]
             use snarkvm::console::program::{Record, Plaintext};

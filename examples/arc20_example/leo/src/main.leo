@@ -11,7 +11,8 @@ program arc20_token.aleo : arc20::IARC20 {
 
     mapping balances: address => u128;
     mapping allowances: field => u128;
-    mapping total_supply: bool => u128;
+
+    storage total_supply: u128;
 
     record Token {
         owner: address,
@@ -22,10 +23,10 @@ program arc20_token.aleo : arc20::IARC20 {
 
     fn mint_public(public recipient: address, public amount: u128) -> Final {
         return final {
-            let minted: u128 = total_supply.get_or_use(true, 0u128);
+            let minted: u128 = total_supply.unwrap_or(0u128);
             let new_supply: u128 = minted + amount;
             assert(new_supply <= MAX_SUPPLY);
-            total_supply.set(true, new_supply);
+            total_supply = new_supply;
 
             let balance: u128 = balances.get_or_use(recipient, 0u128);
             balances.set(recipient, balance + amount);
@@ -184,7 +185,7 @@ program arc20_token.aleo : arc20::IARC20 {
     }
 
     view fn supply() -> u128 {
-        return total_supply.get_or_use(true, 0u128);
+        return total_supply.unwrap_or(0u128);
     }
 
     view fn max_supply() -> u128 {

@@ -8,6 +8,10 @@ struct Approval:
     approver as address;
     spender as address;
 
+struct Optional__6A9ZdhLQa8N:
+    is_some as boolean;
+    val as u128;
+
 mapping balances:
     key as address.public;
     value as u128.public;
@@ -16,7 +20,7 @@ mapping allowances:
     key as field.public;
     value as u128.public;
 
-mapping total_supply:
+mapping total_supply__:
     key as boolean.public;
     value as u128.public;
 
@@ -29,14 +33,18 @@ function mint_public:
 finalize mint_public:
     input r0 as u128.public;
     input r1 as address.public;
-    get.or_use total_supply[true] 0u128 into r2;
-    add r2 r0 into r3;
-    lte r3 1000000000000000u128 into r4;
-    assert.eq r4 true;
-    set r3 into total_supply[true];
-    get.or_use balances[r1] 0u128 into r5;
-    add r5 r0 into r6;
-    set r6 into balances[r1];
+    contains total_supply__[false] into r2;
+    get.or_use total_supply__[false] 0u128 into r3;
+    ternary r2 r3 0u128 into r4;
+    cast r2 r4 into r5 as Optional__6A9ZdhLQa8N;
+    ternary r5.is_some r5.val 0u128 into r6;
+    add r6 r0 into r7;
+    lte r7 1000000000000000u128 into r8;
+    assert.eq r8 true;
+    set r7 into total_supply__[false];
+    get.or_use balances[r1] 0u128 into r9;
+    add r9 r0 into r10;
+    set r10 into balances[r1];
 
 function mint_private:
     input r0 as address.private;
@@ -229,8 +237,12 @@ view allowance:
     output r4 as u128.public;
 
 view supply:
-    get.or_use total_supply[true] 0u128 into r0;
-    output r0 as u128.public;
+    contains total_supply__[false] into r0;
+    get.or_use total_supply__[false] 0u128 into r1;
+    ternary r0 r1 0u128 into r2;
+    cast r0 r2 into r3 as Optional__6A9ZdhLQa8N;
+    ternary r3.is_some r3.val 0u128 into r4;
+    output r4 as u128.public;
 
 view max_supply:
     output 1000000000000000u128 as u128.public;
