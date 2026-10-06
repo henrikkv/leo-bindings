@@ -487,6 +487,11 @@ impl<N: Network> VMManager<N> for NetworkVm<N> {
 #[derive(Clone)]
 pub struct LocalVM {
     vm: VM<TestnetV0, ConsensusMemory<TestnetV0>>,
+    client: Client,
+}
+
+fn network_client() -> Result<Client> {
+    Client::new("https://api.provable.com", None)
 }
 
 impl std::fmt::Debug for LocalVM {
@@ -500,7 +505,10 @@ impl LocalVM {
         let bytes = crate::local_chain::load_or_create_local_chain_bytes()?;
         let blocks = crate::local_chain::parse_local_chain_blocks(&bytes)?;
         let vm = crate::local_chain::vm_from_local_chain_blocks(&blocks)?;
-        Ok(Self { vm })
+        Ok(Self {
+            vm,
+            client: network_client()?,
+        })
     }
 
     pub fn vm(&self) -> &VM<TestnetV0, ConsensusMemory<TestnetV0>> {
@@ -513,6 +521,7 @@ impl LocalVM {
 
     fn ensure_program_loaded(
         &self,
+        deployer: &Account<TestnetV0>,
         program_id: &ProgramID<TestnetV0>,
         dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<()> {
@@ -520,13 +529,7 @@ impl LocalVM {
             return Ok(());
         }
 
-        for dep_id in dependencies {
-            if !self.contains_program(dep_id) {
-                return Err(Error::Other(format!(
-                    "LocalVM: dependency '{dep_id}' not on ledger; deploy it first (missing program '{program_id}')"
-                )));
-            }
-        }
+        self.fetch_missing_dependencies(deployer, dependencies)?;
 
         Err(Error::Other(format!(
             "LocalVM: program '{program_id}' not loaded; deploy via bindings::new first"
@@ -541,13 +544,7 @@ impl LocalVM {
     ) -> Result<()> {
         let program_id = program.id();
 
-        for dep_id in dependencies {
-            if !self.contains_program(dep_id) {
-                return Err(Error::Other(format!(
-                    "LocalVM: missing dependency '{dep_id}' before deploying '{program_id}'"
-                )));
-            }
-        }
+        self.fetch_missing_dependencies(deployer, dependencies)?;
 
         log::info!("📦 Deploy: creating proofless deployment tx for '{program_id}'");
 
@@ -564,19 +561,22 @@ impl LocalVM {
         Ok(())
     }
 
-    pub fn deploy_from_network(
+    fn fetch_missing_dependencies(
         &self,
         deployer: &Account<TestnetV0>,
-        client: &Client,
-        program_id: &str,
+        dependencies: &[ProgramID<TestnetV0>],
     ) -> Result<()> {
-        self.deploy_from_network_inner(deployer, client, program_id, &mut HashSet::new())
+        for dep_id in dependencies {
+            if !self.contains_program(dep_id) {
+                self.fetch_and_deploy(deployer, &dep_id.to_string(), &mut HashSet::new())?;
+            }
+        }
+        Ok(())
     }
 
-    fn deploy_from_network_inner(
+    fn fetch_and_deploy(
         &self,
         deployer: &Account<TestnetV0>,
-        client: &Client,
         program_id: &str,
         visiting: &mut HashSet<ProgramID<TestnetV0>>,
     ) -> Result<()> {
@@ -596,7 +596,7 @@ impl LocalVM {
             )));
         }
 
-        let bytecode = crate::block_on(client.program::<TestnetV0>(&id_str))?;
+        let bytecode = crate::block_on(self.client.program::<TestnetV0>(&id_str))?;
         let program: Program<TestnetV0> = bytecode.parse().map_err(|e| {
             Error::Other(format!("Failed to parse Aleo bytecode for '{id_str}': {e}"))
         })?;
@@ -608,7 +608,7 @@ impl LocalVM {
         }
         let imports: Vec<ProgramID<TestnetV0>> = program.imports().keys().copied().collect();
         for imported in &imports {
-            self.deploy_from_network_inner(deployer, client, &imported.to_string(), visiting)?;
+            self.fetch_and_deploy(deployer, &imported.to_string(), visiting)?;
         }
         self.deploy_and_broadcast(deployer, &program, &imports)?;
         visiting.remove(&parsed_id);
@@ -625,7 +625,7 @@ impl LocalVM {
     ) -> Result<Vec<Value<TestnetV0>>> {
         log::info!("Creating local tx: {program_id}.{function_name}");
 
-        self.ensure_program_loaded(program_id, dependencies)?;
+        self.ensure_program_loaded(account, program_id, dependencies)?;
 
         let mut rng = rand::rng();
 
@@ -678,7 +678,10 @@ impl LocalVM {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let blocks = crate::local_chain::parse_local_chain_blocks(bytes)?;
         let vm = crate::local_chain::vm_from_local_chain_blocks(&blocks)?;
-        Ok(Self { vm })
+        Ok(Self {
+            vm,
+            client: network_client()?,
+        })
     }
 
     pub fn set_mapping_value<N: Network>(
