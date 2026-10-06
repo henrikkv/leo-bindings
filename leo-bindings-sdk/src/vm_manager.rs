@@ -13,7 +13,7 @@ use snarkvm::prelude::*;
 use snarkvm::synthesizer::VM;
 use snarkvm::synthesizer::program::{FinalizeGlobalState, FinalizeStoreTrait, StackTrait};
 
-pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V18;
+pub const CONSENSUS_VERSION: ConsensusVersion = ConsensusVersion::V22;
 
 pub trait VMManager<N: Network>: Send + Sync + Clone {
     fn program_exists(&self, program_id: &ProgramID<N>) -> Result<bool>;
