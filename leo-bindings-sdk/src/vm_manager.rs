@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+use std::str::FromStr;
+
 use crate::account::Account;
 use crate::config::Client;
 use crate::error::{Error, Result};
@@ -558,6 +561,57 @@ impl LocalVM {
         let beacon_key = *beacon_account.private_key();
         crate::local_chain::commit_transaction(&self.vm, &beacon_key, &transaction, &mut rng)?;
 
+        Ok(())
+    }
+
+    pub fn deploy_from_network(
+        &self,
+        deployer: &Account<TestnetV0>,
+        client: &Client,
+        program_id: &str,
+    ) -> Result<()> {
+        self.deploy_from_network_inner(deployer, client, program_id, &mut HashSet::new())
+    }
+
+    fn deploy_from_network_inner(
+        &self,
+        deployer: &Account<TestnetV0>,
+        client: &Client,
+        program_id: &str,
+        visiting: &mut HashSet<ProgramID<TestnetV0>>,
+    ) -> Result<()> {
+        let id_str = if program_id.ends_with(".aleo") {
+            program_id.to_string()
+        } else {
+            format!("{program_id}.aleo")
+        };
+        let parsed_id = ProgramID::<TestnetV0>::from_str(&id_str)
+            .map_err(|e| Error::Other(format!("Invalid program id '{id_str}': {e}")))?;
+        if self.contains_program(&parsed_id) {
+            return Ok(());
+        }
+        if !visiting.insert(parsed_id) {
+            return Err(Error::Other(format!(
+                "LocalVM: import cycle involving '{parsed_id}'"
+            )));
+        }
+
+        let bytecode = crate::block_on(client.program::<TestnetV0>(&id_str))?;
+        let program: Program<TestnetV0> = bytecode.parse().map_err(|e| {
+            Error::Other(format!("Failed to parse Aleo bytecode for '{id_str}': {e}"))
+        })?;
+        if program.id() != &parsed_id {
+            return Err(Error::Other(format!(
+                "Fetched bytecode for '{id_str}' declares '{}'",
+                program.id()
+            )));
+        }
+        let imports: Vec<ProgramID<TestnetV0>> = program.imports().keys().copied().collect();
+        for imported in &imports {
+            self.deploy_from_network_inner(deployer, client, &imported.to_string(), visiting)?;
+        }
+        self.deploy_and_broadcast(deployer, &program, &imports)?;
+        visiting.remove(&parsed_id);
         Ok(())
     }
 
